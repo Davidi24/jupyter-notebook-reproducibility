@@ -29,6 +29,7 @@ source "$PROJECT_ROOT/src/repo.sh"
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
 
 initialize_directories
+ensure_working_db
 
 log "[MAIN] Starting pipeline..."
 log "[MAIN] PROJECT_ROOT : $PROJECT_ROOT"

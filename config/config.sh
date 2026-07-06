@@ -11,11 +11,12 @@ LOG_DIR="$OUTPUT_DIR/logs"
 
 # Input DB — Sheeba's original repo list, READ ONLY
 DB_DIR="$PROJECT_ROOT/data"
-DB_FILE="$DB_DIR/db.sqlite"
+SOURCE_DB_FILE="$DB_DIR/db.sqlite"
 
 # Output DB — created fresh by pipeline, stores all execution results
 OUTPUT_DB_DIR="$PROJECT_ROOT/output/db"
 OUTPUT_DB_FILE="$OUTPUT_DB_DIR/db.sqlite"
+DB_FILE="$OUTPUT_DB_FILE"
 
 TARGET_COUNT="${TARGET_COUNT:-10}"
 export GIT_TERMINAL_PROMPT=0
@@ -27,5 +28,16 @@ initialize_directories() {
     log "[INIT] Initialized directory structure"
 }
 
+ensure_working_db() {
+    if [ ! -f "$DB_FILE" ]; then
+        if [ -f "$SOURCE_DB_FILE" ]; then
+            cp "$SOURCE_DB_FILE" "$DB_FILE"
+            log "[INIT] Working DB created from $SOURCE_DB_FILE"
+        else
+            log "[INIT] No source DB found; starting with empty working DB"
+        fi
+    fi
+}
+
 export PROJECT_ROOT INPUT_DIR OUTPUT_DIR REPOS_DIR COMP_DIR LOG_DIR \
-       DB_DIR DB_FILE OUTPUT_DB_DIR OUTPUT_DB_FILE TARGET_COUNT
+       DB_DIR SOURCE_DB_FILE OUTPUT_DB_DIR OUTPUT_DB_FILE DB_FILE TARGET_COUNT
