@@ -3,7 +3,7 @@
 # repo.sh — Per-repository orchestration and batch SQLite flow
 ###############################################################################
 
-export GITHUB_REPO
+export REPO_URL
 
 
 
@@ -49,7 +49,7 @@ EOF
 # Outputs the repository's row id.
 get_or_create_repo_id() {
 local repo_path
-repo_path=$(echo "$1" | sed -E 's#^https?://[^/]+/##; s#\.git$##')
+repo_path=$(echo "$1" | sed -E 's#^https?://[^/]+/##; s#records?/##; s#\.git$##')
 local platform
 platform=$(detect_platform "$1")
 local existing_id
@@ -63,7 +63,7 @@ EOF
 }
 
 # Populates the notebooks table from user-supplied paths (single-repo mode).
-# Accepts GitHub blob URLs or plain relative paths.
+# Accepts platform notebook URLs or plain relative paths.
 # In batch mode the notebooks are already in the DB, so this is a safe no-op.
 insert_notebooks_from_paths() {
 local repo_id="$1"
@@ -77,12 +77,11 @@ local notebook_paths="$2"
         nb_path=$(echo "$nb_path" | xargs)
         [ -z "$nb_path" ] && continue
 
-        # Strip GitHub blob URL down to relative path
-        # handles: https://github.com/owner/repo/blob/<branch>/path/to/file.ipynb
-        if [[ "$nb_path" == https://github.com/* ]]; then
-            nb_path=$(echo "$nb_path" | sed 's|https://github.com/[^/]*/[^/]*/blob/[^/]*/||')
-        fi
-
+# Strip platform notebook URLs down to relative paths
+# handles GitHub /blob/ URLs and Codeberg /src/ URLs
+if [[ "$nb_path" == https://github.com/* || "$nb_path" == https://codeberg.org/* ]]; then
+    nb_path=$(echo "$nb_path" | sed -E 's|https?://[^/]+/[^/]+/[^/]+/(blob|src)/[^/]+/||')
+fi
         # Only register .ipynb files
         [[ "$nb_path" != *.ipynb ]] && continue
 
@@ -99,32 +98,33 @@ local notebook_paths="$2"
 
 process_repo() {
     REPO_START_TIME=$(now_sec)
-    GITHUB_REPO="$1"; NOTEBOOK_PATHS="$2"; SETUP_PATHS="$3"; REQUIREMENT_PATHS="$4"
-    REPO_NAME=$(basename "$GITHUB_REPO" .git)
+    REPO_URL="$1"; NOTEBOOK_PATHS="$2"; SETUP_PATHS="$3"; REQUIREMENT_PATHS="$4"
+    export REPO_URL
+    REPO_NAME=$(basename "$REPO_URL" .git)
     REPO_DIR="$REPOS_DIR/$REPO_NAME"
     log "[REPO] ── Starting: $REPO_NAME ──────────────────────────────"
     LOG_FILE="${LOG_DIR}/${REPO_NAME}.log"; > "$LOG_FILE"; export LOG_FILE
-    create_repository_run "$REPO_ID" "$GITHUB_REPO"
+    create_repository_run "$REPO_ID" "$REPO_URL"
 
     # Single-repo mode: populate notebooks table from user-supplied URLs/paths.
     # Batch mode: notebooks already in DB — this becomes a no-op.
     insert_notebooks_from_paths "$REPO_ID" "$NOTEBOOK_PATHS"
 
-    # Normalize NOTEBOOK_PATHS: strip GitHub blob URLs to relative paths
-    # so all downstream code (notebooks.sh etc.) gets plain relative paths
+   # Normalize NOTEBOOK_PATHS: strip platform notebook URLs to relative paths
+# so all downstream code (notebooks.sh etc.) gets plain relative paths
     local normalized=""
     IFS=';' read -ra _nb_array <<< "$NOTEBOOK_PATHS"
     for _nb in "${_nb_array[@]}"; do
         _nb=$(echo "$_nb" | xargs)
-        [[ "$_nb" == https://github.com/* ]] && _nb=$(echo "$_nb" | sed 's|https://github.com/[^/]*/[^/]*/blob/[^/]*/||')
+   [[ "$_nb" == https://github.com/* || "$_nb" == https://codeberg.org/* ]] && _nb=$(echo "$_nb" | sed -E 's|https?://[^/]+/[^/]+/[^/]+/(blob|src)/[^/]+/||')
         [ -n "$normalized" ] && normalized="${normalized};${_nb}" || normalized="$_nb"
     done
     NOTEBOOK_PATHS="$normalized"
 
-    PLATFORM=$(detect_platform "$GITHUB_REPO")
+     PLATFORM=$(detect_platform "$REPO_URL")
 
     # Zenodo isn't a Git host, so skip the git ls-remote check for it
-    if [ "$PLATFORM" != "zenodo" ] && ! validate_repo "$GITHUB_REPO"; then
+    if [ "$PLATFORM" != "zenodo" ] && ! validate_repo "$REPO_URL"; then
         finalize_repository_run "$RUN_ID" "INVALID_REPOSITORY_URL" "git ls-remote failed" "$(elapsed_sec "$REPO_START_TIME")"
         return 0
     fi
@@ -149,10 +149,10 @@ process_repo() {
         cd "$REPO_DIR" && git pull >> "$LOG_FILE" 2>&1 && cd - > /dev/null
     elif [ "$PLATFORM" = "zenodo" ]; then
         log "[REPO] Downloading Zenodo record into $REPO_DIR..."
-        fetch_zenodo "$GITHUB_REPO" "$REPO_DIR" >> "$LOG_FILE" 2>&1
+        fetch_zenodo "$REPO_URL" "$REPO_DIR" >> "$LOG_FILE" 2>&1
     else
         log "[REPO] Cloning into $REPO_DIR..."
-        git clone --depth 1 "$GITHUB_REPO" "$REPO_DIR" >> "$LOG_FILE" 2>&1
+        git clone --depth 1 "$REPO_URL" "$REPO_DIR" >> "$LOG_FILE" 2>&1
     fi
 
     if [ ! -d "$REPO_DIR" ]; then
@@ -220,7 +220,7 @@ process_sqlite_flow() {
         repo_data=$(sqlite3 "$DB_FILE" <<EOF
 .mode csv
 .headers off
-SELECT r.id, r.repository, r.notebooks, r.setups, r.requirements
+SELECT r.id, r.repository, r.platform, r.notebooks, r.setups, r.requirements
 FROM repositories r
 WHERE r.notebooks IS NOT NULL AND TRIM(r.notebooks) != ''
 AND r.notebooks_count != 0
@@ -231,18 +231,37 @@ EOF
 )
         if [ -z "$repo_data" ]; then log "[BATCH] No more repositories."; break; fi
 
-        IFS=',' read -r REPO_ID REPO_PATH NOTEBOOK_PATHS SETUP_PATHS REQUIREMENT_PATHS <<< "$repo_data"
-        GITHUB_REPO="https://github.com/${REPO_PATH}"
+        IFS=',' read -r REPO_ID REPO_PATH PLATFORM NOTEBOOK_PATHS SETUP_PATHS REQUIREMENT_PATHS <<< "$repo_data"
+        # if an old platform has not platform value, default to github
+       PLATFORM=$(echo "$PLATFORM" | tr -d '\r\n"')
+[ -z "$PLATFORM" ] && PLATFORM="github"
+REPO_PATH=$(echo "$REPO_PATH" | tr -d '\r\n"')
+        case "$PLATFORM" in
+    github)
+        REPO_URL="https://github.com/${REPO_PATH}"
+        ;;
+    codeberg)
+        REPO_URL="https://codeberg.org/${REPO_PATH}"
+        ;;
+    zenodo)
+        REPO_URL="https://zenodo.org/records/${REPO_PATH}"
+        ;;
+*)
+    log "[BATCH] Unknown platform '$PLATFORM' for repo $REPO_ID, skipping"
+    processed_repo_ids+=("$REPO_ID")
+    continue
+    ;;
+esac
         NOTEBOOK_PATHS=$(echo "$NOTEBOOK_PATHS" | tr -d '\r\n"')
         REQUIREMENT_PATHS=$(echo "$REQUIREMENT_PATHS" | tr -d '\r\n"')
         SETUP_PATHS=$(echo "$SETUP_PATHS" | tr -d '\r\n"')
-        log "[BATCH] Repo $REPO_ID: $GITHUB_REPO"
+        log "[BATCH] Repo $REPO_ID: $REPO_URL"
 
         processed_repo_ids+=("$REPO_ID")
         isExecutedSuccessfully="false"
 
-        if ! process_repo "$GITHUB_REPO" "$NOTEBOOK_PATHS" "$SETUP_PATHS" "$REQUIREMENT_PATHS"; then
-            REPO_NAME=$(basename "$REPO_PATH")
+       if ! process_repo "$REPO_URL" "$NOTEBOOK_PATHS" "$SETUP_PATHS" "$REQUIREMENT_PATHS"; then
+            REPO_NAME=$(basename "$REPO_URL" .git)
             [ -d "$REPOS_DIR/$REPO_NAME" ] && rm -rf "$REPOS_DIR/$REPO_NAME"
             processed_count=$((processed_count + 1))
             continue

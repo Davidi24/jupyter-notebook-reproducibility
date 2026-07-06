@@ -26,7 +26,7 @@ IGNORE_FIELDS = {"execution_count", "metadata"}
 
 DB_FILE = os.environ.get("DB_FILE")
 REPO_TOTAL_TIME = float(os.getenv("REPO_TOTAL_TIME", 0))
-GITHUB_REPO = os.environ.get("GITHUB_REPO")
+REPO_URL = os.environ.get("REPO_URL")
 NOTEBOOKS_COUNT = os.environ.get("NOTEBOOKS_COUNT")
 #EXEC_LOG_PATH = Path("logs/notebook_execution_times.log")
 EXEC_LOG_PATH = Path(os.environ.get("LOG_DIR", "")) / "notebook_execution_times.log"
@@ -99,7 +99,7 @@ def insert_notebook_execution(summary, repository_run_id):
     
     logging.info("notebook_id: %s.", notebook_id)
     logging.info("repository_id: %s.", repository_id)
-    logging.info("GITHUB_REPO: %s.", GITHUB_REPO)
+    logging.info("REPO_URL: %s.", REPO_URL)
     logging.info("REPO_TOTAL_TIME: %s.", REPO_TOTAL_TIME)
 
     cur.execute(
@@ -514,7 +514,7 @@ def build_detailed_summary(diff, notebook, notebook_name, repo_id):
     summary = {
         "repository_id": repo_id,
         "notebook": notebook_name,
-        "url": GITHUB_REPO,
+        "url": REPO_URL,
 
         "execution_status": execution_status,
         "notebook_execution_duration": notebook_duration,
