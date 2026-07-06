@@ -17,7 +17,7 @@ compare_notebook_outputs_json() {
 
 compare_notebook_outputs() {
     log "[NOTEBOOK] Comparing outputs for: $REPO_NAME"
-    IFS=";" read -ra NOTEBOOK_ARRAY <<< "$NOTEBOOK_PATHS"
+    IFS=";" read -ra NOTEBOOK_ARRAY <<<"$NOTEBOOK_PATHS"
     for NOTEBOOK_PATH in "${NOTEBOOK_ARRAY[@]}"; do
         if [ ! -f "$REPO_DIR/$NOTEBOOK_PATH" ]; then
             log "[NOTEBOOK] Not found: $REPO_DIR/$NOTEBOOK_PATH — skipping"
@@ -38,7 +38,7 @@ compare_notebook_outputs() {
         fi
         if [ ! -f "$executed_notebook" ]; then
             log "[NOTEBOOK] Output missing for $NOTEBOOK_PATH — recording failure"
-            cat <<EOF > "$comparison_result_file"
+            cat <<EOF >"$comparison_result_file"
 {
   "notebook": "$NOTEBOOK_PATH",
   "NOTEBOOK_ID": "$NOTEBOOK_ID",
