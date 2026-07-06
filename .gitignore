@@ -1,2 +1,36 @@
+# Editor / tooling
 .claude/
 .vscode/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Databases (runtime data)
+*.sqlite
+*.sqlite3
+
+# Pipeline runtime output
+output/cloned_repos/
+output/comparisons/
+output/db/
+output/logs/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.log
+*.out
+*.toc
+*.synctex.gz
+thesis/template/build/
+
+# Compiled thesis PDFs
+thesis/thesis.pdf
+thesis/template/Template.pdf

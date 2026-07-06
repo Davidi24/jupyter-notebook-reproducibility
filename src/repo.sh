@@ -5,6 +5,18 @@
 
 export GITHUB_REPO
 
+
+
+detect_platform() {
+    case "$1" in
+        *github.com*)   echo "github" ;;
+        *codeberg.org*) echo "codeberg" ;;
+        *zenodo.org*)   echo "zenodo" ;;
+        *)              echo "unknown" ;;
+    esac
+}
+
+
 create_repository_run() {
     RUN_ID=$(sqlite3 "$DB_FILE" <<EOF
 INSERT INTO repository_runs (repository_id, url, run_status, started_at)
@@ -12,11 +24,11 @@ VALUES ($1, '$2', 'RUNNING', datetime('now'));
 SELECT last_insert_rowid();
 EOF
 )
-    export RUN_ID
+export RUN_ID
 }
 
 finalize_repository_run() {
-    log "[REPO] Finalizing run $1 — status: $2"
+log "[REPO] Finalizing run $1 — status: $2"
     sqlite3 "$DB_FILE" <<EOF
 UPDATE repository_runs
 SET run_status='$2', error_message='$3', finished_at=datetime('now'), duration_seconds=$4
@@ -31,14 +43,21 @@ FROM notebooks WHERE repository_id=$1;
 EOF
 }
 
+
+# Find a repository in the DB by its path, or insert it if it's new.
+# Also detects and stores which platform the URL came from.
+# Outputs the repository's row id.
 get_or_create_repo_id() {
-    local repo_path="${1#https://github.com/}"
-    local existing_id
-    existing_id=$(sqlite3 "$DB_FILE" "SELECT id FROM repositories WHERE repository='$repo_path' LIMIT 1;")
-    if [ -n "$existing_id" ]; then echo "$existing_id"; return 0; fi
+local repo_path
+repo_path=$(echo "$1" | sed -E 's#^https?://[^/]+/##; s#\.git$##')
+local platform
+platform=$(detect_platform "$1")
+local existing_id
+existing_id=$(sqlite3 "$DB_FILE" "SELECT id FROM repositories WHERE repository='$repo_path' LIMIT 1;")
+if [ -n "$existing_id" ]; then echo "$existing_id"; return 0; fi
     sqlite3 "$DB_FILE" <<EOF
-INSERT INTO repositories (repository, notebooks, setups, requirements, notebooks_count, setups_count, requirements_count)
-VALUES ('$repo_path', '$NOTEBOOK_PATHS', '$SETUP_PATHS', '$REQUIREMENT_PATHS', 1, 0, 0);
+INSERT INTO repositories (repository, platform, notebooks, setups, requirements, notebooks_count, setups_count, requirements_count)
+VALUES ('$repo_path', '$platform', '$NOTEBOOK_PATHS', '$SETUP_PATHS', '$REQUIREMENT_PATHS', 1, 0, 0);
 SELECT last_insert_rowid();
 EOF
 }
@@ -47,10 +66,10 @@ EOF
 # Accepts GitHub blob URLs or plain relative paths.
 # In batch mode the notebooks are already in the DB, so this is a safe no-op.
 insert_notebooks_from_paths() {
-    local repo_id="$1"
-    local notebook_paths="$2"
+local repo_id="$1"
+local notebook_paths="$2"
 
-    [ -z "$notebook_paths" ] && return 0
+[ -z "$notebook_paths" ] && return 0
 
     IFS=';' read -ra nb_array <<< "$notebook_paths"
     for nb_path in "${nb_array[@]}"; do
@@ -102,7 +121,10 @@ process_repo() {
     done
     NOTEBOOK_PATHS="$normalized"
 
-    if ! validate_repo "$GITHUB_REPO"; then
+    PLATFORM=$(detect_platform "$GITHUB_REPO")
+
+    # Zenodo isn't a Git host, so skip the git ls-remote check for it
+    if [ "$PLATFORM" != "zenodo" ] && ! validate_repo "$GITHUB_REPO"; then
         finalize_repository_run "$RUN_ID" "INVALID_REPOSITORY_URL" "git ls-remote failed" "$(elapsed_sec "$REPO_START_TIME")"
         return 0
     fi
@@ -125,6 +147,9 @@ process_repo() {
     if [ -d "$REPO_DIR" ]; then
         log "[REPO] Repo already exists, pulling latest..."
         cd "$REPO_DIR" && git pull >> "$LOG_FILE" 2>&1 && cd - > /dev/null
+    elif [ "$PLATFORM" = "zenodo" ]; then
+        log "[REPO] Downloading Zenodo record into $REPO_DIR..."
+        fetch_zenodo "$GITHUB_REPO" "$REPO_DIR" >> "$LOG_FILE" 2>&1
     else
         log "[REPO] Cloning into $REPO_DIR..."
         git clone --depth 1 "$GITHUB_REPO" "$REPO_DIR" >> "$LOG_FILE" 2>&1
@@ -225,4 +250,46 @@ EOF
         [[ "$isExecutedSuccessfully" == "true" ]] && processed_count=$((processed_count + 1))
     done
     log "[BATCH] Finished. Processed $processed_count repositories."
+}
+
+
+
+
+# --- Zenodo helpers ---
+
+# Get the record ID number from a Zenodo URL
+zenodo_record_id() {
+    echo "$1" | sed -E 's#.*/records?/([0-9]+).*#\1#'
+}
+
+# Get the file download link for a Zenodo record ID
+zenodo_download_url() {
+    local id="$1"
+    curl -s "https://zenodo.org/api/records/$id" | python3 -c "
+import sys, json
+files = json.load(sys.stdin).get('files', [])
+zips = [f for f in files if f['key'].lower().endswith('.zip')]
+chosen = (zips or files)[0]
+print(chosen['links']['self'])
+"
+}
+
+# Download and unzip a Zenodo record into a folder (Zenodo isn't a Git host)
+fetch_zenodo() {
+    local url="$1" dest="$2"
+    local id dl
+    id=$(zenodo_record_id "$url")
+    dl=$(zenodo_download_url "$id")
+    mkdir -p "$dest"
+    curl -L -s -o "$dest/_zenodo_archive.zip" "$dl"
+    unzip -o -q "$dest/_zenodo_archive.zip" -d "$dest"
+    rm -f "$dest/_zenodo_archive.zip"
+
+    # If everything unzipped into one sub-folder, move its contents up
+    local entries
+    entries=$(find "$dest" -mindepth 1 -maxdepth 1)
+    if [ "$(echo "$entries" | wc -l)" -eq 1 ] && [ -d "$entries" ]; then
+        ( shopt -s dotglob; mv "$entries"/* "$dest"/ )
+        rmdir "$entries"
+    fi
 }
