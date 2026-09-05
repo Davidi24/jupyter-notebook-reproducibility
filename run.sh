@@ -19,6 +19,8 @@ fail() { echo "[ERROR] $*"; exit 1; }
 
 command -v python3 >/dev/null 2>&1 || fail "python3 not found. Please install Python 3."
 command -v sqlite3 >/dev/null 2>&1 || fail "sqlite3 not found. Please install SQLite."
+command -v jq      >/dev/null 2>&1 || fail "jq not found. Please install jq."
+command -v unzip   >/dev/null 2>&1 || fail "unzip not found. Please install unzip."
 command -v git     >/dev/null 2>&1 || fail "git not found. Please install git."
 command -v pyenv   >/dev/null 2>&1 || fail "pyenv not found. See https://github.com/pyenv/pyenv#installation"
 command -v jupyter >/dev/null 2>&1 || fail "jupyter not found. Run: pip install jupyter nbconvert"

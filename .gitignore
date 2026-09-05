@@ -15,7 +15,26 @@ __pycache__/
 output/cloned_repos/
 output/comparisons/
 output/db/
+output/kg/
 output/logs/
+output/pdf/
+output/web-jobs/
+
+# Local scratch and archived verification bundles
+_to_delete/
+tmp/
+
+# Local FAIR Jupyter KG environment
+code/fairjupyter/.venv/
+
+# Website dependencies, build output, and local platform state
+website/node_modules/
+website/.next/
+website/.vinext/
+website/.wrangler/
+website/dist/
+website/_to_delete/
+website/_to_delete_old_*.tar.gz
 
 # LaTeX build artifacts
 *.aux
@@ -34,3 +53,6 @@ thesis/template/build/
 # Compiled thesis PDFs
 thesis/thesis.pdf
 thesis/template/Template.pdf
+
+# Local presentation and database showcase
+ShowCase/

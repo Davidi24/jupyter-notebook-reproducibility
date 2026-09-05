@@ -29,8 +29,8 @@ compare_notebook_outputs() {
         original_notebook="$REPO_DIR/$NOTEBOOK_PATH"
         executed_notebook="$REPO_DIR/${notebook_dir}/${base_name}_output.ipynb"
         comparison_result_file="${COMP_DIR}/${base_name}_comparison.json"
-        NOTEBOOK_ID=$(get_notebook_id_from_db "$NOTEBOOK_PATH")
         REPO_ID=$(get_repo_id_from_db "$REPO_URL")
+        NOTEBOOK_ID=$(get_notebook_id_from_db "$REPO_ID" "$NOTEBOOK_PATH")
         log "[NOTEBOOK] ID=$NOTEBOOK_ID  REPO_ID=$REPO_ID  path=$NOTEBOOK_PATH"
         if [ -z "$NOTEBOOK_ID" ]; then
             log "[NOTEBOOK] No DB record for $NOTEBOOK_PATH — skipping"

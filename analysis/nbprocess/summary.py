@@ -41,39 +41,7 @@ if not DB_FILE:
 DB_FILE = Path(DB_FILE)
 
 
-def compare_old_vs_new(old_row, new_summary):
-    if not old_row:
-        return {
-            "status": "new_notebook",
-            "message": "No previous execution found"
-        }
-    (
-        old_total,
-        old_diff,
-        old_diff_count,
-        old_notebook_execution_duration,
-    ) = old_row
-    # logging.info(
-    #     "Delta calc — old: %r (%s), new: %r (%s)",
-    #     old_notebook_execution_duration,
-    #     type(old_notebook_execution_duration),
-    #     new_summary["notebook_execution_duration"],
-    #     type(new_summary["notebook_execution_duration"]),
-    # )
 
-
-    return {
-        "delta_total_code_cells": new_summary["total_code_cells"] - (old_total or 0),
-        "delta_different_cells_count": new_summary["different_cells_count"] - (old_diff_count or 0),
-        "delta_duration": (
-            round(
-                (new_summary["notebook_execution_duration"] if new_summary["notebook_execution_duration"] is not None else 0) - 
-                (old_notebook_execution_duration if old_notebook_execution_duration is not None else 0),
-                2
-            )
-        )
-        #"delta_notebooks_count": NOTEBOOKS_COUNT - (old_notebooks_count or 0),
-    }
 
 
 def insert_notebook_execution(summary, repository_run_id):
@@ -143,14 +111,6 @@ def insert_notebook_execution(summary, repository_run_id):
     notebook_execution_id = cur.lastrowid
 
 
-    # 🔎 Fetch previous execution
-    old_exec = fetch_previous_execution(
-        conn,
-        repository_id,
-        notebook_id
-    )
-
-    #comparison = compare_old_vs_new(old_exec, summary)
 
     insert_notebook_reproducibility_metrics(
         conn,
@@ -262,27 +222,7 @@ def insert_notebook_reproducibility_metrics(
 
 
 
-def fetch_previous_execution(conn, repository_id, notebook_id):
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT
-            n.code_cells,
-            e.diff,
-            e.diff_count,
-            e.duration
-        FROM notebooks n
-        LEFT JOIN executions e
-               ON e.notebook_id = n.id
-              AND e.repository_id = n.repository_id
-        WHERE n.repository_id = ?
-          AND n.id = ?
-        ORDER BY e.id DESC
-        LIMIT 1
-        """,
-        (repository_id, notebook_id)
-    )
-    return cur.fetchone()
+
 
 def load_execution_log(log_path=EXEC_LOG_PATH):
     """

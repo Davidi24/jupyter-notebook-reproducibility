@@ -15,6 +15,8 @@ RUN apt-get update && \
         wget \
         git \
         sqlite3 \
+        jq \
+        unzip \
         python3.10 \
         python3.10-venv \
         python3-pip \
@@ -31,13 +33,19 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------
-# Install Jupyter via pip (no conda at all)
+# Install the pipeline's own Python dependencies (notebook execution,
+# nbdime for output comparison, pandas/rdflib for the knowledge graph,
+# etc.) plus Jupyter. These run the pipeline scripts themselves
+# (analysis/compare_notebook.py and friends) via the system python3.10 —
+# separate from the per-repo pyenv environments created at runtime for
+# each analyzed repository.
 # ---------------------------------------------------------------
 RUN python3.10 -m pip install --no-cache-dir --upgrade pip && \
     python3.10 -m pip install --no-cache-dir \
-        notebook \
-        jupyterlab \
-        nbconvert
+        "requests>=2.31,<3" \
+        "nbdime==4.0.3" \
+        "rdflib>=7,<8" \
+        morph-kgc==2.10.0
 
 # ---------------------------------------------------------------
 # Create jovyan user (matches NFDI expectation)
