@@ -1,0 +1,23 @@
+prefixes:
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  dcterms: http://purl.org/dc/terms/
+  schema: https://schema.org/
+  nf: https://w3id.org/notebookfair#
+
+mappings:
+  pipeline_repository_metadata:
+    sources:
+      - [pipeline_data/repository_metadata.csv~csv]
+    s: https://w3id.org/notebookfair/repository/$(repo_id)
+    po:
+      - [dcterms:title, $(title)]
+      - [dcterms:description, $(description)]
+      - [dcterms:creator, $(authors)]
+      - [dcterms:license, $(license)]
+      - [dcterms:subject, $(keywords)]
+      - [dcterms:identifier, $(doi)]
+      - [dcterms:created, $(created_at)]
+      - [dcterms:modified, $(updated_at)]
+      - [nf:metadataFetchedAt, $(fetched_at)]
+
+

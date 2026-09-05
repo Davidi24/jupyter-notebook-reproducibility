@@ -1,0 +1,17 @@
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX nf: <https://w3id.org/notebookfair#>
+PREFIX nf-platform: <https://w3id.org/notebookfair/platform/>
+
+SELECT ?record ?title ?doi
+WHERE {
+  ?record a nf:ArchivedResearchRecord ;
+          nf:hostedOnPlatform nf-platform:zenodo .
+  OPTIONAL { ?record dcterms:title ?title }
+  OPTIONAL {
+    ?record dcterms:identifier ?doi .
+    FILTER(STRSTARTS(STR(?doi), "10."))
+  }
+  FILTER NOT EXISTS { ?record a nf:GitRepositoryResource }
+}
+ORDER BY ?record
+

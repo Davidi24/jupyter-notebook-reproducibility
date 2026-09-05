@@ -1,0 +1,14 @@
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?platform (COUNT(?result) AS ?results) (AVG(?score) AS ?averageScore)
+WHERE {
+  ?repository nf:hostedOnPlatform ?platformResource ;
+              nf:hasRun ?run .
+  ?platformResource nf:platformName ?platform .
+  ?run nf:hasExecution ?execution .
+  ?execution nf:hasReproducibilityResult ?result .
+  ?result nf:reproducibilityScore ?score .
+}
+GROUP BY ?platform
+ORDER BY ?platform
+

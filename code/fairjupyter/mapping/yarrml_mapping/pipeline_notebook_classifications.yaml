@@ -1,0 +1,32 @@
+prefixes:
+  dcterms: http://purl.org/dc/terms/
+  nf: https://w3id.org/notebookfair#
+  xsd: http://www.w3.org/2001/XMLSchema#
+
+mappings:
+  pipeline_notebook_classifications:
+    sources:
+      - [pipeline_data/notebook_classifications.csv~csv]
+    s: https://w3id.org/notebookfair/classification/$(id)
+    po:
+      - [a, nf:NotebookClassificationActivity]
+      - [nf:classifiedNotebook, https://w3id.org/notebookfair/notebook/$(notebook_id)~iri]
+      - [nf:ruleCategory, $(rule_category)]
+      - [nf:ruleConfidence, $(rule_confidence), xsd:decimal]
+      - [nf:llmCategory, $(llm_category)]
+      - [nf:llmConfidence, $(llm_confidence), xsd:decimal]
+      - [nf:classifierModel, $(llm_model)]
+      - [nf:classifierPromptVersion, $(llm_prompt_version)]
+      - [nf:classificationAgreementStatus, $(agreement_status)]
+      - [nf:needsHumanReview, $(needs_human_review), xsd:boolean]
+      - [nf:classificationWarning, $(warning)]
+      - [nf:provisionalCategory, $(provisional_category)]
+      - [nf:finalCategory, $(final_category)]
+      - [dcterms:created, $(created_at)]
+
+  pipeline_notebook_has_classification:
+    sources:
+      - [pipeline_data/notebook_classifications.csv~csv]
+    s: https://w3id.org/notebookfair/notebook/$(notebook_id)
+    po:
+      - [nf:hasClassification, https://w3id.org/notebookfair/classification/$(id)~iri]

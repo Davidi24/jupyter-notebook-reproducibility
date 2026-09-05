@@ -1,0 +1,25 @@
+prefixes:
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  dcterms: http://purl.org/dc/terms/
+  nf: https://w3id.org/notebookfair#
+
+mappings:
+  pipeline_notebooks:
+    sources:
+      - [pipeline_data/notebooks.csv~csv]
+    s: https://w3id.org/notebookfair/notebook/$(id)
+    po:
+      - [a, nf:NotebookResource]
+      - [rdfs:label, $(name)]
+      - [dcterms:identifier, $(name)]
+      - [nf:notebookLanguage, $(language)]
+      - [nf:isNotebookOf, https://w3id.org/notebookfair/repository/$(repository_id)~iri]
+
+  pipeline_repository_contains_notebook:
+    sources:
+      - [pipeline_data/notebooks.csv~csv]
+    s: https://w3id.org/notebookfair/repository/$(repository_id)
+    po:
+      - [nf:containsNotebook, https://w3id.org/notebookfair/notebook/$(id)~iri]
+
+

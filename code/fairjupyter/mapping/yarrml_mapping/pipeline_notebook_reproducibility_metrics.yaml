@@ -1,0 +1,28 @@
+prefixes:
+  xsd: http://www.w3.org/2001/XMLSchema#
+  prov: http://www.w3.org/ns/prov#
+  nf: https://w3id.org/notebookfair#
+
+mappings:
+  pipeline_reproducibility_results:
+    sources:
+      - [pipeline_data/notebook_reproducibility_metrics.csv~csv]
+    s: https://w3id.org/notebookfair/result/$(id)
+    po:
+      - [a, nf:ReproducibilityResult]
+      - [nf:resultOfExecution, https://w3id.org/notebookfair/execution/$(notebook_execution_id)~iri]
+      - [nf:totalCodeCells, $(total_code_cells), xsd:integer]
+      - [nf:identicalCellsCount, $(identical_cells_count), xsd:integer]
+      - [nf:differentCellsCount, $(different_cells_count), xsd:integer]
+      - [nf:nondeterministicCellsCount, $(nondeterministic_cells_count), xsd:integer]
+      - [nf:reproducibilityScore, $(reproducibility_score), xsd:decimal]
+      - [prov:generatedAtTime, $(created_at)]
+
+  pipeline_execution_has_result:
+    sources:
+      - [pipeline_data/notebook_reproducibility_metrics.csv~csv]
+    s: https://w3id.org/notebookfair/execution/$(notebook_execution_id)
+    po:
+      - [nf:hasReproducibilityResult, https://w3id.org/notebookfair/result/$(id)~iri]
+
+

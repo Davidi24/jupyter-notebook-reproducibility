@@ -1,0 +1,373 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns:prov="http://www.w3.org/ns/prov#"
+    xmlns:doap="http://usefulinc.com/ns/doap#"
+    xmlns:repr="https://w3id.org/reproduceme#"
+    xmlns:nf="https://w3id.org/notebookfair#">
+
+    <owl:Ontology rdf:about="https://w3id.org/notebookfair">
+        <owl:imports rdf:resource="https://w3id.org/reproduceme"/>
+        <dcterms:title xml:lang="en">Notebook FAIR Extension Ontology</dcterms:title>
+        <dcterms:description xml:lang="en">Cross-platform provenance and reproducibility-result terms for GitHub, Codeberg, and Zenodo notebook resources processed by the Notebook FAIR pipeline.</dcterms:description>
+        <dcterms:created rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2026-08-01</dcterms:created>
+        <owl:versionInfo>1.0.0</owl:versionInfo>
+    </owl:Ontology>
+
+    <!-- Classes -->
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#RepositoryResource">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Entity"/>
+        <rdfs:label xml:lang="en">Repository resource</rdfs:label>
+        <rdfs:comment xml:lang="en">A source-code repository or archived research record processed by the pipeline.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#GitRepositoryResource">
+        <rdfs:subClassOf rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:subClassOf rdf:resource="http://usefulinc.com/ns/doap#GitRepository"/>
+        <rdfs:label xml:lang="en">Git repository resource</rdfs:label>
+        <rdfs:comment xml:lang="en">A Git repository hosted by a Git platform such as GitHub or Codeberg.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#ArchivedResearchRecord">
+        <rdfs:subClassOf rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <owl:disjointWith rdf:resource="https://w3id.org/notebookfair#GitRepositoryResource"/>
+        <rdfs:label xml:lang="en">Archived research record</rdfs:label>
+        <rdfs:comment xml:lang="en">A non-Git archived research record, such as a Zenodo record.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#RepositoryPlatform">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Agent"/>
+        <rdfs:label xml:lang="en">Repository platform</rdfs:label>
+        <rdfs:comment xml:lang="en">A service that hosts a Git repository or archived research record.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#NotebookResource">
+        <rdfs:subClassOf rdf:resource="https://w3id.org/reproduceme#Notebook"/>
+        <rdfs:label xml:lang="en">Notebook resource</rdfs:label>
+        <rdfs:comment xml:lang="en">A Jupyter notebook registered by the reproducibility pipeline.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#RepositoryRun">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Activity"/>
+        <rdfs:label xml:lang="en">Repository run</rdfs:label>
+        <rdfs:comment xml:lang="en">One complete pipeline attempt to process a repository resource.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#NotebookExecution">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Activity"/>
+        <rdfs:label xml:lang="en">Notebook execution</rdfs:label>
+        <rdfs:comment xml:lang="en">The execution of one notebook during a repository run.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#ReproducibilityResult">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Entity"/>
+        <rdfs:label xml:lang="en">Reproducibility result</rdfs:label>
+        <rdfs:comment xml:lang="en">Metrics produced by comparing original and newly executed notebook outputs.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="https://w3id.org/notebookfair#NotebookClassificationActivity">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Activity"/>
+        <rdfs:label xml:lang="en">Notebook classification activity</rdfs:label>
+        <rdfs:comment xml:lang="en">A rule-based and local-LLM activity that assigns a notebook-purpose category and records whether human clarification is needed.</rdfs:comment>
+    </owl:Class>
+
+    <!-- Object properties -->
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#hostedOnPlatform">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/ns/prov#wasAttributedTo"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#RepositoryPlatform"/>
+        <rdfs:label xml:lang="en">hosted on platform</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#containsNotebook">
+        <owl:inverseOf rdf:resource="https://w3id.org/notebookfair#isNotebookOf"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#NotebookResource"/>
+        <rdfs:label xml:lang="en">contains notebook</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#isNotebookOf">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookResource"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:label xml:lang="en">is notebook of</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#hasRun">
+        <owl:inverseOf rdf:resource="https://w3id.org/notebookfair#runOfRepository"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#RepositoryRun"/>
+        <rdfs:label xml:lang="en">has run</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#runOfRepository">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/ns/prov#used"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryRun"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:label xml:lang="en">run of repository</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#hasExecution">
+        <owl:inverseOf rdf:resource="https://w3id.org/notebookfair#partOfRun"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryRun"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:label xml:lang="en">has execution</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#partOfRun">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/ns/prov#wasInformedBy"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#RepositoryRun"/>
+        <rdfs:label xml:lang="en">part of run</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#executedNotebook">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/ns/prov#used"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#NotebookResource"/>
+        <rdfs:label xml:lang="en">executed notebook</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#hasReproducibilityResult">
+        <owl:inverseOf rdf:resource="https://w3id.org/notebookfair#resultOfExecution"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#ReproducibilityResult"/>
+        <rdfs:label xml:lang="en">has reproducibility result</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#resultOfExecution">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/ns/prov#wasGeneratedBy"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#ReproducibilityResult"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:label xml:lang="en">result of execution</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#hasClassification">
+        <owl:inverseOf rdf:resource="https://w3id.org/notebookfair#classifiedNotebook"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookResource"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:label xml:lang="en">has classification</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="https://w3id.org/notebookfair#classifiedNotebook">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/ns/prov#used"/>
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="https://w3id.org/notebookfair#NotebookResource"/>
+        <rdfs:label xml:lang="en">classified notebook</rdfs:label>
+    </owl:ObjectProperty>
+
+    <!-- Data properties -->
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#repositoryIdentifier">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">repository identifier</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#platformName">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryPlatform"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">platform name</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#notebooksCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">notebooks count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#setupsCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">setups count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#requirementsCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">requirements count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#notebookLanguage">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookResource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">notebook language</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#metadataFetchedAt">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryResource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">metadata fetched at</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#runStatus">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#RepositoryRun"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">run status</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#executionStatus">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">execution status</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#durationSeconds">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label xml:lang="en">duration in seconds</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#totalCodeCells">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">total code cells</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#executedCells">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">executed cells</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#errorType">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">error type</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#errorCategory">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">error category</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#errorMessage">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">error message</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#errorCellIndex">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">error cell index</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#errorCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookExecution"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">error count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#identicalCellsCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#ReproducibilityResult"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">identical cells count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#differentCellsCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#ReproducibilityResult"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">different cells count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#nondeterministicCellsCount">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#ReproducibilityResult"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="en">nondeterministic cells count</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#reproducibilityScore">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#ReproducibilityResult"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label xml:lang="en">reproducibility score</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#ruleCategory">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">rule-based category</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#ruleConfidence">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label xml:lang="en">rule-based confidence</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#llmCategory">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">local LLM category</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#llmConfidence">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label xml:lang="en">local LLM confidence</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#classifierModel">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">classifier model</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#classifierPromptVersion">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">classifier prompt version</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#classificationAgreementStatus">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">classification agreement status</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#needsHumanReview">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:label xml:lang="en">needs human review</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#provisionalCategory">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">provisional category</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#finalCategory">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">final category</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="https://w3id.org/notebookfair#classificationWarning">
+        <rdfs:domain rdf:resource="https://w3id.org/notebookfair#NotebookClassificationActivity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label xml:lang="en">classification warning</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <!-- Platform individuals -->
+
+    <owl:NamedIndividual rdf:about="https://w3id.org/notebookfair/platform/github">
+        <rdf:type rdf:resource="https://w3id.org/notebookfair#RepositoryPlatform"/>
+        <rdfs:label xml:lang="en">GitHub</rdfs:label>
+        <nf:platformName>github</nf:platformName>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="https://w3id.org/notebookfair/platform/codeberg">
+        <rdf:type rdf:resource="https://w3id.org/notebookfair#RepositoryPlatform"/>
+        <rdfs:label xml:lang="en">Codeberg</rdfs:label>
+        <nf:platformName>codeberg</nf:platformName>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="https://w3id.org/notebookfair/platform/zenodo">
+        <rdf:type rdf:resource="https://w3id.org/notebookfair#RepositoryPlatform"/>
+        <rdfs:label xml:lang="en">Zenodo</rdfs:label>
+        <nf:platformName>zenodo</nf:platformName>
+    </owl:NamedIndividual>
+
+</rdf:RDF>

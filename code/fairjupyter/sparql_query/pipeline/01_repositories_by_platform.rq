@@ -1,0 +1,10 @@
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?platform (COUNT(DISTINCT ?repository) AS ?repositories)
+WHERE {
+  ?repository nf:hostedOnPlatform ?platformResource .
+  ?platformResource nf:platformName ?platform .
+}
+GROUP BY ?platform
+ORDER BY ?platform
+

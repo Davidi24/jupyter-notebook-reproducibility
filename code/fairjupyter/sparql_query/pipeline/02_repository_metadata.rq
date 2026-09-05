@@ -1,0 +1,17 @@
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?repository ?platform ?title ?authors ?license ?doi
+WHERE {
+  ?repository nf:hostedOnPlatform ?platformResource ;
+              dcterms:title ?title .
+  ?platformResource nf:platformName ?platform .
+  OPTIONAL { ?repository dcterms:creator ?authors }
+  OPTIONAL { ?repository dcterms:license ?license }
+  OPTIONAL {
+    ?repository dcterms:identifier ?doi .
+    FILTER(STRSTARTS(STR(?doi), "10."))
+  }
+}
+ORDER BY ?platform ?repository
+

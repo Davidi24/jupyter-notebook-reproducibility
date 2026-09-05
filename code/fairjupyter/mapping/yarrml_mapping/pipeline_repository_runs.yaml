@@ -1,0 +1,28 @@
+prefixes:
+  xsd: http://www.w3.org/2001/XMLSchema#
+  prov: http://www.w3.org/ns/prov#
+  nf: https://w3id.org/notebookfair#
+
+mappings:
+  pipeline_repository_runs:
+    sources:
+      - [pipeline_data/repository_runs.csv~csv]
+    s: https://w3id.org/notebookfair/run/$(id)
+    po:
+      - [a, nf:RepositoryRun]
+      - [nf:runOfRepository, https://w3id.org/notebookfair/repository/$(repository_id)~iri]
+      - [nf:runStatus, $(run_status)]
+      - [nf:errorMessage, $(error_message)]
+      - [prov:startedAtTime, $(started_at)]
+      - [prov:endedAtTime, $(finished_at)]
+      - [nf:durationSeconds, $(duration_seconds), xsd:decimal]
+      - [prov:generatedAtTime, $(created_at)]
+
+  pipeline_repository_has_run:
+    sources:
+      - [pipeline_data/repository_runs.csv~csv]
+    s: https://w3id.org/notebookfair/repository/$(repository_id)
+    po:
+      - [nf:hasRun, https://w3id.org/notebookfair/run/$(id)~iri]
+
+

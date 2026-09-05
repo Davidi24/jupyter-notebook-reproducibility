@@ -1,0 +1,2 @@
+id,notebook_id,notebook_path,notebook_sha256,rule_category,rule_confidence,llm_category,llm_confidence,llm_model,llm_prompt_version,agreement_status,needs_human_review,warning,provisional_category,final_category,effective_category,human_reviewer,human_note,human_reviewed_at,created_at
+1,27273,C:\David\Work\ma-david-keci\output\cloned_repos\ipynb-py-convert\examples\plot.ipynb,301fe5321e1f920c4bb6fea7172e3dd8c209210d994e3b458cb926c44a9f7169,visualization,0.7,visualization,0.95,gemma3:4b,1.0.0,AGREED,0,,visualization,,visualization,,,,2026-08-28 19:30:05

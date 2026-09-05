@@ -1,0 +1,80 @@
+{
+  "notebook_path": "C:\\David\\Work\\ma-david-keci\\output\\cloned_repos\\ipynb-py-convert\\examples\\plot.ipynb",
+  "notebook_sha256": "301fe5321e1f920c4bb6fea7172e3dd8c209210d994e3b458cb926c44a9f7169",
+  "collector_version": "1.0.0",
+  "collection_stats": {
+    "cell_counts": {
+      "markdown": 1,
+      "code": 1,
+      "raw": 0
+    },
+    "import_count": 2,
+    "output_count": 1
+  },
+  "rule_result": {
+    "method": "rule_based",
+    "primary_category": "visualization",
+    "secondary_categories": [],
+    "confidence": 0.7,
+    "reason": "Highest weighted evidence: visualization=7; next: data_analysis=3.",
+    "evidence": [
+      "import:matplotlib",
+      "pattern:\\b(plt\\.|sns\\.|px\\.|go\\.|alt\\.|\\.plot\\s*\\()",
+      "image outputs:1"
+    ],
+    "scores": {
+      "data_preparation": 0.0,
+      "data_analysis": 3.0,
+      "visualization": 7.0,
+      "machine_learning": 0.0,
+      "simulation": 0.0,
+      "tutorial": 0.0,
+      "software_development": 0.0
+    },
+    "signal_statistics": {
+      "visualization": [
+        {
+          "pattern": "\\b(plt\\.|sns\\.|px\\.|go\\.|alt\\.|\\.plot\\s*\\()",
+          "match_count": 2,
+          "counted_matches": 2,
+          "matching_cells": 1,
+          "total_cells": 2,
+          "cell_coverage": 0.5,
+          "awarded_points": 3.0
+        }
+      ]
+    },
+    "model_name": null,
+    "version": "1.1.0",
+    "raw_response": null
+  },
+  "llm_result": {
+    "method": "local_llm",
+    "primary_category": "visualization",
+    "secondary_categories": [
+      "data_analysis"
+    ],
+    "confidence": 0.95,
+    "reason": "The notebook primarily uses `matplotlib` to create a line plot of the sine function. The code imports `numpy` for numerical operations and `matplotlib.pyplot` for plotting. This aligns with the visualization category as its main purpose is to generate a visual representation of data.",
+    "evidence": [
+      "imports\": [\"matplotlib\", \"numpy\"]",
+      "code_excerpts\": [\"import matplotlib.pyplot as plt\\nimport numpy as np\\n\\nx = np.linspace(0, 20, 100)\\nplt.plot(x, np.sin(x))\\nplt.show()\"]"
+    ],
+    "scores": {},
+    "signal_statistics": {},
+    "model_name": "gemma3:4b",
+    "version": "1.0.0",
+    "raw_response": "{\"primary_category\": \"visualization\", \"secondary_categories\": [\"data_analysis\"], \"confidence\": 0.95, \"reason\": \"The notebook primarily uses `matplotlib` to create a line plot of the sine function. The code imports `numpy` for numerical operations and `matplotlib.pyplot` for plotting. This aligns with the visualization category as its main purpose is to generate a visual representation of data.\", \"evidence\": [\"imports\\\": [\\\"matplotlib\\\", \\\"numpy\\\"]\", \"code_excerpts\\\": [\\\"import matplotlib.pyplot as plt\\\\nimport numpy as np\\\\n\\\\nx = np.linspace(0, 20, 100)\\\\nplt.plot(x, np.sin(x))\\\\nplt.show()\\\"]\"]}"
+  },
+  "agreement_status": "AGREED",
+  "needs_human_review": false,
+  "warning": null,
+  "provisional_category": "visualization",
+  "final_category": null,
+  "llm_error": null,
+  "human_reviewer": null,
+  "human_note": null,
+  "human_reviewed_at": null,
+  "effective_category": "visualization",
+  "database_id": 1
+}
