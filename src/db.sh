@@ -12,17 +12,26 @@ CREATE TABLE IF NOT EXISTS notebooks (id INTEGER PRIMARY KEY AUTOINCREMENT, repo
 CREATE TABLE IF NOT EXISTS repository_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, repository_id INTEGER NOT NULL, url TEXT, run_status TEXT NOT NULL, error_message TEXT, started_at TEXT, finished_at TEXT, duration_seconds FLOAT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (repository_id) REFERENCES repositories(id));
 CREATE TABLE IF NOT EXISTS notebook_executions (id INTEGER PRIMARY KEY AUTOINCREMENT, repository_run_id INTEGER NOT NULL, repository_id INTEGER NOT NULL, notebook_id INTEGER NOT NULL, notebook_name TEXT, url TEXT, execution_status TEXT, execution_duration FLOAT, total_code_cells INTEGER, executed_cells INTEGER, error_type TEXT, error_category TEXT, error_message TEXT, error_cell_index INTEGER, error_count INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(repository_run_id, notebook_id), FOREIGN KEY (repository_run_id) REFERENCES repository_runs(id), FOREIGN KEY (repository_id) REFERENCES repositories(id), FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
 CREATE TABLE IF NOT EXISTS notebook_reproducibility_metrics (id INTEGER PRIMARY KEY AUTOINCREMENT, repository_run_id INTEGER NOT NULL, notebook_execution_id INTEGER NOT NULL, repository_id INTEGER NOT NULL, notebook_id INTEGER NOT NULL, total_code_cells INTEGER, identical_cells_count INTEGER, different_cells_count INTEGER, nondeterministic_cells_count INTEGER, identical_cells TEXT, different_cells TEXT, nondeterministic_cells TEXT, reproducibility_score REAL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(repository_run_id, notebook_id), FOREIGN KEY (repository_run_id) REFERENCES repository_runs(id), FOREIGN KEY (notebook_execution_id) REFERENCES notebook_executions(id), FOREIGN KEY (repository_id) REFERENCES repositories(id), FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
+CREATE TABLE IF NOT EXISTS notebook_classifications (id INTEGER PRIMARY KEY AUTOINCREMENT, notebook_id INTEGER, notebook_path TEXT NOT NULL, notebook_sha256 TEXT NOT NULL, rule_category TEXT NOT NULL, rule_confidence REAL NOT NULL, llm_category TEXT, llm_confidence REAL, llm_model TEXT, llm_prompt_version TEXT, agreement_status TEXT NOT NULL, needs_human_review INTEGER NOT NULL DEFAULT 1, warning TEXT, provisional_category TEXT, final_category TEXT, human_reviewer TEXT, human_note TEXT, human_reviewed_at TEXT, result_json TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
+CREATE INDEX IF NOT EXISTS idx_notebook_classifications_notebook ON notebook_classifications(notebook_id);
+CREATE INDEX IF NOT EXISTS idx_notebook_classifications_review ON notebook_classifications(needs_human_review, agreement_status);
 
 CREATE TABLE IF NOT EXISTS repository_metadata (id INTEGER PRIMARY KEY AUTOINCREMENT, repo_id INTEGER NOT NULL UNIQUE, title TEXT DEFAULT '', description TEXT DEFAULT '', authors TEXT DEFAULT '', license TEXT DEFAULT '', created_at TEXT DEFAULT '', updated_at TEXT DEFAULT '', fetched_at TEXT DEFAULT (datetime('now')), FOREIGN KEY (repo_id) REFERENCES repositories(id));
 SQLEOF
-    
-    
-    
+
     # Migration: add 'platform' column to repositories if missing
     if ! sqlite3 "$DB_FILE" "PRAGMA table_info(repositories);" | awk -F'|' '{print $2}' | grep -q '^platform$'; then
         sqlite3 "$DB_FILE" "ALTER TABLE repositories ADD COLUMN platform TEXT DEFAULT 'github';"
         echo "[DB] Migration: added 'platform' column to repositories"
     fi
+
+    sqlite3 "$DB_FILE" \
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_repositories_platform_repository
+         ON repositories(platform, repository);"
+
+    sqlite3 "$DB_FILE" \
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_notebooks_repository_name
+         ON notebooks(repository_id, name);"
 
     # Migration: add 'keywords' and 'doi' to repository_metadata if missing
     if ! column_exists repository_metadata keywords; then
@@ -36,17 +45,36 @@ SQLEOF
 }
 
 get_notebook_id_from_db() {
-    sqlite3 "$DB_FILE" "SELECT id FROM notebooks WHERE name = '$1';"
+    local repository_id="$1"
+    local notebook_name="$2"
+    local notebook_name_sql
+
+    [[ "$repository_id" =~ ^[0-9]+$ ]] || return 1
+    notebook_name_sql=$(sql_escape "$notebook_name")
+
+    sqlite3 "$DB_FILE" \
+        "SELECT id FROM notebooks
+         WHERE repository_id=$repository_id
+           AND name='$notebook_name_sql'
+         LIMIT 1;"
 }
 
 get_repo_id_from_db() {
     local repo_path
     local platform
-    
+    local repo_path_sql
+    local platform_sql
+
     repo_path=$(echo "$1" | sed -E 's#^https?://[^/]+/##; s#records?/##; s#\.git$##')
     platform=$(detect_platform "$1")
-    
-    sqlite3 "$DB_FILE" "SELECT id FROM repositories WHERE repository = '$repo_path' AND platform = '$platform' LIMIT 1;"
+    repo_path_sql=$(sql_escape "$repo_path")
+    platform_sql=$(sql_escape "$platform")
+
+    sqlite3 "$DB_FILE" \
+        "SELECT id FROM repositories
+         WHERE repository='$repo_path_sql'
+           AND platform='$platform_sql'
+         LIMIT 1;"
 }
 
 column_exists() {
@@ -69,6 +97,8 @@ save_repo_metadata() {
     local doi
     local created_at
     local updated_at
+
+    [[ "$repo_id" =~ ^[0-9]+$ ]] || return 1
 
     title=$(sql_escape "$2")
     description=$(sql_escape "$3")

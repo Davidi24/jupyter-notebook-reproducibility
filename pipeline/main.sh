@@ -24,7 +24,12 @@ source "$PROJECT_ROOT/src/db.sh"
 source "$PROJECT_ROOT/src/pyenv.sh"
 source "$PROJECT_ROOT/src/requirements.sh"
 source "$PROJECT_ROOT/src/notebooks.sh"
+source "$PROJECT_ROOT/src/classification.sh"
 source "$PROJECT_ROOT/src/repo.sh"
+
+RUN_ID=""
+
+trap finalize_active_run_on_exit EXIT
 
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
 
@@ -79,7 +84,7 @@ if [ "$choice" -eq 1 ]; then
     REPO_ID=$(get_or_create_repo_id "$REPO_URL")
     export REPO_ID
     process_repo "$REPO_URL" "$NOTEBOOK_PATHS" "$SETUP_PATHS" "$REQUIREMENT_PATHS"
-    elif [ "$choice" -eq 2 ]; then
+elif [ "$choice" -eq 2 ]; then
     process_sqlite_flow
 else
     echo "[ERROR] Invalid choice. Please enter 1 or 2."

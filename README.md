@@ -10,18 +10,19 @@
 
 ## Overview
 
-This pipeline automatically clones GitHub repositories containing Jupyter notebooks, re-executes them in isolated Python environments, and measures how reproducible the results are. It is designed to run on the **[NFDI JupyterHub](https://hub.nfdi-jupyter.de)** — no local Docker installation needed.
+This pipeline processes GitHub, Codeberg, and Zenodo resources containing Jupyter notebooks, re-executes notebooks in isolated Python environments, and measures how reproducible the results are. It is designed to run on the **[NFDI JupyterHub](https://hub.nfdi-jupyter.de)** — no local Docker installation needed.
 
 Results are stored in a SQLite database for downstream analysis.
 
 ### What it does
 
-1. **Clones** a GitHub repository containing Jupyter notebooks
+1. **Acquires** a GitHub or Codeberg repository, or a Zenodo archive
 2. **Detects** the required Python version from the repo's metadata
 3. **Creates** an isolated pyenv + venv environment per repository
 4. **Executes** each notebook via `nbconvert`
 5. **Compares** original vs. re-executed outputs
-6. **Stores** cell-level reproducibility scores in a SQLite database
+6. **Stores** normalized metadata and cell-level reproducibility scores in SQLite
+7. **Builds** an extended FAIR Jupyter RDF knowledge graph for SPARQL analysis
 
 ---
 
@@ -155,6 +156,35 @@ The output database is created automatically on first run. The following tables 
 | `repository_runs` | Per-run status, timestamps, duration |
 | `notebook_executions` | Per-notebook execution results and errors |
 | `notebook_reproducibility_metrics` | Cell-level reproducibility scores |
+| `repository_metadata` | Cross-platform title, authors, licence, keywords, and DOI |
+| `notebook_classifications` | Rule, local-LLM, agreement, and human-review results |
+
+## Notebook classification
+
+Notebooks can be classified by a free hybrid workflow that combines transparent
+weighted rules with a local Ollama model. Confident agreement receives a
+provisional category; disagreement, uncertainty, low confidence, or an unavailable
+model produces a human-review warning.
+
+```bash
+python -B -m analysis.notebook_classification classify path/to/notebook.ipynb
+```
+
+The default local model is `gemma3:4b`, and `--rule-only` is available when Ollama
+is not running. Results can be stored in SQLite, reviewed by a person, evaluated
+against human decisions, and exported into the knowledge graph. See
+[the notebook-classification guide](docs/notebook-classification.md).
+
+## Knowledge graph
+
+The pipeline output database can be transformed into an extended FAIR Jupyter knowledge graph:
+
+```bash
+bash code/fairjupyter/run_fairjupyter_kg.sh
+bash tests/test_kg.sh
+```
+
+The graph, build evidence, and SPARQL results are generated under `output/kg/`. See [the KG extension documentation](code/fairjupyter/KG_EXTENSION.md) for the model, mappings, commands, and evaluation results.
 
 ### Example queries
 
