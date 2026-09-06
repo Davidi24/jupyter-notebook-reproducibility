@@ -1,0 +1,1 @@
+ALTER TABLE `analysis_jobs` ADD `target_notebooks_json` text DEFAULT '[]' NOT NULL;
