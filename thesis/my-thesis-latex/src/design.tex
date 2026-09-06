@@ -1,0 +1,104 @@
+\chapter{System Design}
+\label{chap:design}
+
+\section{Architecture Overview}
+
+The system uses a layered design with a narrow platform-specific boundary. Figure~\ref{fig:architecture} shows the intended separation. The entry layer checks dependencies, loads configuration, creates output directories, prepares the working database, and asks the user for single or batch mode. The connector layer detects, validates, describes, and acquires an external resource. The processing layer operates only on a local directory and normalized notebook paths. The persistence layer records relational evidence. The semantic layer exports, maps, and materialises the graph.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.92\textwidth}
+\centering
+\textbf{Entry and configuration}\\
+dependencies $\mid$ folders $\mid$ working DB $\mid$ mode\\[0.18cm]
+$\downarrow$\\[0.18cm]
+\textbf{Connector layer}\\
+detect $\rightarrow$ validate $\rightarrow$ metadata $\rightarrow$ acquire\\
+GitHub $\mid$ Codeberg $\mid$ Zenodo\\[0.18cm]
+$\downarrow$ local directory and normalized paths\\[0.18cm]
+\textbf{Shared processing layer}\\
+notebooks $\rightarrow$ requirements $\rightarrow$ pyenv $\rightarrow$ nbconvert $\rightarrow$ compare\\[0.18cm]
+$\downarrow$\\[0.18cm]
+\textbf{SQLite persistence} $\rightarrow$ \textbf{CSV/RML materialisation} $\rightarrow$ \textbf{RDF graph}
+\end{minipage}}
+\caption{Layered architecture of the extended system.}
+\label{fig:architecture}
+\end{figure}
+
+This architecture minimises change to proven functions. GitHub and Codeberg share Git validation and acquisition, but have separate metadata adapters. Zenodo has a separate validation and acquisition route. After local content is available, every source calls the same requirement, environment, execution, and comparison functions.
+
+\section{Control Flow}
+
+The main controller first resolves a repository ID. In single mode, it normalizes the input URL, detects the platform, and inserts a repository only if the normalized platform-identifier pair is absent. In batch mode, the ID already exists in the selected row. The controller then creates a \texttt{repository\_runs} row with status \texttt{RUNNING}, records the start time, and enters the resource-processing function.
+
+The order of validation and metadata collection is significant. An earlier draft collected metadata before checking reachability. That order could store a partial or misleading row when a resource was invalid. The final design validates first. Zenodo uses an API-oriented validator, while GitHub and Codeberg use a Git-oriented validator. Only a valid source reaches the metadata controller.
+
+The metadata controller is a dispatch function. It receives \texttt{repo\_id}, \texttt{repo\_url}, and \texttt{platform}; normalizes the external path; invokes one fetcher; checks that eight lines were returned; and passes them to a common save function. This explicit contract prevents platform fields from leaking into storage logic.
+
+Content acquisition follows validation and metadata. A pre-existing local directory is updated with \texttt{git pull}; a new Git resource is cloned; a Zenodo record is downloaded and extracted. The directory must exist before notebook discovery. Supplied paths are registered before acquisition when known, while automatic discovery runs afterwards when paths are empty. This explains why notebook insertion can appear twice in the controller: the calls serve mutually exclusive input conditions and the insert function itself deduplicates rows.
+
+The shared route then checks total and Python notebook counts, prepares requirements, creates an environment, executes notebooks, compares outputs, removes the temporary environment, and finalises the run. Every early return records a classified final status and elapsed time.
+
+\section{Connector Strategy}
+
+Table~\ref{tab:connector-strategy} maps platform decisions to connector behaviour.
+
+\begin{table}[ht]
+\centering
+\caption{Connector dispatch strategy.}
+\label{tab:connector-strategy}
+\begin{tabularx}{\textwidth}{@{}lXXX@{}}
+\toprule
+Platform & Validator & Metadata fetcher & Acquisition\\
+\midrule
+GitHub & \path{validate_repo} & \path{fetch_github_metadata} & clone/pull Git remote\\
+Codeberg & \path{validate_repo} & \path{fetch_codeberg_metadata} & clone/pull Git remote\\
+Zenodo & \path{validate_zenodo} & \path{fetch_zenodo_metadata} & API file download/extract\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The dispatch table shows why ``platform'' and ``resource type'' are related but not identical. GitHub and Codeberg are different platforms with the same acquisition type. Zenodo is both a different platform and a different resource type. The ontology later represents this distinction with one platform class and two resource subclasses.
+
+\section{Metadata Contract}
+
+Each fetcher writes exactly eight newline-separated values in the following order:
+
+\begin{enumerate}
+  \item title,
+  \item description,
+  \item authors,
+  \item licence,
+  \item keywords,
+  \item DOI,
+  \item creation date,
+  \item update date.
+\end{enumerate}
+
+An array is used by the controller because shell functions cannot return structured objects directly. \texttt{mapfile} captures each emitted line as one array element. The controller verifies the array length before storage. Newline characters in Zenodo text are replaced with spaces so a multi-line description cannot be mistaken for additional fields.
+
+Values are escaped immediately before SQL construction. The escape helper doubles single quotes in every text field. The save statement uses an upsert keyed by repository ID. The fetch timestamp is generated by SQLite, not accepted from an external API. This design separates source assertions from local provenance.
+
+\section{Database Safety and Migration}
+
+The configured paths distinguish \texttt{SOURCE\_DB\_FILE} from \texttt{DB\_FILE}. On first execution, the source is copied to the working location. Schema preparation then creates missing pipeline tables and checks for added columns. Column-level migration is necessary because \texttt{CREATE TABLE IF NOT EXISTS} does not add columns to an existing table. A helper inspects \texttt{PRAGMA table\_info} before an \texttt{ALTER TABLE} statement is executed.
+
+The platform column defaults to \texttt{github} for compatibility with inherited rows. This is a migration convenience, not an assertion that an unknown new record is GitHub. New URLs are always detected explicitly. Batch rows with an empty legacy platform value are also interpreted as GitHub because the inherited dataset was GitHub-only.
+
+\section{Failure Model}
+
+Failures are first-class outputs. A finalised repository run records a status, message, and duration. Representative terminal states include invalid URL, invalid Zenodo record, missing repository directory, no notebooks, no Python notebooks, environment error, execution error, and success. Notebook-level execution rows carry more detailed error type, category, message, cell index, and count.
+
+The failure model supports two kinds of analysis. Operationally, a user can find the stage that stopped a resource. Analytically, error categories can be grouped by platform or future notebook category. A generic shell exit code alone would not support either use case.
+
+\section{Knowledge-Graph Design}
+
+The semantic layer follows the relational activity structure instead of mapping every value to a repository literal. A \texttt{RepositoryResource} is hosted on a \texttt{RepositoryPlatform}, contains a \texttt{NotebookResource}, and has a \texttt{RepositoryRun}. A run has notebook executions, an execution identifies the notebook it used, and an execution has a reproducibility result. Inverse relations are defined where they improve navigation.
+
+The design reuses PROV-O. Resources and results are entities, platforms are agents, and runs and executions are activities. \texttt{GitRepositoryResource} specialises both the common resource and DOAP's Git repository. \texttt{ArchivedResearchRecord} specialises the common resource and is disjoint with the Git class. This makes an invalid assertion about Zenodo detectable through ontology review or SPARQL tests.
+
+\section{Security and Robustness Considerations}
+
+API tokens are read from environment variables and are never written to the database. Public requests can run without tokens, but authenticated requests reduce rate-limit risk. URLs are still external input and should be treated cautiously. The pipeline restricts supported platform patterns and uses fixed API bases, reducing the chance that a stored host silently redirects metadata requests to an arbitrary service.
+
+SQL escaping addresses quotes in fetched text, but parameterised database access would be safer and is recommended for a future Python-based storage layer. Archive extraction also deserves stronger controls: a production connector should reject absolute paths and parent-directory traversal inside downloaded archives. Finally, remote notebook execution is inherently risky. The present pipeline is intended for controlled research infrastructure; stronger process, network, and filesystem isolation is required before processing untrusted notebooks as a public service.

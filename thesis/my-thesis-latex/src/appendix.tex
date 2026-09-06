@@ -1,0 +1,119 @@
+\chapter{Technical Appendix}
+
+\section{Main Pipeline Route}
+
+The following condensed route can be used to inspect logs or explain the implementation during a demonstration:
+
+\begin{enumerate}
+  \item Check required programs and source all modules.
+  \item Initialise output directories and the working database.
+  \item Select single-resource or batch mode.
+  \item Find or create the repository and create a new run.
+  \item Detect the platform and normalize supplied notebook paths.
+  \item Validate through Git or the Zenodo Records API.
+  \item Fetch and store normalized metadata.
+  \item Clone, pull, or download and extract the resource.
+  \item Register supplied notebooks or discover \texttt{.ipynb} files.
+  \item Check total and Python notebook counts.
+  \item Build requirements and create a pyenv environment.
+  \item Execute notebooks and classify errors.
+  \item Compare original and executed outputs.
+  \item Clean the environment and finalise the run.
+\end{enumerate}
+
+\section{Representative Database Queries}
+
+\begin{lstlisting}[language=SQL,caption={Inspect normalized metadata by platform.}]
+SELECT r.platform,
+       r.repository,
+       m.title,
+       m.authors,
+       m.license,
+       m.doi
+FROM repositories AS r
+LEFT JOIN repository_metadata AS m
+  ON m.repo_id = r.id
+ORDER BY r.platform, r.repository;
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL,caption={Inspect repository run outcomes.}]
+SELECT r.platform,
+       rr.run_status,
+       COUNT(*) AS runs
+FROM repository_runs AS rr
+JOIN repositories AS r
+  ON r.id = rr.repository_id
+GROUP BY r.platform, rr.run_status
+ORDER BY r.platform, rr.run_status;
+\end{lstlisting}
+
+\section{Representative SPARQL Queries}
+
+\begin{lstlisting}[caption={List resources and platforms.}]
+PREFIX nf: <https://w3id.org/notebookfair#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?resource ?resourceLabel ?platformLabel
+WHERE {
+  ?resource a nf:RepositoryResource ;
+            rdfs:label ?resourceLabel ;
+            nf:hostedOnPlatform ?platform .
+  ?platform rdfs:label ?platformLabel .
+}
+ORDER BY ?platformLabel ?resourceLabel
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Constraint check for Zenodo typing.}]
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?resource
+WHERE {
+  ?resource nf:hostedOnPlatform
+      <https://w3id.org/notebookfair/platform/zenodo> ;
+      a nf:GitRepositoryResource .
+}
+# Expected result: zero rows.
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Trace an execution to a result.}]
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?repository ?run ?execution ?result ?score
+WHERE {
+  ?repository nf:hasRun ?run .
+  ?run nf:hasExecution ?execution .
+  ?execution nf:hasReproducibilityResult ?result .
+  ?result nf:reproducibilityScore ?score .
+}
+\end{lstlisting}
+
+\section{Build Commands}
+
+\begin{lstlisting}[language=bash,caption={Metadata test in the local container image.}]
+docker build -f binder/Dockerfile -t notebookfair-test .
+docker run --rm notebookfair-test bash tests/test_metadata.sh
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={Build the pipeline knowledge graph.}]
+python code/fairjupyter/build_pipeline_kg.py
+\end{lstlisting}
+
+The graph builder writes the combined graph and build report to:
+\begin{center}
+\path{output/kg/notebookfair-pipeline.nt}\\
+\path{output/kg/build-summary.json}
+\end{center}
+
+\section{Draft Completion Checklist}
+
+\begin{itemize}
+  \item[\texttt{[ ]}] Review final title and student administration details.
+  \item[\texttt{[ ]}] Complete ontology domain, range, inverse, and datatype review.
+  \item[\texttt{[ ]}] Freeze and run the cross-platform experiment sample.
+  \item[\texttt{[ ]}] Add comparative tables and plots with denominators.
+  \item[\texttt{[x]}] Implement hybrid notebook classification and human-review warnings.
+  \item[\texttt{[ ]}] Evaluate notebook classification against a human-labelled sample.
+  \item[\texttt{[ ]}] Replace interim evaluation statements with final results.
+  \item[\texttt{[ ]}] Review references, language, and university formatting requirements.
+  \item[\texttt{[ ]}] Obtain supervisor feedback and complete the declaration page.
+\end{itemize}

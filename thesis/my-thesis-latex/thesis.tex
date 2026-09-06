@@ -1,100 +1,229 @@
-\documentclass[a4paper, 12pt, oneside, BCOR1cm,toc=chapterentrywithdots]{scrbook}
+\documentclass[a4paper,11pt,oneside,BCOR=1cm,DIV=12,toc=chapterentrywithdots]{scrbook}
 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{makeidx}
-\usepackage[colorlinks=false]{hyperref}
-\usepackage{tocbibind}
-\usepackage{blindtext}
-\usepackage{subfigure}
-\usepackage{acronym}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[expansion=false]{microtype}
+\usepackage{listings}
+\usepackage[nohyperlinks]{acronym}
+\usepackage{scrlayer-scrpage}
+\usepackage{hyperref}
+\usepackage{xstring}
+\setlength{\emergencystretch}{2em}
 
-\hypersetup{%
-bookmarksnumbered=true, hyperindex=true,
-bookmarksopen=true, bookmarksopenlevel=1,
-pdfborder=0 0 0
+\definecolor{tucgreen}{RGB}{0,120,90}
+\definecolor{codegray}{RGB}{245,247,249}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=tucgreen,
+  citecolor=tucgreen,
+  urlcolor=tucgreen,
+  bookmarksnumbered=true,
+  bookmarksopen=true,
+  pdfauthor={David Keci},
+  pdftitle={Extending Jupyter Notebook Reproducibility Analysis Beyond GitHub}
 }
 
-\renewcommand*{\tableofcontents}{%
-    \begingroup
-    \tocsection
-    \tocfile{\contentsname}{toc}
-    \endgroup
+\clearpairofpagestyles
+\ihead{Cross-Platform Notebook Reproducibility}
+\ohead{Draft}
+\cfoot{\pagemark}
+\setkomafont{pageheadfoot}{\small}
+\setkomafont{chapter}{\color{tucgreen}}
+\setkomafont{section}{\color{tucgreen}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codegray},
+  frame=single,
+  rulecolor=\color{black!15},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=1em,
+  belowskip=1em
 }
-\renewcommand*{\listoffigures}{%
-    \begingroup
-    \tocsection
-    \tocfile{\listfigurename}{lof}
-    \endgroup
-}
-\renewcommand{\listoftables}{
-    \begingroup
-    \tocsection
-    \tocfile{\listtablename}{lot}
-    \endgroup
-}
+
+\newcommand{\systemname}{Notebook FAIR Cross-Platform Pipeline}
+\newcommand{\draftwarning}{\textbf{Draft status:} Chapters 1--7 document the completed cross-platform pipeline, notebook classifier, and knowledge-graph extension. Evaluation, discussion, and conclusion follow the planned thesis structure.}
 
 \begin{document}
+\hypersetup{pageanchor=false}
 
-%--------titlepage
 \begin{titlepage}
-{
-    \begin{center}
-        \raisebox{-1ex}{\includegraphics[scale=1.5]{../template/TU_Chemnitz_positiv_gruen.pdf}}\\
-    \end{center}
-    \vspace{0.5cm}
-}
-\begin{center}
-\LARGE{\textbf{Title of Master Thesis}}\\
-\vspace{1cm}
-\Large{\textbf{Master Thesis}}\\
-\vspace{1cm}
-Submitted in Fulfilment of the\\
-Requirements for the Academic Degree\\
-M.Sc.\\
-\vspace{0.5cm}
-Dept. of Computer Science\\
-Chair of Distributed and Self-organizing Systems
-\end{center}
-\vspace{3cm}
-Submitted by: David Keci\\
-Student ID: \\
-Date: \\
-\vspace{0.3cm}\\
-Supervisor: Prof. Dr. Sheeba Samuel
-
+  \begin{center}
+    \raisebox{-1ex}{\includegraphics[scale=1.5]{../template/TU_Chemnitz_positiv_gruen.pdf}}\\[1.2cm]
+    {\Large\bfseries Extending Jupyter Notebook Reproducibility Analysis Beyond GitHub\\[0.35cm]}
+    {\large A Cross-Platform Pipeline for Codeberg and Zenodo\\[1.3cm]}
+    {\Large\bfseries Master Thesis - Draft}\\[0.8cm]
+    Submitted in Fulfilment of the Requirements for the Academic Degree\\
+    Master of Science\\[0.5cm]
+    Department of Computer Science\\
+    Chair of Distributed and Self-organizing Systems
+  \end{center}
+  \vfill
+  \begin{tabular}{@{}ll@{}}
+    Submitted by: & David Keci\\
+    Programme: & M.Sc. Web Engineering\\
+    Supervisor: & Prof. Dr. Sheeba Samuel\\
+    University: & Chemnitz University of Technology\\
+    Draft date: & 18 August 2026
+  \end{tabular}
 \end{titlepage}
 
-\addchap*{Abstract}
-% Write your abstract here
-\blindtext
+\hypersetup{pageanchor=true}
+\frontmatter
 
-\tableofcontents
-\listoffigures
-\listoftables
+\addchap{Abstract}
+Jupyter notebooks combine executable code, narrative text, and generated results, but their apparent self-containment does not guarantee computational reproducibility. Existing large-scale reproducibility pipelines and the downstream FAIR Jupyter knowledge graph primarily operate on GitHub-hosted notebooks. This focus excludes resources distributed through alternative Git forges and research repositories whose access mechanisms and metadata models differ from GitHub. This thesis develops a cross-platform extension that processes GitHub, Codeberg, and Zenodo resources through a common reproducibility route while preserving the distinctions between Git repositories and archived research records.
 
-%---------------------------------------------------------
-% Here starts your thesis
-%---------------------------------------------------------
+The implementation introduces platform detection, platform-specific validation and acquisition, normalized metadata extraction, mixed-platform batch processing, and a copy-on-first-run database architecture. GitHub and Codeberg resources are validated and acquired with Git, whereas Zenodo records are validated through the Records API and downloaded as archives. Eight descriptive metadata fields are normalized and stored in a dedicated table. After acquisition, the existing platform-independent stages collect notebooks, infer requirements, create Python environments, execute notebooks, compare outputs, and record provenance and error information.
 
-\chapter{Introduction}
-\input{src/introduction}
+The database is subsequently exported into seven CSV datasets and transformed into RDF using YARRRML-derived RML mappings and Morph-KGC. An ontology extension represents platforms, Git repositories, archived records, notebooks, repository runs, notebook executions, reproducibility results, and notebook-classification activities. The confirmed reproducibility snapshot generated 222,048 unique triples and passed structural and SPARQL competency checks. A hybrid classifier compares transparent weighted rules with a structured AI-model response, stores both decisions, and requests human clarification when the methods disagree or have low confidence.
 
-% Add more chapters below:
-% \chapter{Background}
-% \input{src/background}
+\vspace{0.6cm}
+\noindent\textbf{Keywords:} computational reproducibility, Jupyter notebooks, metadata normalization, knowledge graphs, GitHub, Codeberg, Zenodo
 
-% \chapter{Methodology}
-% \input{src/methodology}
+\vspace{0.6cm}
+\noindent\draftwarning
 
-% \chapter{Results}
-% \input{src/results}
+\addchap*{Table of Contents}
+{\color{tucgreen}\hrule height 0.7pt}
+\vspace{0.45cm}
 
-% \chapter{Conclusion}
-% \input{src/conclusion}
+\newcommand{\tocpagerange}[1]{\StrBehind{#1}{. }[\tocpagerangevalue]\tocpagerangevalue}
+\newcommand{\tocchapterline}[3]{\noindent\textcolor{tucgreen}{\textbf{#1\quad #2}}\dotfill\textbf{\tocpagerange{#3}}\par\vspace{0.28em}}
+\newcommand{\tocsectionline}[3]{\noindent\hspace{1.5em}\textcolor{black!82}{#1\quad #2}\dotfill\textcolor{black!65}{\tocpagerange{#3}}\par}
+\newcommand{\tocsubsectionline}[3]{\noindent\hspace{3em}\textcolor{black!68}{#1\quad #2}\dotfill\textcolor{black!55}{\tocpagerange{#3}}\par}
+\newcommand{\tocfrontline}[2]{\noindent\textcolor{tucgreen}{\textbf{#1}}\dotfill\textbf{#2}\par\vspace{0.28em}}
 
-%---------------------------------------------------------
-\nocite{*}
-\bibliographystyle{splncs03}
+\begingroup
+\small
+\setlength{\parskip}{0.08em}
+
+\tocfrontline{Abstract}{1 page}
+
+\tocchapterline{1.}{Introduction}{pp. 1--4}
+\tocsectionline{1.1}{Motivation}{p. 1}
+\tocsectionline{1.2}{Problem Statement}{p. 2}
+\tocsectionline{1.3}{Research Goal and Research Questions}{pp. 2--3}
+\tocsectionline{1.4}{Contributions}{p. 3}
+\tocsectionline{1.5}{Thesis Structure}{p. 4}
+
+\tocchapterline{2.}{Background and Related Work}{pp. 5--13}
+\tocsectionline{2.1}{Computational Reproducibility}{p. 5}
+\tocsectionline{2.2}{Jupyter Notebooks and Reproducibility}{p. 6}
+\tocsectionline{2.3}{Existing Notebook Reproducibility Analysis}{p. 7}
+\tocsectionline{2.4}{GitHub, Codeberg, and Zenodo}{p. 8}
+\tocsectionline{2.5}{Metadata Normalization and Provenance}{pp. 8--9}
+\tocsectionline{2.6}{Environment Reconstruction and Notebook Execution}{p. 10}
+\tocsectionline{2.7}{Notebook Classification Approaches}{p. 11}
+\tocsectionline{2.8}{FAIR Data and Knowledge Graphs}{p. 12}
+\tocsectionline{2.9}{Research Gap}{p. 13}
+
+\tocchapterline{3.}{Requirements and System Analysis}{pp. 14--19}
+\tocsectionline{3.1}{Baseline System and Scope}{p. 14}
+\tocsectionline{3.2}{Functional Requirements}{p. 15}
+\tocsectionline{3.3}{Non-Functional Requirements}{p. 16}
+\tocsectionline{3.4}{Input and Output Contracts}{p. 17}
+\tocsectionline{3.5}{Data and Classification Requirements}{p. 18}
+\tocsectionline{3.6}{Evaluation Requirements}{p. 19}
+
+\tocchapterline{4.}{System Design}{pp. 20--27}
+\tocsectionline{4.1}{Overall Architecture}{pp. 20--21}
+\tocsectionline{4.2}{Pipeline Control Flow}{p. 22}
+\tocsectionline{4.3}{Connector Architecture}{p. 23}
+\tocsectionline{4.4}{Metadata Model and Normalization Design}{p. 24}
+\tocsectionline{4.5}{Persistence and Database Design}{p. 25}
+\tocsectionline{4.6}{Notebook Classification Architecture}{p. 26}
+\tocsectionline{4.7}{Knowledge Graph and Provenance Design}{p. 27}
+
+\clearpage
+\tocchapterline{5.}{Cross-Platform Pipeline Implementation}{pp. 28--42}
+\tocsectionline{5.1}{Project Structure and Pipeline Entry Point}{p. 28}
+\tocsectionline{5.2}{Run Creation, Single and Batch Processing}{p. 29}
+\tocsectionline{5.3}{Platform Detection and Validation}{pp. 30--31}
+\tocsectionline{5.4}{GitHub Baseline Integration}{p. 32}
+\tocsectionline{5.5}{Codeberg Connector Implementation}{pp. 33--34}
+\tocsectionline{5.6}{Zenodo Connector and Content Acquisition}{pp. 35--36}
+\tocsectionline{5.7}{Cross-Platform Metadata Normalization}{p. 37}
+\tocsectionline{5.8}{Notebook Registration and Discovery}{p. 38}
+\tocsectionline{5.9}{Dependency and Environment Reconstruction}{pp. 39--40}
+\tocsectionline{5.10}{Notebook Execution and Output Comparison}{p. 41}
+\tocsectionline{5.11}{Error Handling, Testing, and Container Verification}{p. 42}
+
+\tocchapterline{6.}{Notebook Classification}{pp. 43--51}
+\tocsectionline{6.1}{Classification Objective and Taxonomy}{p. 43}
+\tocsectionline{6.2}{Feature Extraction and Input Representation}{p. 44}
+\tocsectionline{6.3}{Rule-Based Notebook Classification}{pp. 45--47}
+\tocsubsectionline{6.3.1}{Classification Rules}{p. 45}
+\tocsubsectionline{6.3.2}{Rule Priorities and Conflict Resolution}{p. 46}
+\tocsubsectionline{6.3.3}{Rule-Based Output}{p. 47}
+\tocsectionline{6.4}{AI-Based Notebook Classification}{pp. 48--49}
+\tocsubsectionline{6.4.1}{Model Selection}{p. 48}
+\tocsubsectionline{6.4.2}{Prompt Design}{pp. 48--49}
+\tocsubsectionline{6.4.3}{Input Context Construction}{p. 49}
+\tocsubsectionline{6.4.4}{Structured AI Output}{p. 49}
+\tocsectionline{6.5}{Hybrid Classification Strategy}{p. 50}
+\tocsectionline{6.6}{Classification Integration into the Pipeline}{pp. 50--51}
+\tocsectionline{6.7}{Failure Handling and Classification Examples}{p. 51}
+
+\tocchapterline{7.}{Knowledge Graph Extension}{pp. 52--61}
+\tocsectionline{7.1}{Relationship to FAIR Jupyter Knowledge Graph}{p. 52}
+\tocsectionline{7.2}{Relational Data Export}{p. 53}
+\tocsectionline{7.3}{Ontology Extension}{pp. 54--55}
+\tocsectionline{7.4}{YARRRML and RML Mapping Design}{p. 56}
+\tocsectionline{7.5}{Knowledge Graph Materialisation}{pp. 57--58}
+\tocsectionline{7.6}{Representation of Notebook Classifications}{p. 59}
+\tocsectionline{7.7}{SPARQL Competency Questions}{p. 60}
+\tocsectionline{7.8}{Resulting Knowledge Graph}{p. 61}
+
+\clearpage
+\tocchapterline{8.}{Evaluation}{pp. 62--73}
+\tocsectionline{8.1}{Evaluation Strategy and Dataset}{p. 62}
+\tocsectionline{8.2}{Connector and Metadata Correctness}{p. 63}
+\tocsectionline{8.3}{Cross-Platform Reproducibility Experiment}{pp. 64--65}
+\tocsectionline{8.4}{Cross-Platform Notebook Characteristics}{p. 66}
+\tocsectionline{8.5}{Rule-Based Classification Evaluation}{p. 67}
+\tocsectionline{8.6}{AI-Based Classification Evaluation}{p. 68}
+\tocsectionline{8.7}{Hybrid Classification Evaluation}{p. 69}
+\tocsectionline{8.8}{Knowledge Graph Validation}{pp. 70--71}
+\tocsectionline{8.9}{End-to-End and Integration Testing}{p. 72}
+\tocsectionline{8.10}{Error Analysis}{p. 73}
+
+\tocchapterline{9.}{Discussion}{pp. 74--77}
+\tocsectionline{9.1}{Answering the Research Questions}{p. 74}
+\tocsectionline{9.2}{Design Decisions and Trade-offs}{p. 75}
+\tocsectionline{9.3}{Threats to Validity}{p. 76}
+\tocsectionline{9.4}{Ethical and Operational Considerations}{p. 77}
+
+\tocchapterline{10.}{Conclusion and Future Work}{pp. 78--80}
+\tocsectionline{10.1}{Summary of Contributions}{p. 78}
+\tocsectionline{10.2}{Conclusion}{p. 79}
+\tocsectionline{10.3}{Future Work}{p. 80}
+
+\tocfrontline{Bibliography}{}
+\tocfrontline{Appendices}{}
+\endgroup
+
+\mainmatter
+\include{src/introduction_working}
+\include{src/background_working}
+\include{src/requirements_working}
+\include{src/design_working}
+\include{src/implementation_working}
+\include{src/classification_working}
+\include{src/knowledge_graph_working}
+
+\backmatter
+\bibliographystyle{unsrt}
 \bibliography{bibliography}
 
 \end{document}

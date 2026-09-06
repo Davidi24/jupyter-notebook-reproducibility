@@ -1,0 +1,413 @@
+\chapter{Cross-Platform Pipeline Implementation}
+\label{chap:implementation}
+
+This chapter explains how the design from Chapter~\ref{chap:design} is implemented in the repository. The focus is on executable functions, data passed between them, and the files they produce. Platform concepts that were introduced earlier are not repeated; instead, each section follows the corresponding code path.
+
+\section{Project Structure and Pipeline Entry Point}
+
+The top-level command is \texttt{run.sh}. It uses \texttt{set -e}, checks whether Python, SQLite, \texttt{jq}, \texttt{unzip}, Git, pyenv, Jupyter, and \texttt{nbconvert} are available, and then replaces itself with \texttt{pipeline/main.sh}. Replacing the process with \texttt{exec} keeps the exit status of the main controller visible to the caller. Missing programs are reported before any database or repository is changed.
+
+The main controller resolves \texttt{PROJECT\_ROOT} from its own location and sources the shell modules listed in Table~\ref{tab:implementation-files}. Sourcing is important because the functions share run variables in one shell process. For example, \texttt{process\_repo} exports \texttt{RUN\_ID}, and the Python comparison module reads it from the environment when it inserts execution rows.
+
+\begin{table}[ht]
+\centering
+\caption{Executable modules and their implementation responsibilities.}
+\label{tab:implementation-files}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.7cm}X@{}}
+\toprule
+File & Main responsibility\tabularnewline
+\midrule
+\texttt{config/config.sh} & Paths, output directories, source and working database, and batch limit\tabularnewline
+\texttt{src/db.sh} & Schema creation, migrations, identifiers, and metadata upsert\tabularnewline
+\texttt{src/checks.sh} & Git-remote and Zenodo-record validation\tabularnewline
+\texttt{src/repo.sh} & Per-resource controller, connectors, metadata adapters, and batch loop\tabularnewline
+\texttt{src/requirements.sh} & Requirement-file collection and import discovery\tabularnewline
+\texttt{src/pyenv.sh} & Python selection, virtual environment, notebook execution, and cleanup\tabularnewline
+\texttt{src/notebooks.sh} & Original/output pairing and comparison dispatch\tabularnewline
+\texttt{analysis/} & Notebook diff, execution summary, classification, and persistence\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+After loading these files, \texttt{initialize\_directories} creates the input folder and the output folders for cloned or extracted resources, comparisons, logs, and the working database. \texttt{ensure\_working\_db} copies \texttt{data/db.sqlite} only when \texttt{output/db/db.sqlite} does not yet exist. All later SQL uses \texttt{DB\_FILE}, which points to the working copy. Finally, \texttt{ensure\_pipeline\_tables} creates missing tables and applies compatible column migrations. The controller reaches the mode selection only after this preparation has succeeded.
+
+\clearpage
+\section{Run Creation, Single and Batch Processing}
+
+Single mode asks for four values: the resource URL, notebook paths, setup paths, and requirement paths. The last three values use semicolons as separators and may be empty. \texttt{get\_or\_create\_repo\_id} removes the scheme, host, a Zenodo \texttt{record/} or \texttt{records/} segment, and a trailing \texttt{.git}. It returns the existing repository ID or inserts a new row with the detected platform. The main controller exports this ID and calls \texttt{process\_repo} with the four input values.
+
+Repository identity and run identity are deliberately different. The repository row represents the external resource and is reused. \texttt{create\_repository\_run} inserts a new row for every processing attempt:
+
+\begin{lstlisting}[language=bash,caption={Creation of a separate processing attempt.}]
+INSERT INTO repository_runs
+    (repository_id, url, run_status, started_at)
+VALUES
+    ($1, '$2', 'RUNNING', datetime('now'));
+SELECT last_insert_rowid();
+\end{lstlisting}
+
+The returned \texttt{RUN\_ID} connects all notebook executions from this attempt. A repeated run therefore does not overwrite an earlier status or duration. Every terminal path calls \texttt{finalize\_repository\_run}, which replaces \texttt{RUNNING} with a final status, message, finish time, and elapsed seconds.
+
+Batch mode uses the same \texttt{process\_repo} function. \texttt{process\_sqlite\_flow} selects one eligible row at a time, excluding repositories already represented in \texttt{repository\_runs}. It reads the stored identifier and platform, removes CSV quotes and carriage returns, and reconstructs the complete URL. GitHub becomes \texttt{https://github.com/owner/repository}, Codeberg uses the Codeberg host, and Zenodo uses \texttt{https://zenodo.org/records/id}. Unknown platform values are logged and skipped.
+
+The loop retains processed IDs in memory so a problematic row cannot be selected again during the same command. \texttt{TARGET\_COUNT}, with a default of ten, limits the number of completed repository attempts. A failure is stored for the affected row, while the loop continues with the next candidate. At the end, \texttt{print\_run\_summary} queries the database for total, successful, and unsuccessful runs and prints the elapsed time and output locations.
+
+\clearpage
+\section{Platform Detection and Validation}
+
+\subsection*{Detection and normalized identity}
+
+\texttt{detect\_platform} performs one host-based decision. A GitHub URL returns \texttt{github}, a Codeberg URL returns \texttt{codeberg}, a Zenodo URL returns \texttt{zenodo}, and every other input returns \texttt{unknown}. The result is calculated once near the beginning of \texttt{process\_repo} and is reused for validation, metadata selection, acquisition, and database lookup.
+
+The original URL is retained on the run row, while the shorter repository identifier is stored on the resource row. Table~\ref{tab:identifier-examples} shows the transformation used by both repository creation and later comparison lookup.
+
+\begin{table}[ht]
+\centering
+\caption{Examples of platform detection and identifier normalization.}
+\label{tab:identifier-examples}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.0cm}p{6.8cm}X@{}}
+\toprule
+Platform & Input & Stored identifier\tabularnewline
+\midrule
+GitHub & \url{https://github.com/octocat/Hello-World.git} & \texttt{octocat/Hello-World}\tabularnewline
+Codeberg & \texttt{https://codeberg.org/user/project} & \texttt{user/project}\tabularnewline
+Zenodo & \texttt{https://zenodo.org/records/3362625} & \texttt{3362625}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Notebook links are normalized separately because they contain branch-specific segments. For a GitHub link, the code removes the host, owner, repository, \texttt{/blob/}, and branch. For Codeberg it removes the corresponding \texttt{/src/} route. The remaining value is a repository-relative path such as \texttt{notebooks/example.ipynb}. Zenodo paths are not transformed as web links because they are normally discovered after extraction.
+
+Keeping platform and identifier as separate values prevents a host name from being copied into every relation. It also allows batch mode to construct a valid URL without guessing. The complete URL on each run preserves the exact input, including the original host and route.
+
+An unsupported host never falls through to a GitHub default. The detector returns \texttt{unknown}, and batch mode skips that row with its repository ID in the log. In single mode, the same value fails validation instead of being cloned under a misleading platform. This explicit result is important for database safety: a new host cannot silently reuse the API, URL template, or RDF type of one of the supported platforms.
+
+The normalized value is used consistently when a comparison later resolves \texttt{REPO\_ID}. That lookup includes both identifier and platform. Thus, \texttt{user/project} on GitHub and \texttt{user/project} on Codeberg remain distinct even though their host-stripped text is identical. The run URL can still show the exact address used for a particular attempt.
+
+\clearpage
+\subsection*{Validation branches and stored outcomes}
+
+GitHub and Codeberg are Git hosts, so \texttt{validate\_repo} uses \texttt{git ls-remote}. This command checks that the URL can be contacted and exposes Git references without downloading the working tree. A successful command returns zero. A failure produces \texttt{INVALID\_REPOSITORY\_URL}, stores the message \texttt{git ls-remote failed}, records the elapsed time, and ends only that repository route.
+
+Zenodo does not provide a Git remote. \texttt{validate\_zenodo} first checks the full URL with a regular expression. The accepted form contains the Zenodo host, \texttt{record} or \texttt{records}, and a numeric identifier. The captured number is then requested from \texttt{/api/records/id} with connection and overall time limits. When \texttt{ZENODO\_TOKEN} is set, the function adds a bearer token without printing it. A malformed, missing, or unreachable record produces \texttt{INVALID\_ZENODO\_RECORD}.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.90\textwidth}
+\centering
+\texttt{PLATFORM=github/codeberg} $\rightarrow$ \texttt{git ls-remote}
+$\rightarrow$ valid Git resource\par
+\vspace{0.18cm}
+\texttt{PLATFORM=zenodo} $\rightarrow$ URL pattern $\rightarrow$ Records API
+$\rightarrow$ valid archived record\par
+\vspace{0.18cm}
+any failed check $\rightarrow$ final run status and duration $\rightarrow$ stop this route
+\end{minipage}}
+\caption{Validation selects a protocol that matches the resource type.}
+\label{fig:validation-implementation}
+\end{figure}
+
+Validation occurs before metadata fetching. The metadata adapters therefore receive a source that has already passed its platform check. This avoids storing an API error document as repository metadata and gives a precise failure stage. It also avoids unnecessary downloads: a source that cannot be validated never reaches clone or archive extraction.
+
+The validators only test source availability and form. They do not claim that every notebook will execute. Acquisition, notebook discovery, package installation, and execution have their own statuses. This separation lets later SQL queries distinguish a connector problem from a reproducibility problem.
+
+\clearpage
+\section{GitHub Baseline Integration}
+
+GitHub provides the baseline route inherited from the original pipeline. The extension keeps the Git operations unchanged and places them behind the same platform decision used by the new connectors. If the local repository folder is missing, \texttt{process\_repo} performs a shallow clone with \texttt{--depth 1}. If the folder already exists, it runs \texttt{git pull}. Both commands write detailed output to the repository log rather than mixing it with the short terminal summary.
+
+The metadata adapter is new to the baseline route. \texttt{fetch\_github\_metadata} requests \texttt{/repos/owner/repository} from the GitHub REST API \cite{githubapi}. It adds the recommended JSON accept header and includes an authorization header only when \texttt{GITHUB\_TOKEN} is set. A missing or empty response returns an adapter failure before any values are saved.
+
+\begin{table}[ht]
+\centering
+\caption{GitHub API values returned through the common metadata contract.}
+\label{tab:github-adapter}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.0cm}p{4.3cm}X@{}}
+\toprule
+Common value & GitHub JSON expression & Treatment\tabularnewline
+\midrule
+Title & \texttt{name} & empty string when absent\tabularnewline
+Description & \texttt{description} & preserved as text\tabularnewline
+Authors & \texttt{owner.login} & one repository owner\tabularnewline
+Licence & \texttt{license.spdx\_id} & \texttt{NOASSERTION} becomes empty\tabularnewline
+Keywords & \texttt{topics} & joined with semicolons\tabularnewline
+DOI & no direct field & empty string\tabularnewline
+Dates & \texttt{created\_at}, \texttt{updated\_at} & original API timestamps\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The adapter uses \texttt{jq} to emit exactly one line per value. This form is intentionally identical to the Codeberg and Zenodo adapters, so the controller does not contain GitHub-specific database code. Repository topics are joined into one text field, and a DOI remains empty rather than being guessed from another identifier.
+
+After clone or update, the route is fully shared. GitHub notebooks use the same registration, requirement inference, pyenv environment, \texttt{nbconvert} execution, output comparison, and database tables as the other platforms. This preserved baseline is useful in the evaluation because differences can be attributed to connectors and source data instead of to three separate execution implementations.
+
+\clearpage
+\section{Codeberg Connector Implementation}
+
+\subsection*{Reuse of Git behaviour}
+
+Codeberg is implemented as a Git connector rather than as a copy of the GitHub pipeline. Detection selects \texttt{codeberg}, validation still uses \texttt{git ls-remote}, and acquisition still uses shallow clone or pull. The difference appears at boundaries that expose host-specific data: URL reconstruction, full notebook-link normalization, metadata API access, and the platform column.
+
+The metadata function calls the Forgejo repository endpoint at \url{https://codeberg.org/api/v1/repos/owner/repository} \cite{codebergapi,forgejoapi}. It uses an Accept header and optionally sends \texttt{CODEBERG\_TOKEN}. The response is converted into the same eight lines as GitHub. The implementation checks several possible owner properties because Forgejo responses can contain a full name, login, or username.
+
+Licence handling is also defensive. A missing value becomes an empty string. If the value is an object, the adapter tries an SPDX identifier, key, and readable name in that order. If it is another JSON type, it is converted to text. This logic prevents a complete JSON object from being written into the short licence column.
+
+\begin{lstlisting}[language=bash,caption={Selection of a Codeberg owner value in the adapter.}]
+if (.owner.full_name // "") != ""
+then .owner.full_name
+else (.owner.login // .owner.username // "")
+end
+\end{lstlisting}
+
+Topics are joined with semicolons, and repository creation and update timestamps are retained. Codeberg, like GitHub, has no direct DOI field in this endpoint, so the adapter returns an empty DOI. The absence is stored and can later be measured as metadata completeness.
+
+The connector writes \texttt{codeberg} on the repository row. This value controls URL reconstruction in batch mode and produces a separate platform resource in the knowledge graph. It is not inferred again from a local directory name, because the same owner/repository text could exist on more than one Git host.
+
+\clearpage
+\subsection*{Path handling and an end-to-end example}
+
+A Codeberg notebook link normally contains \texttt{/src/branch/} instead of GitHub's \texttt{/blob/branch/}. \texttt{insert\_notebooks\_from\_paths} accepts either full form and applies one regular expression with the alternatives \texttt{blob|src}. Downstream functions consequently receive only the relative file name. This small normalization prevents the environment code from trying to open a web URL below the local repository directory.
+
+Consider the input \texttt{https://codeberg.org/tplasdio/ipynb-py-convert}. The main controller performs the following concrete sequence:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item store \texttt{tplasdio/ipynb-py-convert} with platform \texttt{codeberg};
+  \item create a \texttt{RUNNING} row containing the complete Codeberg URL;
+  \item validate the remote with \texttt{git ls-remote};
+  \item request Forgejo metadata and upsert the eight normalized values;
+  \item clone the Git repository or update its existing local folder;
+  \item register supplied notebooks or discover all \texttt{.ipynb} files;
+  \item execute the shared environment, execution, and comparison route;
+  \item store the final status and elapsed time.
+\end{enumerate}
+
+No Codeberg branch exists after step five. This is the point at which platform-specific work ends. Requirement paths, setup paths, and notebook paths have the same relative form as GitHub paths and can be processed by the existing functions.
+
+Mixed batch processing uses the stored platform rather than assuming every identifier belongs to GitHub. Values read through SQLite's CSV output are stripped of quotes and Windows carriage returns before the switch reconstructs the URL. If a Codeberg row fails, its run is finalized and the batch advances. A single unavailable forge project therefore does not cancel results for GitHub or Zenodo.
+
+The metadata regression test uses this public Codeberg example together with one GitHub and one Zenodo source. It checks that all three adapters create a metadata row and that every stored title is non-empty. The Codeberg path is therefore exercised through the same controller and persistence contract as the other platforms.
+
+\clearpage
+\section{Zenodo Connector and Content Acquisition}
+
+\subsection*{Record validation, metadata, and file selection}
+
+Zenodo is an archived record rather than a Git repository. Its connector therefore replaces the Git operations while preserving the same output contract. \texttt{zenodo\_record\_id} extracts the numeric part of a record URL. Both \texttt{record} and \texttt{records} are accepted, so older and current link forms produce the same identifier.
+
+After validation, \texttt{fetch\_zenodo\_metadata} requests the Records API \cite{zenodoapi}. Title and description come from the record metadata. The creator array is reduced to names and joined with semicolons. Licence data may be a text value or an object; the function selects an identifier or title. Keywords are joined, and the DOI is selected from the direct record field, metadata, or persistent-identifier structure. Creation and modification dates also use ordered fallbacks. Newlines in all eight returned values are replaced by spaces so one metadata field cannot be mistaken for several array elements.
+
+The file list is used separately for acquisition. \texttt{zenodo\_download\_url} reads the JSON response, filters for names ending in \texttt{.zip}, and chooses the first ZIP when one exists. If no ZIP is listed, it selects the first available file. The selected download link is returned to \texttt{fetch\_zenodo}. A record that passes the API check therefore has a clear acquisition decision rather than being sent to Git.
+
+\begin{table}[ht]
+\centering
+\caption{Zenodo connector values for record \texttt{3362625}.}
+\label{tab:zenodo-example}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.3cm}X@{}}
+\toprule
+Item & Connector representation\tabularnewline
+\midrule
+Input URL & \texttt{https://zenodo.org/records/3362625}\tabularnewline
+Stored resource ID & \texttt{3362625}\tabularnewline
+Validation & HTTP request to \texttt{/api/records/3362625}\tabularnewline
+DOI & \texttt{10.5281/zenodo.3362625}\tabularnewline
+Acquisition & API-selected archive download and extraction\tabularnewline
+Local result & directory below \texttt{output/cloned\_repos/}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The directory name is derived with the same \texttt{basename} step used for Git resources. Because the URL ends in the record number, the Zenodo folder remains stable and can be addressed by all shared modules.
+
+\clearpage
+\subsection*{Extraction and convergence with the shared route}
+
+\texttt{fetch\_zenodo} creates the destination, downloads the selected file as a temporary archive, extracts it, and removes the archive after a successful extraction. Some deposits contain one outer directory. The function detects this case and moves its contents one level upward, including hidden files, before removing the empty wrapper. The final directory therefore has the same role as a cloned Git working tree.
+
+This local-directory boundary is what allows Zenodo to use the original notebook-processing code. The next stage searches recursively for \texttt{.ipynb} files when no paths were supplied. Each absolute match is converted to a path relative to the extracted record directory and is passed through the normal notebook insertion function. Requirement and setup files found inside the record are handled exactly like files in a Git checkout.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.91\textwidth}
+\centering
+Zenodo URL $\rightarrow$ numeric ID $\rightarrow$ Records API\par
+$\downarrow$\par
+select archive $\rightarrow$ download $\rightarrow$ extract $\rightarrow$ flatten one wrapper folder\par
+$\downarrow$\par
+local resource directory $\rightarrow$ discover notebooks $\rightarrow$ shared reproducibility route
+\end{minipage}}
+\caption{The Zenodo connector converts an archived record into the pipeline's local-directory contract.}
+\label{fig:zenodo-convergence}
+\end{figure}
+
+The route records separate outcomes for a malformed or missing record, an acquisition that does not create a directory, a record with no notebooks, and a record with no Python notebooks. Each outcome includes its elapsed time. The source can therefore be valid even when its deposited files are unsuitable for the execution stage.
+
+The connector does not describe Zenodo as Git merely because the extracted files resemble a repository. The database platform stays \texttt{zenodo}, the normalized identifier stays numeric, and the graph exporter assigns the archived-record class. These values preserve the nature of the published source after all three platforms have converged on a local folder.
+
+\clearpage
+\section{Cross-Platform Metadata Normalization}
+
+\texttt{fetch\_and\_save\_repo\_metadata} is the controller for all descriptive data. It receives the repository ID, original URL, and detected platform. After normalizing the URL to an API path, a \texttt{case} statement calls exactly one adapter. \texttt{mapfile -t} captures the eight output lines in an indexed Bash array.
+
+The controller checks \texttt{\${\#metadata[@]}} before writing. When the count is not eight, it records a clear message and leaves the metadata table unchanged. When the count is correct, indexes zero through seven are passed to \texttt{save\_repo\_metadata} in the declared order. This boundary prevents each connector from creating its own SQL statement.
+
+The database writer applies \texttt{sql\_escape} to every external text value. This helper doubles single quotes, which keeps a title such as \texttt{Researcher's notebook} inside one SQLite string literal. The writer then uses \texttt{ON CONFLICT(repo\_id) DO UPDATE}. The unique repository key produces one current descriptive record, while \texttt{fetched\_at} is refreshed with the local SQLite clock.
+
+\begin{table}[ht]
+\centering
+\caption{Separation between resource metadata and processing provenance.}
+\label{tab:metadata-provenance-storage}
+\small
+\begin{tabularx}{\textwidth}{@{}p{4.0cm}XX@{}}
+\toprule
+Stored item & Source & Updated behaviour\tabularnewline
+\midrule
+Title, description, authors & platform API & refresh current metadata row\tabularnewline
+Licence, keywords, DOI & platform API & keep empty when absent\tabularnewline
+Created and updated dates & platform API & describe the external resource\tabularnewline
+Metadata fetch time & working database clock & refresh on every successful fetch\tabularnewline
+Run start, finish, duration & pipeline controller & add a new run row\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This implementation makes missing data explicit. GitHub and Codeberg normally produce empty DOI values, while Zenodo can provide a DOI. Empty values are not replaced with guesses. Consequently, later completeness queries compare actual source metadata rather than information invented by the pipeline. Similar descriptive elements appear in DataCite's metadata schema \cite{datacite45}, while the dedicated fetch time records the local observation.
+
+\clearpage
+\section{Notebook Registration and Discovery}
+
+Notebook paths enter the route in two ways. In single mode, the user can supply relative paths or full GitHub and Codeberg notebook links. \texttt{insert\_notebooks\_from\_paths} splits the semicolon-separated text, trims each item, reduces supported web links to relative paths, and ignores every value that does not end in \texttt{.ipynb}. Before insertion, it queries the repository and path pair. An existing row is reused; a missing row is inserted with the Python language value.
+
+The function stores identity, not notebook content. The \texttt{notebooks} row contains its database ID, repository ID, relative name, and language. The JSON notebook remains in the acquired resource directory and is read only by later Python modules. This keeps the database compact and lets the original and executed files be compared directly.
+
+When \texttt{NOTEBOOK\_PATHS} is empty, discovery waits until clone or extraction has completed. A recursive \texttt{find} collects every \texttt{.ipynb}, sorts the matches, removes the local directory prefix, and joins them with semicolons. The same insertion function then registers the discovered paths. Running the database count before this search would incorrectly classify a new Zenodo record as empty; the implemented order avoids that error.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.90\textwidth}
+\centering
+supplied paths $\rightarrow$ normalize $\rightarrow$ register missing rows\par
+\textbf{or}\par
+empty input $\rightarrow$ acquire files $\rightarrow$ recursive discovery $\rightarrow$ register rows\par
+$\downarrow$\par
+count all notebooks and Python notebooks $\rightarrow$ continue or store a precise status
+\end{minipage}}
+\caption{Two notebook-collection routes converge before language checks.}
+\label{fig:notebook-collection}
+\end{figure}
+
+\texttt{get\_notebook\_language\_stats} returns two values from one SQL query: the total notebook count and the number whose language equals Python without regard to case. A zero total produces \texttt{NO\_NOTEBOOKS}; a nonzero total with zero Python notebooks produces \texttt{NO\_PYTHON\_NOTEBOOKS}. The environment is built only when at least one supported notebook is registered.
+
+\clearpage
+\section{Dependency and Environment Reconstruction}
+
+\subsection*{Combining declared and observed requirements}
+
+\texttt{process\_requirements} creates three temporary text files: packages copied from requirement files, imports detected in notebooks, and their combined content. When explicit requirement paths are present, each path is resolved below \texttt{REPO\_DIR}. Existing files are appended, while missing files create warnings and do not stop the route.
+
+For notebook imports, Jupyter converts each selected notebook into a temporary Python file. Lines beginning with \texttt{import} or \texttt{from} are reduced to their top-level module name. The implementation removes duplicates and separates three cases. Standard-library modules such as \texttt{json}, \texttt{pathlib}, and \texttt{sqlite3} are skipped because they should not be installed from PyPI. A module whose \texttt{.py} file exists inside the resource is treated as local and is also skipped. Remaining names are treated as external packages.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.90\textwidth}
+\centering
+declared requirement files $\searrow$\par
+\hspace{2.7cm} combine $\rightarrow$ remove empty/comment lines $\rightarrow$ sort once\par
+notebook imports $\nearrow$\par
+$\downarrow$\par
+resource-level \texttt{requirements.txt}
+\end{minipage}}
+\caption{Requirement reconstruction combines explicit files with imports observed in notebooks.}
+\label{fig:requirement-reconstruction}
+\end{figure}
+
+The final merge removes blank lines and comments, sorts the remaining entries, and writes one \texttt{requirements.txt} in the resource root. Temporary converted Python files and intermediate lists are deleted. If no package is found, an empty requirement file is still created so the environment function receives a predictable path.
+
+Import discovery provides package names but cannot reliably recover versions or operating-system libraries. The implementation therefore prefers versions already declared by the resource and uses imports as additional evidence. Installation results are logged package by package, which makes an unavailable or renamed dependency visible during later error analysis.
+
+\clearpage
+\subsection*{Python selection and isolated execution environment}
+
+\texttt{detect\_python\_version} checks version hints in a fixed order: \texttt{binder/runtime.txt}, a root \texttt{runtime.txt}, \texttt{.python-version}, \texttt{python\_requires} in \texttt{setup.py}, and the corresponding field in \texttt{setup.cfg}. If none is present, it selects Python~3.10. The chosen source is written to the log.
+
+\texttt{ensure\_pyenv\_version} first looks for an exact installed version. A major/minor value such as 3.8 is resolved to the newest stable patch shown by pyenv. The function reuses an installed match or installs the resolved interpreter. Failure produces \texttt{PYTHON\_INSTALL\_FAIL}; a missing interpreter binary produces \texttt{PYTHON\_BINARY\_MISSING}. The use of pyenv follows its documented version-management purpose \cite{pyenv}.
+
+\texttt{setup\_pyenv\_env} removes any older environment for the same resource and creates a new \texttt{venv}. It upgrades \texttt{pip}, \texttt{setuptools}, and \texttt{wheel}, then installs Jupyter and \texttt{nbconvert}. Requirement entries are installed one at a time. A failed package is logged and skipped, allowing execution to reveal whether the package was actually needed. Supplied setup paths are installed from their containing directories with \texttt{pip install .}.
+
+\begin{table}[ht]
+\centering
+\caption{Environment state shared with the notebook executor.}
+\label{tab:environment-state}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.5cm}X@{}}
+\toprule
+Variable & Meaning\tabularnewline
+\midrule
+\texttt{REPO\_VENV\_DIR} & temporary environment dedicated to the current resource\tabularnewline
+\texttt{REPO\_PYTHON} & selected interpreter inside that environment\tabularnewline
+\texttt{REPO\_PIP} & package installer inside the same environment\tabularnewline
+\texttt{ENV\_ERROR\_TYPE} & structured failure category returned to the controller\tabularnewline
+\texttt{ENV\_ERROR\_MESSAGE} & readable explanation stored on the run\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The environment is temporary by design. \texttt{cleanup\_pyenv\_env} removes it after setup failure, execution failure, or completed comparison. A later resource cannot accidentally reuse packages from the previous one, while the logs and database keep the evidence needed to explain the run.
+
+\clearpage
+\section{Notebook Execution and Output Comparison}
+
+\texttt{run\_in\_pyenv\_env} splits the normalized path list and executes each existing notebook from its own directory. Running there preserves relative file access used by notebook code. Jupyter \texttt{nbconvert} writes \texttt{name\_output.ipynb} beside the original and uses the Python~3 kernel \cite{nbconvert}. The \texttt{--allow-errors} option preserves a notebook containing a runtime error so the error cell can be analysed instead of losing the complete output document.
+
+For every path, the executor records duration and one of three observable outcomes in \texttt{notebook\_execution\_times.log}: output created without an error, output created with error cells, or execution failure. When no output notebook is created for any path, the repository route receives \texttt{NOTEBOOK\_EXECUTION\_ERROR}. Otherwise, comparison continues for every original/output pair that exists.
+
+\texttt{compare\_notebook\_outputs} resolves repository and notebook IDs, creates a comparison JSON path, and calls \texttt{analysis/compare\_notebook.py}. The Python program loads both notebooks and uses \texttt{nbdime} to obtain a cell-level diff. Execution counts and notebook metadata are ignored because they do not represent result changes. Source and output changes are recorded separately, and output changes are classified as numeric, textual, or structural.
+
+Potential nondeterminism is detected from code patterns such as random-number calls, current time, environment variables, and UUID creation. These signals do not prove that an output changed; they identify cells whose results can vary between runs. Runtime error outputs are read directly from the executed notebook and are grouped into dependency, file, data, code, resource, network, or execution-environment categories.
+
+For a notebook with $n$ code cells and $i$ unchanged cells, the stored score is
+\[
+  \textit{reproducibility score}=\begin{cases}
+  i/n, & n>0,\\
+  1, & n=0.
+  \end{cases}
+\]
+The summary inserts one \path{notebook_executions} row and one linked \path{notebook_reproducibility_metrics} row. It also writes the detailed diff to \path{output/comparisons/}. The original notebook is never overwritten.
+
+Execution and comparison use database uniqueness at the run-and-notebook level. A notebook appears once in one repository run, while another run can create a new execution and metrics pair. The JSON file contains the readable summary, raw notebook diff, and extracted runtime errors. The relational rows retain the fields needed for aggregate queries, and the JSON keeps details that would be inconvenient to split across many SQL columns.
+
+An output notebook that was not created receives a small failure JSON document containing its path, repository and notebook IDs, status, and reason. This ensures that the comparison folder also explains missing pairs. Successful and unsuccessful notebook paths can therefore be inspected without relying only on terminal output.
+
+\clearpage
+\section{Error Handling, Testing, and Container Verification}
+
+Expected failures are converted into data close to the point where they occur. Connector failures finalize the repository run immediately. Environment failures set \texttt{ENV\_ERROR\_TYPE} and \texttt{ENV\_ERROR\_MESSAGE}. \texttt{analyze\_env\_error} searches the repository log for known patterns, including missing kernels, missing modules, import or syntax errors, memory problems, timeouts, and network failures. The controller stores the selected type and elapsed seconds before cleanup.
+
+\begin{table}[ht]
+\centering
+\caption{Automated checks implemented for the completed pipeline.}
+\label{tab:pipeline-tests}
+\small
+\begin{tabularx}{\textwidth}{@{}p{4.2cm}X@{}}
+\toprule
+Test & Behaviour checked\tabularnewline
+\midrule
+\texttt{test\_metadata.sh} & valid and invalid Zenodo records plus normalized metadata for all three platforms\tabularnewline
+\texttt{test\_repo\_discovery.sh} & acquisition precedes automatic notebook discovery and registration\tabularnewline
+\texttt{test\_pipeline.sh} & a complete repository attempt creates run evidence\tabularnewline
+\texttt{test\_notebook\_}\linebreak\texttt{classification.py} & collection, rules, AI schema, reconciliation, storage, review, and evaluation\tabularnewline
+\texttt{test\_kg.sh} & relational export, materialisation, graph structure, and SPARQL queries\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The metadata test creates a temporary SQLite database, applies the real migrations, and inserts one repository per platform. It validates Zenodo URL handling, calls the three live metadata adapters, and asserts that exactly three metadata rows with non-empty titles are stored. The discovery test avoids network access with local function replacements but runs the real \texttt{process\_repo} order; it proves that an empty path list reaches discovery before notebook counts are checked.
+
+The classification suite uses a generated notebook and a mocked model response so its eight tests are deterministic. It checks AST import collection, capped rule weights, structured AI output, agreement and disagreement, database persistence, human review, and evaluation metrics. The suite completes without requiring an installed model.
+
+The Binder Dockerfile packages the surrounding tools and offers a stable verification environment. A local image build followed by \texttt{tests/test\_metadata.sh} confirms that curl, Git, \texttt{jq}, SQLite, Python, and the project files work together. Per-repository Python environments remain separate from this container: the image verifies the pipeline runtime, while pyenv reconstructs the environment of each analysed notebook.
+
+Together, these checks cover the route from external source to stored result. They also keep failures observable, which is necessary because an unsuccessful notebook is part of the reproducibility evidence rather than merely a test interruption.

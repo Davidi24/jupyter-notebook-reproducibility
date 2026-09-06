@@ -1,0 +1,197 @@
+\chapter{Requirements and System Analysis}
+\label{chap:requirements}
+
+This chapter defines what the system must do and how each requirement can be tested.
+
+\section{Baseline System and Scope}
+
+The starting point is an existing pipeline for Python notebooks stored on GitHub. It reads repository and notebook information from SQLite, finds dependencies, creates a separate Python environment, executes notebooks, compares new and saved outputs, and stores the results. FAIR Jupyter exports this database information and uses it to build an RDF knowledge graph. This thesis extends those components instead of creating a separate system.
+
+The process starts with a resource URL or a resource already listed in the database. It ends with database results, notebook categories, and an RDF graph that can be rebuilt. The extension must recognize GitHub, Codeberg, and Zenodo; download their content; convert their metadata into common fields; execute Python notebooks through the same main route; and record where each resource came from. It must also classify notebook purpose so the results can be compared by platform and category.
+
+\begin{table}[ht]
+\centering
+\caption{Scope of the thesis system.}
+\label{tab:scope}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}XX@{}}
+\toprule
+Included & Outside the present scope\tabularnewline
+\midrule
+Public GitHub and Codeberg repositories & Private repositories requiring user-specific access\tabularnewline
+Public Zenodo records with downloadable files & Arbitrary research repositories beyond Zenodo\tabularnewline
+Python notebook environment reconstruction & Guaranteed reproduction of every operating system\tabularnewline
+Execution and stored-output comparison & Validation of the scientific conclusion\tabularnewline
+Normalized descriptive metadata & Automatic repair of missing source metadata\tabularnewline
+Rule-based and AI-model classification & Treating automated labels as human ground truth\tabularnewline
+RDF materialisation and SPARQL validation & Operation of a permanent public triple-store service\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The original database is kept read-only because it contains the starting research data. The pipeline copies it to \texttt{output/db/} and writes all new columns and results to that copy. Existing GitHub rows must still work after the database structure is extended.
+
+A notebook that runs successfully is not automatically scientifically correct. Also, a limited sample cannot represent every resource on a platform. The evaluation must therefore explain how examples were selected and show the number of resources used for each result.
+
+\clearpage
+\section{Functional Requirements}
+
+Functional requirements describe actions that the system must perform. Each requirement below can be checked with a command, database query, generated file, or test result. The requirements describe behaviour instead of individual function names, so they remain valid if the code is reorganized later.
+
+\begin{table}[ht]
+\centering
+\caption{Functional requirements of the extended pipeline.}
+\label{tab:functional-requirements}
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.9cm}p{9.5cm}p{2.2cm}@{}}
+\toprule
+ID & Requirement & Verification\tabularnewline
+\midrule
+FR1 & Detect GitHub, Codeberg, and Zenodo from a supported URL and reject unknown hosts. & Unit examples\tabularnewline
+FR2 & Validate Git resources through Git and Zenodo resources through its record API before metadata is stored. & Connector test\tabularnewline
+FR3 & Acquire Git repositories by clone or update and Zenodo records by file download and extraction. & Local files\tabularnewline
+FR4 & Translate each supported API response into the same eight metadata fields without inventing missing values. & DB assertion\tabularnewline
+FR5 & Support both one-resource input and platform-aware batch processing from SQLite. & End-to-end run\tabularnewline
+FR6 & Register supplied notebook paths and discover \texttt{.ipynb} files automatically when paths are absent. & Notebook rows\tabularnewline
+FR7 & Infer requirements, select Python, create an isolated environment, and execute Python notebooks. & Execution rows\tabularnewline
+FR8 & Compare original and executed outputs and record status, metrics, errors, and elapsed time. & Result rows\tabularnewline
+FR9 & Classify notebook purpose with rules and an AI model, store both attempts, and expose disagreement for review. & Classifier test\tabularnewline
+FR10 & Export relational tables, materialise RDF with versioned mappings, and answer defined SPARQL questions. & KG test suite\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+FR2 must happen before FR4. The pipeline checks that the source is valid before saving its metadata. Otherwise, information taken from an error response could be saved as if it were real metadata. The metadata is then fetched before the files are downloaded because the API already provides the source description and origin.
+
+FR7 and FR8 reuse the original environment and execution steps. Each new connector only has to provide a local folder and notebook paths. It does not create a separate environment system. FR9 can run even when notebook execution fails because classification reads the notebook content without executing it. This allows failed notebooks to keep a category for later error analysis. FR10 requires the graph to be generated from the working database instead of edited by hand.
+
+Together, these requirements describe one complete route from an input URL to results that can be queried. Downloading a file alone does not complete a connector: the resource must also be checked and described. Creating an N-Triples file alone does not complete the graph: its relationships and SPARQL test questions must also be correct.
+
+\clearpage
+\section{Non-Functional Requirements}
+
+Non-functional requirements describe how safely, clearly, and reliably the system must work. They are important because the pipeline downloads external resources, reads several APIs, and executes research code.
+
+\begin{table}[ht]
+\centering
+\caption{Quality requirements and their design consequences.}
+\label{tab:nonfunctional-requirements}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.4cm}XX@{}}
+\toprule
+Quality & Requirement & Observable consequence\tabularnewline
+\midrule
+Data safety & Preserve the source database unchanged. & All writes target a working copy.\tabularnewline
+Comparability & Use common fields and statuses across platforms. & Results can be grouped without platform-specific joins.\tabularnewline
+Traceability & Keep source, run, execution, model, and result provenance. & An output can be followed back to its activity.\tabularnewline
+Repeatability & Make generated data reproducible from inputs and versioned rules. & CSV and RDF outputs can be deleted and rebuilt.\tabularnewline
+Robustness & Turn expected failures into classified evidence. & One bad resource does not terminate a batch.\tabularnewline
+Security & Treat URLs, archives, API text, and notebooks as untrusted. & Inputs are constrained, escaped, and run in controlled environments.\tabularnewline
+Maintainability & Isolate platform-specific behaviour behind one contract. & A connector can change without rewriting execution.\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Comparability does not mean pretending that all platforms are identical. Information with the same meaning should use the same field, while important platform differences remain visible. For example, every resource has a platform and title, but Zenodo remains an archived record and can have a DOI. Every processing attempt also uses the same main status values, while detailed messages still explain platform-specific errors.
+
+Traceability is required for classification as well as execution. Each category must record how it was produced, which model or rule version was used, its confidence, its time, and whether a person reviewed it. Old decisions must still be understandable after the classifier changes. The graph follows the same idea: ontology and mapping files are saved as source files, while CSV and N-Triples files are generated again when needed.
+
+The system also needs clear security rules. API tokens are read from environment variables and must not be written to logs or the database. Text from APIs is escaped before it is added to SQL. Extracted archive files must stay inside the repository folder. A separate Python environment prevents package conflicts, but it is not a complete security sandbox. Untrusted notebooks would need stronger filesystem and network restrictions before this pipeline could be offered as a public service.
+
+These requirements matter even when a short demonstration looks successful. A pipeline that overwrites the original database, loses failed runs, or removes the source platform would not meet the research goal, even if it produced a final results table.
+
+\clearpage
+\section{Input and Output Contracts}
+
+An input or output contract defines the exact information passed between parts of the system. The pipeline has two input modes, but both must produce the same internal information: URL, normalized identifier, platform, notebook paths, setup paths, and requirement paths. The three path values may be empty.
+
+In single-resource mode, the user enters a GitHub, Codeberg, or Zenodo URL. Several optional paths are separated with semicolons. A complete GitHub \texttt{/blob/} link or Codeberg \texttt{/src/} link is converted into a path inside the repository. Zenodo notebook paths are normally found after the archive is extracted because its folder structure is unknown before download. In batch mode, the pipeline reads the same information from the working database and recreates the full URL from the platform and stored identifier.
+
+\begin{table}[ht]
+\centering
+\caption{Pipeline inputs and persistent outputs.}
+\label{tab:io-contract}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.2cm}X@{}}
+\toprule
+Boundary & Artefact & Contract\tabularnewline
+\midrule
+User or batch DB & Resource identifier & Supported URL or platform plus normalized identifier\tabularnewline
+User or batch DB & Path fields & Empty or semicolon-separated repository-relative paths\tabularnewline
+Connector & Local resource & Existing directory containing acquired source files\tabularnewline
+Metadata adapter & Field sequence & Exactly eight normalized values in a fixed order\tabularnewline
+Pipeline & Working database & Resources, metadata, runs, notebooks, executions, metrics, classifications\tabularnewline
+Pipeline & File outputs & Per-resource logs, executed notebooks, and JSON comparisons\tabularnewline
+Semantic build & CSV exports & One header-defined file per mapped relational dataset\tabularnewline
+Semantic build & RDF outputs & Mapping fragments, combined \texttt{.nt} graph, and build summary\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Identifiers depend on the platform. GitHub and Codeberg use \texttt{owner/repository}, while Zenodo uses its numeric record ID. The platform is also part of the identity because GitHub and Codeberg could both contain the same \texttt{owner/repository} text. Each run keeps the complete input URL, while the shorter normalized identifier is used for database searches.
+
+The metadata connector returns eight values in a fixed order because Bash functions cannot directly return a structured object. The controller counts the values, and one shared function saves them. Empty fields are allowed. A missing, extra, or wrongly ordered field means that the connector did not follow the contract.
+
+The outputs have two groups. Database rows and notebook comparisons are the main pipeline evidence. CSV and RDF files are generated from that evidence and can be rebuilt. Logs help explain problems, but the database must still contain structured status values. This separation shows which information must be preserved and which files can be generated again.
+
+\clearpage
+\section{Data and Classification Requirements}
+
+The database must separate a resource from the actions performed on it. The same repository or Zenodo record can be processed several times. One run can execute several notebooks, and one notebook can have several classification attempts. If all results were stored in one repository row, a new run would overwrite the old history.
+
+\begin{table}[ht]
+\centering
+\caption{Required relational entities and their purpose.}
+\label{tab:data-entities}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.6cm}X@{}}
+\toprule
+Entity & Required meaning\tabularnewline
+\midrule
+\texttt{repositories} & Stable platform-specific resource identity and supplied path information\tabularnewline
+\texttt{repository\_metadata} & One refreshable normalized description linked to the resource\tabularnewline
+\texttt{notebooks} & Repository-relative notebook identity and language\tabularnewline
+\texttt{repository\_runs} & One processing attempt with status, message, start, end, and duration\tabularnewline
+\texttt{notebook\_executions} & Notebook-level execution, error, timing, and cell evidence\tabularnewline
+\texttt{notebook\_}\linebreak\texttt{reproducibility\_}\linebreak\texttt{metrics} & Original-versus-executed comparison measurements\tabularnewline
+\texttt{notebook\_}\linebreak\texttt{classifications} & Method-specific label, confidence, explanation, model/rule identity, and review state\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Normalized metadata has one current row for each resource. A later metadata fetch can update that row. Runs, executions, and classifications work differently: every new attempt receives a new row so that earlier results are not deleted. Foreign keys connect the tables, and a uniqueness rule prevents the same notebook path from being added twice to one repository.
+
+The category list must be clear enough for people to use consistently while still covering common notebook purposes. The nine categories are \emph{data preparation}, \emph{data analysis}, \emph{visualization}, \emph{machine learning}, \emph{simulation}, \emph{tutorial}, \emph{software development}, \emph{mixed purpose}, and \emph{uncertain}. Every automated answer must select one of these labels and return a defined data structure, not only free text.
+
+The rules and AI model should examine the same limited information: filename, notebook metadata, selected Markdown and code, imports, cell counts, and output types. Large outputs and possible secrets are not included unless necessary. The pipeline first stores the answer from each method. If the two answers agree, the result can be accepted automatically. Disagreement, an invalid answer, or low confidence is marked for human review. Manual evaluation labels are stored separately so they cannot be confused with predictions.
+
+\clearpage
+\section{Evaluation Requirements}
+
+The evaluation must test both the software and the research questions. A demonstration with one repository shows that the route can work, but it is not enough evidence for a thesis comparison. The study also needs connector tests, database checks, classification evaluation, graph tests, and a documented experiment across all three platforms.
+
+\begin{table}[ht]
+\centering
+\caption{Evaluation matrix for the completed system.}
+\label{tab:evaluation-matrix}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.1cm}p{4.3cm}X@{}}
+\toprule
+Area & Measures & Required evidence\tabularnewline
+\midrule
+Connector correctness & validation and acquisition success & Public examples and expected local files\tabularnewline
+Metadata normalization & field accuracy and completeness & API-to-database checks for each platform\tabularnewline
+Reproducibility route & environment, execution, and output rates & Structured run and notebook records\tabularnewline
+Error analysis & counts by stage and category & Logs linked to classified failures\tabularnewline
+Classification & accuracy, macro F1, per-class results, agreement & Human-labelled evaluation sample\tabularnewline
+Knowledge graph & parseability, expected links, query answers & Triple counts and SPARQL competency tests\tabularnewline
+End-to-end behaviour & repeatability and source-DB safety & Clean-run test and file checksums/schema checks\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The cross-platform experiment must explain how its examples were selected. It must also record the date, software versions, network conditions, and resource identifiers. For each platform, it should report how many resources were selected, validated, and downloaded; which metadata fields were present; how many notebooks were found; and how many environments, executions, and output comparisons succeeded. Percentages must always be shown together with the original counts, especially when the Codeberg and Zenodo samples are smaller than the GitHub data.
+
+Classification must be checked against categories assigned manually without first showing the reviewer the automated answers. Overall accuracy is not enough because some categories may contain far more notebooks than others. The evaluation should also report precision, recall, macro F1, a confusion matrix, and examples of disagreement. The rules, AI model, and combined decision must be measured separately. This shows whether combining them actually improves the result.
+
+Knowledge-graph evaluation must check more than whether the file opens. The ontology and mappings must be valid, CSV row counts must match the database queries, and the graph must contain the expected links between resources, runs, executions, results, and classifications. SPARQL questions test whether these links can be used correctly. A clean rerun must also leave the source database unchanged and recreate all documented outputs. The final claims are therefore supported by stored evidence, not only screenshots.

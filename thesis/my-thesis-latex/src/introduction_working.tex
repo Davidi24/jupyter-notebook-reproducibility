@@ -1,0 +1,73 @@
+\chapter{Introduction}
+
+Jupyter notebooks are widely used in research because they combine executable code, explanations, and results in one document. This allows readers to understand how an analysis was performed and to run the code again. However, publishing a notebook does not guarantee reproducibility. The notebook may fail because required libraries, data files, software versions, or execution information are missing.
+
+An existing reproducibility pipeline was created to address this problem for notebooks hosted on GitHub. It downloads a repository, prepares its Python environment, executes its notebooks, compares the outputs, and stores the results. However, the pipeline was designed only for GitHub.
+
+This thesis first extends the pipeline to support three platforms: GitHub, Codeberg, and Zenodo. GitHub and Codeberg repositories are downloaded with Git, while Zenodo records are downloaded as archived files through the Zenodo API. After collection, resources from all three platforms follow the same reproducibility process.
+
+The FAIR Jupyter knowledge graph is then extended to represent the new platforms, normalized metadata, notebooks, processing runs, execution results, and reproducibility scores. Finally, notebook classification is added to identify the purpose of each notebook using rules and an AI model. The classification results are stored in the database and included in the knowledge graph. Together, these extensions can reveal missing metadata, dependencies, and execution problems. This information helps researchers improve their notebook resources and makes the notebooks easier to reproduce.
+
+\section{Motivation}
+
+Reproducibility allows other researchers to check a result, repeat an analysis, and build on previous work. For a notebook, this requires more than access to the file. The code must run in a compatible environment, the required data must be available, and the execution steps must be clear. Large studies have found repeated problems such as missing dependencies, unavailable data, and inconsistent cell execution order~\cite{pimentel2019}. A study of notebooks linked to biomedical publications found similar problems during re-execution~\cite{samuel2024computational}. These results show that notebook reproducibility remains a practical research problem.
+
+The platform on which a notebook is published also matters. A study limited to GitHub can only describe resources from one hosting environment. Codeberg provides another Git-based platform, while Zenodo is mainly used to publish archived research records. Their identifiers and metadata are not organized in exactly the same way~\cite{codebergapi,zenodoapi}. Including all three platforms gives the evaluation a broader basis and makes it possible to study whether platform-specific differences are connected to metadata quality or execution results.
+
+A useful comparison requires both common fields and clear information about origin. Metadata normalization gives equivalent fields, such as title, authors, licence, keywords, and dates, the same structure. Provenance records where a resource came from and how the pipeline processed it. This follows the FAIR principles, which state that digital research objects should be findable, accessible, interoperable, and reusable~\cite{wilkinson2016fair}. FAIR Jupyter already shows how reproducibility information can be organized and queried in a knowledge graph~\cite{samuel2024fairjupyter}. Extending this model allows cross-platform results to be studied together without hiding their original source.
+
+Notebook purpose provides another important part of the context. A tutorial, a data analysis, and a machine-learning experiment may require different data, libraries, and computing resources. Classification makes these differences visible and supports a more careful interpretation of execution results. The motivation is therefore not only to process more platforms, but to produce evidence that explains what was processed, where it came from, what type of notebook it was, and what happened during re-execution.
+
+\section{Problem Statement}
+
+The original reproducibility pipeline assumes that every input is a GitHub repository. This assumption appears in its URL handling, source validation, repository download, and database lookup. The pipeline does not identify Codeberg as a separate platform. It also cannot download a Zenodo record because an archived record is not necessarily a Git repository. Changing only the Git clone command would not solve the problem. Each platform uses different identifiers, metadata fields, access methods, and error responses.
+
+A second problem is how to compare the collected information. Descriptions, authors, licences, keywords, dates, and permanent identifiers such as DOIs have different structures on each platform. Without normalization, fields with the same meaning cannot be compared reliably. Without platform information, their origin is unclear. Execution results must also be linked to the correct resource, notebook, processing run, and platform so that successful and failed attempts can be understood and queried.
+
+Finally, execution success alone gives only a limited view of reproducibility. Notebooks have different purposes, including data exploration, visualization, machine-learning experiments, simulations, and tutorials. If these differences are ignored, an execution result may be connected to the hosting platform even when the notebook's purpose or complexity also influenced it. The main problem is therefore to create one cross-platform workflow without hiding platform differences. The workflow must produce clear metadata, notebook categories, execution results, and provenance that support a fair comparison.
+
+\section{Research Goal and Research Questions}
+
+The goal of this thesis is to design, implement, and evaluate a reproducibility pipeline for Jupyter notebook resources from GitHub, Codeberg, and Zenodo. All resources should enter the same main workflow after the platform-specific collection step. The system should preserve information about their origin, normalize descriptive metadata, classify the notebooks, and make the combined results available through a knowledge graph.
+
+This goal is investigated through four research questions:
+
+\begin{description}[leftmargin=1.3cm,labelwidth=1.05cm,style=nextline]
+  \item[\textbf{RQ1}] How can a GitHub-oriented notebook reproducibility pipeline be extended with Codeberg and Zenodo connectors while reusing its platform-independent processing stages?
+  \item[\textbf{RQ2}] How can metadata from different platforms, notebook execution results, and provenance be normalized and represented in a shared database and knowledge graph?
+  \item[\textbf{RQ3}] How can rule-based and AI-based methods place notebooks into meaningful categories, and how often do their results agree with human classification?
+  \item[\textbf{RQ4}] What differences, if any, are observed in metadata completeness, execution outcomes, failure causes, and notebook categories across GitHub, Codeberg, and Zenodo?
+\end{description}
+
+RQ1 and RQ2 address the pipeline design and the integration of data from several sources. RQ3 studies the notebook classification step. RQ4 uses the completed system for a cross-platform experiment without assuming that one platform is more reproducible than another.
+
+\section{Contributions}
+
+The thesis makes the following contributions:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Collecting resources from several platforms.} The pipeline detects GitHub, Codeberg, and Zenodo inputs and selects the correct route. It uses Git operations for GitHub and Codeberg, and the Zenodo API to download archived files.
+  \item \textbf{Normalized metadata and database storage.} Eight common metadata fields are stored separately from execution results. The database records the platform, uses normalized identifiers, updates existing rows instead of duplicating them, and keeps the source database read-only.
+  \item \textbf{One shared reproducibility workflow.} After collection, resources from all platforms use the same steps for notebook discovery, dependency detection, Python environment creation, notebook execution, output comparison, logging, and result storage.
+  \item \textbf{Hybrid notebook classification.} A transparent, weighted rule-based classifier is combined with an AI model. The system stores their agreement, confidence, and need for human review instead of saving only a category label.
+  \item \textbf{Knowledge-graph extension.} The pipeline exports database tables to CSV and maps them to RDF. The FAIR Jupyter model is extended to describe platforms, archived records, processing runs, notebook executions, reproducibility scores, normalized metadata, and classification provenance. SPARQL queries are used to check and explore the graph.
+  \item \textbf{Evaluation framework.} Automated tests check the connectors, metadata, classification, knowledge graph, and pipeline integration. A cross-platform experiment then compares metadata quality and reproducibility results.
+\end{itemize}
+
+Together, these contributions change a single-platform workflow into a system that can support additional platforms. Platform-specific access, shared notebook processing, knowledge-graph representation, and cross-platform comparison remain separate and understandable parts of the system.
+
+\section{Thesis Structure}
+
+The remainder of the thesis is organized as follows:
+
+\begin{description}[leftmargin=2.25cm,labelwidth=1.95cm,style=multiline]
+  \item[\textbf{Chapter 2}] explains computational reproducibility, Jupyter notebooks, hosting platforms, software environment reconstruction, notebook classification, FAIR principles, and related research.
+  \item[\textbf{Chapter 3}] defines the system, data, input-output, quality, and evaluation requirements based on the original pipeline and the research questions.
+  \item[\textbf{Chapter 4}] presents the system architecture, pipeline flow, platform connectors, normalized database, notebook classifier, and provenance model.
+  \item[\textbf{Chapter 5}] explains how platform detection, GitHub, Codeberg, and Zenodo support, metadata collection, notebook processing, environment creation, execution, comparison, and testing were implemented.
+  \item[\textbf{Chapter 6}] defines the notebook categories and explains the rule-based classifier, AI-based classifier, combined decision process, pipeline connection, and error handling.
+  \item[\textbf{Chapter 7}] explains how database data is exported, mapped to the extended ontology, converted into an RDF knowledge graph, and tested with SPARQL queries.
+  \item[\textbf{Chapter 8}] evaluates the platform connectors, metadata completeness, notebook execution, classification accuracy, knowledge graph, pipeline integration, and observed errors.
+  \item[\textbf{Chapter 9}] answers the research questions and discusses design choices, study limitations, validity risks, and ethical and operational concerns.
+  \item[\textbf{Chapter 10}] summarizes the contributions, presents the conclusions, and identifies possible future improvements.
+\end{description}

@@ -1,0 +1,124 @@
+\chapter{Pipeline Implementation}
+\label{chap:implementation}
+
+\section{Project Structure}
+
+The executable pipeline is organised as shell modules under \texttt{src/}, an entry controller under \texttt{pipeline/}, shared configuration under \texttt{config/}, and a top-level \texttt{run.sh}. The separation follows responsibility rather than processing order. Database creation and migration are located in \texttt{src/db.sh}; validation in \texttt{src/checks.sh}; repository acquisition and metadata in \texttt{src/repo.sh}; notebook selection in \texttt{src/notebooks.sh}; requirement inference and environment management in their respective modules; and output comparison in the analysis module.
+
+At startup, the entry script verifies required programs, sources the child modules, initializes configured directories, creates or copies the working database, and ensures all tables exist. Because sourced scripts run in the same shell process, exported variables such as \texttt{DB\_FILE}, \texttt{REPOS\_DIR}, \texttt{LOG\_DIR}, \texttt{REPO\_ID}, and \texttt{RUN\_ID} are visible to later functions. This is different from executing a separate shell file as an unrelated process, which would not modify variables in its parent.
+
+\section{Repository Identity and Run Creation}
+
+Repository identity is based on a normalized identifier plus the platform. The normalizer removes the URL scheme and host, removes a Zenodo \texttt{record/} or \texttt{records/} prefix, and removes a trailing \texttt{.git}. GitHub and Codeberg therefore store values such as \texttt{octocat/Hello-World}; Zenodo stores a value such as \texttt{3362625}.
+
+The \texttt{get\_or\_create\_repo\_id} function first checks whether the normalized identifier already exists. If present, it returns the existing ID. Otherwise, it inserts a repository row with the detected platform and supplied path information and returns \texttt{last\_insert\_rowid()}. Notebook insertion follows only after a repository ID is available, preserving the foreign-key relationship.
+
+Every call to \texttt{process\_repo} invokes \texttt{create\_repository\_run}. Unlike repository creation, run creation is intentionally not deduplicated. Two runs over the same repository represent two distinct attempts and may use different dates, source revisions, environments, or results. The function inserts a \texttt{RUNNING} row and exports its ID for execution records.
+
+\section{Single and Batch Modes}
+
+Single mode receives a URL from the user and creates the repository when necessary. Batch mode selects the next eligible database row that contains notebook information and has not already been represented in \texttt{repository\_runs}. The number of resources is controlled by \texttt{TARGET\_COUNT}. Processed IDs are retained during the loop so an exceptional row cannot be selected indefinitely.
+
+Batch URLs are reconstructed with a platform switch:
+
+\begin{lstlisting}[language=bash,caption={Simplified mixed-platform URL reconstruction.}]
+case "$PLATFORM" in
+  github)   REPO_URL="https://github.com/${REPO_PATH}" ;;
+  codeberg) REPO_URL="https://codeberg.org/${REPO_PATH}" ;;
+  zenodo)   REPO_URL="https://zenodo.org/records/${REPO_PATH}" ;;
+  *)        skip_unknown_platform ;;
+esac
+\end{lstlisting}
+
+Carriage returns and quotes are removed from values read through SQLite's CSV mode. This is necessary when databases or fixtures have been prepared on Windows and are consumed inside a Linux container. Unknown platforms are logged and skipped rather than terminating the entire batch.
+
+\section{Platform Detection and Validation}
+
+The detector uses host patterns and returns one of \texttt{github}, \texttt{codeberg}, \texttt{zenodo}, or \texttt{unknown}. A single platform variable is computed near the beginning of \texttt{process\_repo}; subsequent branches use that value rather than repeatedly parsing the URL.
+
+GitHub and Codeberg call the existing Git validator. \texttt{git ls-remote} checks that the remote can be contacted and that it behaves as a Git repository without cloning its contents. Zenodo calls a dedicated validator because the remote URL is an HTML/API resource rather than a Git remote. The validator extracts the numeric record ID and performs a Records API request. Failure is recorded as \texttt{INVALID\_ZENODO\_RECORD}; Git failures are recorded as \texttt{INVALID\_REPOSITORY\_URL}.
+
+Validation precedes metadata. This order guarantees that an unreachable source cannot create a new descriptive metadata row during the same run. It also provides a clearer log: a connector failure is attributed to validation rather than to a later JSON parser.
+
+\section{Metadata Fetchers}
+
+\subsection{GitHub Adapter}
+
+The GitHub fetcher calls \url{https://api.github.com/repos/owner/repository}. When \texttt{GITHUB\_TOKEN} is present, an Authorization header is added. \texttt{jq} transforms the JSON response into eight lines. The repository name becomes the title, the owner login becomes the author, the SPDX identifier becomes the licence, and topics are joined with semicolons. GitHub's creation and update timestamps are retained. DOI is emitted as an empty line.
+
+\subsection{Codeberg Adapter}
+
+The Codeberg fetcher calls the Forgejo repository endpoint at \url{https://codeberg.org/api/v1/repos/} using the normalized owner/repository path. Authentication is optional through the environment variable \path{CODEBERG_TOKEN}. The adapter is deliberately defensive. For authorship it prefers \path{owner.full_name}, then falls back to a login or username. The licence can be absent, an object, or another JSON value; the adapter selects an SPDX ID, key, name, or string representation in that order. Topics and timestamps are normalized like GitHub, and DOI remains empty.
+
+\subsection{Zenodo Adapter}
+
+The Zenodo fetcher accepts a full URL or normalized record ID. It calls \url{https://zenodo.org/api/records/id} and optionally uses \texttt{ZENODO\_TOKEN}. The title and description come from the record metadata. Creator names are extracted from the creator array and joined with semicolons. Licence objects are reduced to an ID or title, keywords are joined, and the DOI is selected from the known record locations. Creation and modification timestamps use fallbacks because Zenodo response versions can expose publication and update dates differently. Embedded newlines are replaced with spaces before output.
+
+\begin{table}[ht]
+\centering
+\caption{Normalized metadata and source fields.}
+\label{tab:metadata-fields}
+\small
+\begin{tabularx}{\textwidth}{@{}lXXX@{}}
+\toprule
+Normalized field & GitHub & Codeberg & Zenodo\\
+\midrule
+Title & name & name & metadata.title\\
+Authors & owner.login & owner full name/login & metadata.creators\\
+Licence & license.spdx\_id & licence object/value & licence ID/title\\
+Keywords & topics & topics & metadata.keywords\\
+DOI & empty & empty & doi / metadata DOI\\
+Dates & created / updated & created / updated & created / published / modified\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Metadata Storage}
+
+\texttt{fetch\_and\_save\_repo\_metadata} captures the selected adapter output with \texttt{mapfile}. If the number of values is not eight, the controller records a metadata message and does not call the database writer. When the contract is satisfied, \texttt{save\_repo\_metadata} escapes every text value and executes an upsert.
+
+The new table is connected to \texttt{repositories} by \texttt{repo\_id}. A unique constraint implements one current metadata record per repository. Reprocessing refreshes values and \texttt{fetched\_at} rather than accumulating snapshots. Historical metadata versioning could be added later by replacing this constraint with a source timestamp and observation identity.
+
+\section{Content Acquisition}
+
+For Git repositories, the local directory is derived from the final URL component. A missing directory is populated with a shallow clone to reduce transfer size. An existing directory is updated with \texttt{git pull}. These operations are redirected into the per-repository log.
+
+Zenodo uses three helpers. \texttt{zenodo\_record\_id} extracts the numeric identifier. \texttt{zenodo\_download\_url} inspects the API response and selects a ZIP file when present, otherwise the first downloadable file. \texttt{fetch\_zenodo} creates the destination, downloads the selected object, and extracts a supported archive. The result is a local directory that conforms to the same downstream assumption as a Git clone.
+
+This convergence point is central to the architecture. Notebook and environment modules do not call platform APIs and do not need to know whether files arrived through Git or an HTTP archive.
+
+\section{Notebook Registration and Discovery}
+
+\texttt{insert\_notebooks\_from\_paths} splits a semicolon-separated argument, trims whitespace, normalizes complete notebook URLs, rejects non-\texttt{.ipynb} values, and inserts only missing rows. It stores the notebook path and a preliminary Python language value, not the entire notebook document.
+
+If the user supplies no paths, discovery runs after acquisition with \texttt{find}. Absolute local paths are converted to paths relative to the resource directory. The resulting semicolon-separated value is logged and passed through the same insert function. Language statistics are requested only after supplied or discovered notebooks have been registered. This ordering fixed an earlier route in which an empty database check could stop before discovery had a chance to run.
+
+\section{Requirements and Environment}
+
+\texttt{process\_requirements} combines explicit requirement files with imports found in selected notebooks. The goal is not to infer perfect dependency versions; it is to collect the best available installation set. Duplicate and irrelevant lines are removed before the final \texttt{requirements.txt} is written.
+
+Python-version hints are searched in runtime, pyenv, and setup-related files. A fallback is used when no hint exists. \texttt{ensure\_pyenv\_version} checks installed versions and invokes installation when necessary. \texttt{setup\_pyenv\_env} creates a repository-specific environment, installs requirement packages, and processes supplied setup paths. Failure details are stored in shared error variables so the controller can finalise the run with a meaningful status.
+
+The environment is temporary. \texttt{cleanup\_pyenv\_env} removes it after a failed setup, failed execution, or completed comparison. This reduces interference between resources and avoids selecting packages from a previous run.
+
+\section{Execution, Error Analysis, and Comparison}
+
+\texttt{run\_in\_pyenv\_env} executes each notebook with Jupyter \texttt{nbconvert}. The executed notebook is written separately from the original. Execution rows capture status, duration, code-cell counts, and error information. When the command fails, \texttt{analyze\_env\_error} classifies the log, for example as a missing module or missing kernel, before the repository run is finalised.
+
+Successful execution is not the end of reproducibility analysis. \path{compare_notebook_outputs} resolves repository and notebook IDs, locates original/output pairs, and calls a Python comparison program. The resulting JSON records identical, different, and nondeterministic cells and a reproducibility score. Database lookup now uses the shared working \texttt{DB\_FILE} and includes platform-aware repository normalization.
+
+\section{Hybrid Notebook-Purpose Classification}
+
+The classification component first reads a notebook with \texttt{nbformat} and collects markdown, code, metadata, top-level Python imports, and output MIME types. Python imports are parsed with the standard-library abstract-syntax-tree module rather than by executing notebook code. Compact excerpts are used for classification so image payloads and the full notebook document do not need to enter a model prompt.
+
+Two independent methods use nine shared categories: data preparation, data analysis, visualisation, machine learning, simulation, tutorial, software development, mixed purpose, and uncertain. The rule-based method assigns weighted evidence from imports, code patterns, markdown terms, and output types. The second method calls a free local \texttt{gemma3:4b} model through Ollama. Ollama's structured-output mode constrains the response to a category, secondary categories, confidence, reason, and evidence. The prompt treats notebook contents as untrusted data and uses temperature zero to reduce variation.
+
+The reconciliation layer accepts a confident exact agreement as a provisional category. A disagreement, partial agreement, uncertain label, low confidence, disabled model, or unavailable local model sets \texttt{needs\_human\_review} and records a warning. A reviewer can assign the final category without overwriting either automated result. The database stores the notebook checksum, rule and model outputs, model and prompt versions, agreement status, warning, and human decision. Evaluation commands calculate coverage, accuracy, precision, recall, macro F1, per-category support, and the rule--model disagreement rate over reviewed rows.
+
+\section{Testing and Container Verification}
+
+The metadata test starts from a prepared working database, ensures migrations, loads the connector functions, and exercises one example per platform: GitHub's public \texttt{octocat/Hello-World}, Codeberg's \texttt{tplasdio/ipynb-py-convert}, and Zenodo record \texttt{3362625}. Assertions verify that each platform produces one metadata row and that expected non-empty fields are stored. The final query prints platform, repository, title, authors, licence, and DOI for inspection.
+
+The test can be executed in a locally built Binder image. This verifies that the declared image contains Bash, Git, curl, jq, SQLite, Python, and the test files. Container testing does not replace per-repository pyenv environments; it validates the surrounding pipeline runtime.
+
+A separate batch harness backs up the working database, swaps in a fixture, runs a limited batch, and restores the original through a shell trap. The restore step is important because the configured database path is fixed by the sourced configuration. Together, the tests cover connector normalization, schema migration, persistence, and mixed-platform orchestration while preserving the user's current database.

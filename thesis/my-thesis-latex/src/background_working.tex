@@ -1,0 +1,193 @@
+\chapter{Background and Related Work}
+\label{chap:background}
+
+This chapter introduces the ideas needed to understand the system without describing its implementation. It first explains computational reproducibility and the special properties of Jupyter notebooks. It then reviews earlier notebook studies, the three source platforms, metadata and provenance, environment reconstruction, classification, and semantic publication. The final section identifies the gap addressed by this thesis.
+
+\section{Computational Reproducibility}
+
+Computational results are reproducible when another person can use the same input data, code, computational steps, and analysis conditions and obtain consistent results. This thesis follows the terminology of the National Academies, which separates \emph{reproducibility} from \emph{replicability}: replication answers the same research question with newly collected data, whereas reproduction repeats the original computation \cite{nasem2019}. The distinction matters because this work evaluates digital research objects. It does not repeat the scientific study or judge whether its conclusion is correct.
+
+Reproduction is not a single yes-or-no event. A rerun can stop while the software environment is being created, fail during execution, finish with changed outputs, or finish with outputs that match the stored notebook. Each outcome provides different evidence. A missing package points to incomplete dependency information. A network error may show that an external service is no longer available. A changed numerical result may arise from a newer library, random behaviour, or updated data. Therefore, a useful pipeline records the stage, error, duration, and comparison result instead of reducing every attempt to ``failed.''
+
+Three groups of information influence computational reproducibility. The first is the \emph{computational object}: source code, notebook cells, input files, and stored outputs. The second is the \emph{environment}: programming-language version, libraries, operating-system assumptions, and external tools. The third is the \emph{provenance}: where the resource came from, when it was retrieved, what process acted on it, and which result that process produced. Access to code alone covers only part of this evidence.
+
+Large notebook studies confirm the practical importance of these distinctions. Pimentel et al. examined quality and reproducibility across a large notebook corpus and connected successful execution with practices such as ordered cells and dependency information \cite{pimentel2019}. Samuel and Mietchen analysed notebooks linked to biomedical publications and recorded environment construction, execution exceptions, and output comparison separately \cite{samuel2024computational}. Their work shows that a pipeline must preserve intermediate outcomes if the results are to support later analysis.
+
+In this thesis, \emph{successful execution} means that all selected notebook cells complete in the reconstructed environment. \emph{Output reproducibility} is stricter: the executed notebook must also be compared with the stored version. This operational definition makes the evaluation measurable while acknowledging that identical output is not proof of scientific validity. It answers a narrower but important question: can the published computation still be rerun in a controlled, documented process?
+
+\clearpage
+\section{Jupyter Notebooks and Reproducibility}
+
+A Jupyter notebook is both a document and an executable program. It can place source code beside natural-language explanations, equations, tables, figures, and interactive results. This combination makes notebooks useful for exploring data and explaining an analysis to readers \cite{kluyver2016}. It also creates a challenge: the visible document does not necessarily contain everything needed to repeat the computation.
+
+The standard \texttt{.ipynb} file is a JSON document containing an ordered list of cells and notebook-level metadata \cite{nbformat}. Code cells may store source code, an execution count, and several output types. Markdown cells store explanatory text, and raw cells can preserve content for later conversion. Kernel and language information may appear in metadata, but most metadata fields are optional. A valid notebook can therefore omit the exact Python or package versions used by its author.
+
+\begin{table}[ht]
+\centering
+\caption{Notebook information and its value for reproduction.}
+\label{tab:notebook-anatomy}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+Element & What it contains & Why it matters\tabularnewline
+\midrule
+Code cell & Program statements and imports & Reveals operations and undeclared packages\tabularnewline
+Markdown cell & Explanations, headings, and instructions & May describe purpose, data, and execution steps\tabularnewline
+Stored output & Text, images, tables, or errors & Provides a reference for comparison\tabularnewline
+Execution count & The recorded order of code execution & Can reveal out-of-order interactive work\tabularnewline
+Notebook metadata & Kernel and language hints & Helps select a compatible environment\tabularnewline
+Repository files & Requirements, setup files, and data & Supplies context missing from the notebook\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Interactive execution is the central difficulty. A user may run cell 10, return to cell 3, redefine a variable, and then save the notebook. The displayed outputs can depend on hidden kernel state that is not reproduced by a clean top-to-bottom run. Rule et al. explain that notebooks are often used first for trying ideas and exploring data. During this work, users may run cells in different orders or test several versions of an analysis. The saved notebook may therefore not clearly show how the final result was produced \cite{rule2018}. Kery et al. found that data scientists often organize and explain the notebook only after the exploratory work is complete \cite{kery2018}.
+
+Reproducible execution therefore requires more than opening the file. The notebook should be run in a new kernel, in a known order, with explicit dependencies and available data. Stored outputs should be preserved long enough to compare them with new outputs. The surrounding repository is equally important because it may contain local modules, requirements files, setup scripts, or documentation. This thesis treats the notebook as the central executable object while using its repository or archived record as the context needed to interpret and rerun it.
+
+\clearpage
+\section{Existing Notebook Reproducibility Analysis}
+
+Earlier studies examine notebook reproducibility in different ways. Some check the quality of many notebooks. Others try to execute notebooks automatically or organize the results in a knowledge graph. These studies provide the starting point for this thesis.
+
+Pimentel et al. studied more than one million notebooks from GitHub and reran a selected group under controlled conditions \cite{pimentel2019}. They found that reproducibility is related to features such as a clear execution order, version control, and documented dependencies. Samuel and Mietchen later studied notebooks connected to biomedical publications \cite{samuel2024computational}. Their pipeline found the GitHub repositories, created Python environments, executed the notebooks, recorded errors, and compared the new outputs with the saved outputs. The results were stored as structured database records, not only as downloaded files.
+
+FAIR Jupyter then converted this database information into a knowledge graph \cite{samuel2024fairjupyter}. This allows users to ask connected questions about publications, repositories, notebooks, executions, and results. However, both the source pipeline and the first graph version mainly describe GitHub resources. Other research gives practical advice to notebook authors. Rule et al., for example, recommend a clear cell order, documented dependencies, and visible data-processing steps \cite{rule2019tenrules}.
+
+\begin{table}[ht]
+\centering
+\caption{Relationship between key prior work and this thesis.}
+\label{tab:related-work}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}XXX@{}}
+\toprule
+Work & Main focus & Useful foundation & Remaining limitation\tabularnewline
+\midrule
+Pimentel et al. & Large-scale notebook quality and reruns & Quality indicators and execution evidence & GitHub corpus; no cross-platform connector model\tabularnewline
+Samuel and Mietchen & Biomedical notebook reproduction & Baseline database, environment, errors, comparisons & Resource acquisition centred on GitHub\tabularnewline
+FAIR Jupyter & Semantic exploration of results & Ontology, mappings, provenance-oriented queries & GitHub repository representation\tabularnewline
+This thesis & Cross-platform reproducibility & Reuses execution and semantic foundations & Adds Codeberg, Zenodo, normalized metadata, and classification\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This thesis builds on that work instead of replacing it. The existing environment, execution, and comparison stages already record useful information and are therefore reused. The new work starts when a resource enters the pipeline. The system must now identify, check, describe, and download resources from three platforms. It must also record the platform in the database, classification results, and knowledge graph. This makes it possible to compare metadata and reproducibility across platforms, which a GitHub-only dataset cannot do.
+
+\clearpage
+\section{GitHub, Codeberg, and Zenodo}
+
+GitHub, Codeberg, and Zenodo can all publish notebooks, but they store different kinds of resources. GitHub and Codeberg are Git hosting platforms. Their main resource is a version-controlled repository. Zenodo is a research repository. Its main resource is a published record with metadata and downloadable files. The pipeline must keep this difference because one download method cannot correctly handle all three platforms.
+
+GitHub provides two forms of access. Git is used to clone the files, while the REST API provides information such as the name, owner, description, topics, licence, and dates \cite{githubapi}. Codeberg also supports Git, but it uses the Forgejo software and API \cite{codebergdocs,forgejoapi}. Therefore, GitHub and Codeberg can be cloned in a similar way, but their API addresses and JSON fields are not always the same. Their notebook links also differ: GitHub normally uses \texttt{/blob/}, while Codeberg uses \texttt{/src/}.
+
+Zenodo gives each published record a numeric identifier and usually a DOI. Its Records API returns research metadata and a list of files that can be downloaded \cite{zenodoapi}. A record may contain notebooks, source-code archives, data, documentation, or several of these. It normally has no Git remote. Therefore, the Zenodo part of the pipeline must check the API record, select a useful file, download it, extract it, and then search the extracted folder for notebooks.
+
+\begin{table}[ht]
+\centering
+\caption{Platform properties that affect reproducibility processing.}
+\label{tab:platform-differences}
+\small
+\begin{tabularx}{\textwidth}{@{}lXXX@{}}
+\toprule
+Aspect & GitHub & Codeberg & Zenodo\tabularnewline
+\midrule
+Primary object & Git repository & Git repository & Archived research record\tabularnewline
+Stable local acquisition & Clone or pull & Clone or pull & Download and extract\tabularnewline
+Validation signal & Git remote & Git remote & Records API\tabularnewline
+Metadata source & GitHub REST API & Forgejo REST API & Zenodo Records API\tabularnewline
+Identifier & owner/repository & owner/repository & numeric record ID and DOI\tabularnewline
+Version context & commits and branches & commits and branches & record versions and deposited files\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+For this reason, each platform has a small connector. A connector contains only the steps that differ: checking the source, reading its metadata, and downloading its files. After the files are available in a local folder, all platforms use the same notebook discovery, environment, execution, and comparison steps. The system therefore supports platform differences without creating three separate pipelines.
+
+\section{Metadata Normalization and Provenance}
+
+Metadata and provenance answer two different questions. Metadata answers, ``What is this resource?'' It includes information such as the title, authors, description, licence, keywords, DOI, and dates. Provenance answers, ``Where did the resource come from, and what did the pipeline do with it?'' For example, metadata can say that a Zenodo record has a certain title and two authors. Provenance can show that the record came from Zenodo, was downloaded by the pipeline, and was processed during a specific run.
+
+GitHub, Codeberg, and Zenodo do not return this information in the same form. GitHub may provide one owner account, while Zenodo may provide a list of creators. One platform may return a licence as a short name, another may return a larger data object, and sometimes no licence is available. These differences make direct comparison difficult.
+
+Metadata normalization solves this problem by converting the different API responses into the same eight database fields: title, description, authors, licence, keywords, DOI, creation date, and update date. For example, a GitHub owner and a Zenodo creator list are both stored in the 
+authors field. After normalization, one database query can compare the same kind of information across all three platforms. The selected fields are also consistent with common elements used by the DataCite standard to describe research objects \cite{datacite45}.
+
+Normalization changes the structure of the data, but it does not invent missing information. If a GitHub or Codeberg repository has no DOI, the DOI field remains empty. The same rule applies to missing licences or keywords. These empty fields are useful because they make missing metadata visible and measurable. Lists are converted into consistent text, and line breaks are removed when they would damage the shell output format. The platform name is stored with every repository so that the source of the metadata remains clear.
+
+Source dates and pipeline dates have different meanings. The API reports when the author created or updated the resource. The pipeline records when it fetched the metadata, started processing, finished, and how long the run took. These dates are stored separately so that an action by the author is not confused with an action by the pipeline.
+
+The knowledge graph records this history using PROV-O, a standard vocabulary for provenance \cite{prov2013}. It has three main ideas. An \texttt{Entity} is a resource, such as a repository, notebook, or result. An \texttt{Activity} is an action, such as a repository run or notebook execution. An \texttt{Agent} is responsible for a resource or action, such as GitHub, Codeberg, or Zenodo. For example, Zenodo is the agent that provides a record, the record is an entity used by the pipeline run, and the run is an activity that produces an execution result.
+
+Together, normalization and provenance make the results easier to understand and check. Normalization makes equivalent values comparable across the three platforms. Provenance keeps the path to every result visible: platform, resource, pipeline run, notebook execution, and output. If two outputs differ, a researcher can follow this path and investigate where the difference occurred.
+
+\clearpage
+\section{Environment Reconstruction and Notebook Execution}
+
+A notebook needs more than the code stored in its cells. It may depend on a specific Python version, external packages, local modules, system programs, input data, environment variables, or online services. Environment reconstruction means using the available files and notebook content to create an environment in which the notebook can run.
+
+Files such as \texttt{requirements.txt}, \texttt{setup.py}, and Python-version files provide the clearest dependency information. When these files are missing or incomplete, imports in notebook cells provide additional clues. However, an imported module can have a different name from the package installed with \texttt{pip}, and an import normally gives no version. Automatically generated requirements are therefore only the pipeline's best attempt to rebuild the environment. They are not an exact copy of the author's original computer.
+
+Selecting the correct Python version is also important. Code written for one version can fail with another, and some packages work only with certain versions. The pipeline uses \texttt{pyenv} to manage several Python versions and choose one for each repository \cite{pyenv}. It then installs the packages in a separate environment. This prevents the packages required by one repository from changing the environment of another repository.
+
+Jupyter \texttt{nbconvert} executes notebooks automatically and saves the new outputs \cite{nbconvert}. Each run starts with a new kernel and executes the cells from top to bottom. This removes variables left over from an earlier interactive session. It can also reveal hidden assumptions. For example, a later cell may need a variable that the author created by running cells in a different order. Chattopadhyay et al. found that environment setup, dependency management, and turning exploratory notebooks into reliable workflows are common problems \cite{chattopadhyay2020}.
+
+Execution success and output reproducibility are different results. A notebook can finish without errors but still produce different numbers, text, tables, or figures. This can happen because of random behaviour, current dates, changed online data, or new package versions. The comparison stage records these changes instead of treating every difference as a simple error. Matching outputs also do not prove that the scientific method is correct. They only show that the tested run produced the same saved result.
+
+For this reason, the pipeline stores each important step: the detected requirements, selected Python version, installation result, execution status, error type, duration, and output comparison. These details explain where a run succeeded or failed and provide the data needed for comparing platforms.
+
+\clearpage
+\section{Notebook Classification Approaches}
+
+Reproducibility results are easier to understand when notebooks are grouped by their main purpose. A tutorial, a data-cleaning notebook, and a machine-learning experiment can need different packages and may fail for different reasons. Classification helps separate these differences from differences caused by the hosting platform.
+
+A notebook does not normally contain one field that clearly states its purpose. Useful clues appear in the filename, headings, Markdown explanations, imports, function calls, outputs, and order of cells. Earlier studies show that notebooks often mix exploration with later explanation \cite{rule2018,kery2018}. The classifier must therefore examine both written text and code. It must also allow a notebook to have more than one important purpose.
+
+\begin{table}[ht]
+\centering
+\caption{Classification strategies considered in this thesis.}
+\label{tab:classification-approaches}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.7cm}XXX@{}}
+\toprule
+Approach & Strength & Limitation & Role in the system\tabularnewline
+\midrule
+Weighted rules & Transparent and repeatable; works without a model & Keywords and imports can be ambiguous & Creates an auditable baseline\tabularnewline
+AI model & Can combine code and narrative context & Output may vary and requires validation & Provides a second independent judgement\tabularnewline
+Human review & Can resolve context and mixed intent & Slow and not suitable for every item & Handles disagreement and evaluation labels\tabularnewline
+Hybrid decision & Exposes agreement and uncertainty & Requires a clear conflict policy & Produces the operational classification\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The system uses nine categories: data preparation, data analysis, visualization, machine learning, simulation, tutorial, software development, mixed purpose, and uncertain. These categories describe what the notebook does, not its research subject. For example, notebooks about biology and economics can both belong to data analysis. \emph{Mixed purpose} means that several purposes are equally important. \emph{Uncertain} means that the available evidence is missing or unclear.
+
+The pipeline uses two automated methods instead of trusting only one. Weighted rules and an AI model examine the same limited notebook summary. If both methods choose the same category, the result has stronger support. If they disagree or have low confidence, the case is marked for human review. Research on human involvement in machine learning supports reviewing unclear cases instead of accepting every model answer as correct \cite{mosqueira2023hitl}. The evaluation must still compare the automated categories with labels assigned manually by a person.
+
+\clearpage
+\section{FAIR Data and Knowledge Graphs}
+
+The FAIR principles state that digital research objects should be findable, accessible, interoperable, and reusable \cite{wilkinson2016fair}. They apply to data, code, workflows, and other research materials. FAIR information should be understandable not only to people but also to software. For notebook reproducibility, providing a download link is not enough. The notebook should be connected to its platform, metadata, processing history, execution, and result in a machine-readable form.
+
+RDF stores information as simple statements called triples. Each triple has a subject, a relation, and an object \cite{rdf2014}. For example, ``repository 42 -- is hosted on -- Codeberg'' is one triple. ``run 17 -- processed -- repository 42'' is another. Because both statements use the same repository identifier, they become connected in the graph. SPARQL is a query language that follows these connections \cite{sparql2013}. It can move from a platform to its repositories, notebooks, executions, and results without manually joining several CSV files.
+
+An ontology defines the types of things and relations allowed in the graph. FAIR Jupyter reuses standards such as PROV-O for processing history and DOAP for software projects, and adds terms for notebook reproducibility \cite{samuel2024fairjupyter}. The first graph describes publications, GitHub repositories, notebooks, executions, and results from the biomedical study. This thesis keeps that model and adds hosting platforms, Zenodo records, pipeline runs, normalized metadata, and notebook classifications.
+
+The graph is built in several clear steps. Selected database tables are exported to CSV. YARRRML files describe how CSV columns become RDF statements, and they are converted into RML mapping files \cite{heyvaert2018yarrrml,rmlspec}. Morph-KGC reads the mappings and creates the RDF triples \cite{arenas2024morph}. The ontology, mapping rules, and generated graph remain separate. This allows reviewers to check the model and rules, and it allows the graph to be rebuilt when the database changes.
+
+The graph must also be tested. The ontology and mappings must be valid, database rows must create the expected triples, and SPARQL queries must return sensible answers. Test questions include: Which repositories come from each platform? Which Zenodo records contain Python notebooks? Which executions failed because of dependencies? Which notebook categories produced matching outputs? These questions show that the graph represents useful information instead of being only a large file of untested triples.
+
+\clearpage
+\section{Research Gap}
+
+Earlier research shows that notebooks can be executed and compared automatically and that the results can be stored in a knowledge graph. However, three problems are not solved by the original GitHub-focused system.
+
+First, the original pipeline expects GitHub input. Adding Codeberg requires more than accepting another website name because Codeberg uses a different API and notebook-link format. Zenodo is even more different because it provides published records and downloadable files instead of Git repositories. The pipeline therefore needs a separate connector for each platform before all notebooks can enter the same execution steps.
+
+Second, the three APIs use different metadata fields. These values must be converted into the same database structure before they can be compared. At the same time, the system must keep the platform and processing history so that normalization does not hide where a value came from. FAIR Jupyter provides the basic graph model, but the first version does not represent Zenodo records or the new run and metadata tables created by this pipeline.
+
+Third, reproduction results can depend on what a notebook is designed to do. One platform may contain more tutorials, while another may contain more simulations or machine-learning notebooks. A direct comparison of overall success rates could incorrectly present a category difference as a platform difference. The original pipeline does not classify the purpose of each notebook or record how that category was chosen.
+
+This thesis connects these three improvements in one system. It accepts GitHub, Codeberg, and Zenodo resources; stores eight common metadata fields; records the platform and every processing run in SQLite; classifies notebooks with rules, an AI model, and human review; and extends FAIR Jupyter so all results can be queried in one graph.
+
+The scope remains limited. The selected examples cannot represent every notebook on each platform. The reconstructed environment may not exactly match the author's computer, and an automated category is not automatically equal to a human judgement. The system instead creates a consistent and traceable way to test these questions. It compares different sources while keeping their platform differences visible and reusing the working execution stages of the earlier pipeline.
+
+The next chapter turns these problems into requirements that can be tested. Chapter~\ref{chap:design} then explains the system design. Later chapters describe the code and evaluation results.

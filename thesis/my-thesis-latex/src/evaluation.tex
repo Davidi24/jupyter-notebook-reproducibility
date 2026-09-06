@@ -1,0 +1,94 @@
+\chapter{Evaluation}
+\label{chap:evaluation}
+
+\section{Evaluation Strategy}
+
+The evaluation is divided into technical validation and comparative research evaluation. Technical validation asks whether the implemented connectors, schema, persistence, and graph builder behave according to their contracts. Comparative evaluation asks whether meaningful differences in metadata quality and reproducibility outcomes can be observed across platforms. The first part has preliminary results; the second remains in progress.
+
+This separation avoids two common errors. First, passing a unit or integration test does not demonstrate that the system generalises to diverse research repositories. Second, a platform comparison based on one convenient example per host would not support statistical conclusions. The examples used for connector testing are therefore reported as fixtures, not as a representative sample.
+
+\section{Metadata Integration Test}
+
+The metadata test uses one publicly reachable resource for each connector:
+
+\begin{itemize}
+  \item GitHub: \texttt{https://github.com/octocat/Hello-World};
+  \item Codeberg: \texttt{https://codeberg.org/tplasdio/ipynb-py-convert};
+  \item Zenodo: \texttt{https://zenodo.org/records/3362625}.
+\end{itemize}
+
+The test prepares the working schema, creates or finds repository rows, invokes the metadata controller with the expected platform, and queries the resulting table. It asserts that each repository has exactly one metadata row and that the normalized title is non-empty. The Zenodo row additionally provides a DOI, testing a field that is expected to remain empty for ordinary Git repositories.
+
+The test was executed inside a locally built container image. The output reported successful migrations for the platform, keywords, and DOI additions and ended with \texttt{[TEST] Metadata extraction and storage PASSED}. The printed inspection rows contained titles and authors for all three sources and DOI \texttt{10.5281/zenodo.3362625} for the Zenodo fixture.
+
+The test demonstrates connector reachability, JSON adaptation, eight-field normalization, SQL storage, and cross-platform querying. It does not demonstrate completeness for all API response variants or rate-limit behaviour. Those concerns require a larger fixture set and error-response mocking.
+
+\section{Database Inspection}
+
+The inherited working database and current pipeline outputs provide the preliminary counts shown in Table~\ref{tab:preliminary-counts}. These numbers describe the current development database, not a balanced cross-platform experiment.
+
+\begin{table}[ht]
+\centering
+\caption{Preliminary working database and graph counts.}
+\label{tab:preliminary-counts}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Item & Count\\
+\midrule
+Repository resources exported & 5,244\\
+Notebook resources exported & 27,274\\
+Repository runs & 116\\
+Notebook executions & 444\\
+Reproducibility metric rows & 444\\
+Normalized metadata test rows & 3\\
+Unique triples in first combined graph & 222,048\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Most inherited resources are GitHub records from the baseline study. Consequently, the large repository and notebook counts must not be presented as evidence that Codeberg and Zenodo have been evaluated at the same scale. The platform column and new examples make mixed representation possible, but a controlled sample is still needed.
+
+\section{Knowledge-Graph Build Validation}
+
+The first full build performs several checks before reporting success. RDFLib parses the OWL extension, and each compiled RML file is parsed as Turtle. The exporter now writes seven CSV files and prints row counts. Morph-KGC generates one graph fragment per mapping, and every fragment is parsed again to count its triples. Finally, the combined graph is parsed and serialised as N-Triples.
+
+The build produced 222,048 unique triples. The number is lower than the sum of all intermediate triple counts when two mappings produce an identical relationship, because RDF graphs are sets and duplicate triples collapse during combination. A JSON summary preserves the mapping-level counts and elapsed times for reproducibility.
+
+SPARQL tests check that GitHub and Codeberg resources are typed as Git repository resources, Zenodo is typed as an archived record, resources connect to platform individuals, and operational entities are reachable through the expected property chain. A negative constraint query checks that no Zenodo record is simultaneously typed as a Git repository resource. Further tests of datatypes and cardinality remain part of the final KG review.
+
+\section{Planned Cross-Platform Experiment}
+
+The final experiment will use several resources from each platform. The selection procedure must be documented before results are collected. A practical design is a stratified sample with equal target counts per platform, limited to public resources that contain at least one Python notebook. Where possible, the sample should cover projects with and without requirement files, single and multiple notebooks, and different publication ages.
+
+The experiment will record the following stages separately:
+
+\begin{enumerate}
+  \item validation success;
+  \item content acquisition success;
+  \item metadata completeness;
+  \item notebook discovery success;
+  \item environment creation success;
+  \item notebook execution success;
+  \item output comparison category;
+  \item total and stage-specific duration.
+\end{enumerate}
+
+Metadata completeness can be calculated as the fraction of eight normalized fields that are non-empty, both overall and per field. DOI should be analysed separately because its absence on Git platforms is expected and should not automatically imply lower metadata quality. Environment and execution failures should be grouped by the stored error categories. Reproducibility results should report the proportion of complete executions with identical, different, or nondeterministic cells.
+
+\section{Hybrid Notebook Classification}
+
+Notebook classification supports analysis rather than determining whether a notebook is allowed to run. The implemented first version uses data preparation, data analysis, visualisation, machine learning, simulation, tutorial, software development, mixed-purpose, and uncertain categories. It collects notebook markdown, imported packages, code tokens, metadata, and output types without executing code. Transparent weighted rules and a free local language model then produce independent categories and confidence values.
+
+The methods are reconciled conservatively. Confident exact agreement produces a provisional category. Disagreement, partial agreement, uncertainty, low confidence, or model unavailability produces a warning requiring human clarification. The raw outputs remain stored after review. Automated tests cover collection, weighted evidence, structured model responses, agreement, disagreement, SQLite persistence, and human correction. A real local integration fixture containing NumPy and Matplotlib was classified as visualisation by both methods. This fixture demonstrates operation, not classification accuracy.
+
+Final evaluation still requires a manually labelled sample and documented annotation guide. The implementation can export the review queue and report method coverage, accuracy, precision, recall, macro F1, per-category support, and disagreement rate. A random subset of agreed results must also be reviewed because agreement does not guarantee correctness. Only after classification quality is measured should category be compared with environment and execution outcomes.
+
+\section{Reproducibility of the Evaluation}
+
+The experiment should record the pipeline commit, container image identifier, operating system, Python/pyenv versions, run date, and API access mode. The input resource list should contain persistent identifiers or exact repository revisions. Logs and database outputs should be retained in a versioned result package, while API tokens and private credentials must be excluded.
+
+For Zenodo, the record DOI and record ID improve repeatability, but records can contain multiple files or versions. The selected file URL and checksum should therefore be stored. For Git platforms, the clone should record the resolved commit hash rather than relying only on the default branch. These additions would make repeated experiments more comparable than a moving \texttt{git pull} against an unspecified revision.
+
+\section{Interim Assessment}
+
+The preliminary evidence supports the engineering feasibility of RQ1 through RQ3: all connectors can produce normalized metadata; the common database can store the results; and the seven relational datasets can be transformed into a linked RDF graph. The evidence is not yet sufficient to compare platform reproducibility rates, metadata quality, or classification accuracy. The final thesis must replace this interim section with results from the controlled and human-labelled samples and provide confidence intervals or appropriately cautious descriptive statistics.

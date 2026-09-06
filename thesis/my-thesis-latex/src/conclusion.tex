@@ -1,0 +1,14 @@
+\chapter{Conclusion and Future Work}
+\label{chap:conclusion}
+
+This thesis addresses the GitHub bias of an existing Jupyter notebook reproducibility pipeline and its FAIR Jupyter knowledge-graph layer. The implemented system detects GitHub, Codeberg, and Zenodo resources; validates each source with the appropriate mechanism; normalizes descriptive metadata; acquires Git repositories or research archives; and passes all local content through one shared notebook-processing route.
+
+The implementation demonstrates that GitHub and Codeberg can share Git validation and acquisition while retaining separate API adapters. Zenodo requires a genuinely different connector because a record is an archived research object rather than a Git repository. The eight-field metadata contract hides API structure differences from database storage while preserving missing values honestly. A dedicated metadata table and platform-aware repository identity support mixed-platform querying and batch execution.
+
+The database extension is connected to a first semantic-publication workflow. Seven CSV exports are transformed through YARRRML-derived RML mappings, materialised with Morph-KGC, and combined with an ontology extension. The model distinguishes Git repositories from archived records and links platforms, resources, notebooks, repository runs, notebook executions, reproducibility results, and classification activities. Preliminary construction before the classification extension produced 222,048 unique triples and supported initial SPARQL checks.
+
+The current evidence establishes engineering feasibility but not final comparative findings. The hybrid notebook classifier is implemented, including disagreement warnings, human review, evaluation metrics, and semantic export; its labelled evaluation remains unfinished. The next work is to complete the ontology and mapping review, run a controlled cross-platform sample, label a representative notebook sample, and analyse metadata completeness and stage-specific outcomes. The final experiment should record immutable revisions and file checksums, use stronger execution isolation, and report sample-dependent limitations.
+
+Further technical work should replace manual SQL strings with parameterised access, version metadata observations, add archive traversal protection, store Git commit hashes, and expose explicit working-database lifecycle commands. The semantic layer should add more datatype and cardinality tests and evaluate alignment with the complete upstream FAIR Jupyter ontology.
+
+The principal contribution is therefore not only support for two more hosts. It is a platform-aware architecture that preserves the type and provenance of research resources while reusing a common computational reproducibility process. This foundation enables future analysis across repository ecosystems and supports a more interoperable, traceable, and extensible notebook reproducibility service.

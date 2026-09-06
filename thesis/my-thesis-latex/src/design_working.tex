@@ -1,0 +1,264 @@
+\chapter{System Design}
+\label{chap:design}
+
+\section{Overall Architecture}
+
+The design adds a small connector layer to the original pipeline. GitHub, Codeberg, and Zenodo use different methods for source detection, validation, metadata access, and download. Each connector handles these differences. After the files are stored in a local folder, every platform follows the same notebook-processing route. This avoids repeated code and makes the results easier to compare.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.92\textwidth}
+\centering
+\textbf{Input and orchestration}\par
+single URL or SQLite batch $\rightarrow$ configuration $\rightarrow$ working database\par
+\vspace{0.18cm}
+$\downarrow$\par
+\vspace{0.12cm}
+\textbf{Platform connector boundary}\par
+detect $\rightarrow$ validate $\rightarrow$ normalize metadata $\rightarrow$ acquire\par
+GitHub $\mid$ Codeberg $\mid$ Zenodo\par
+\vspace{0.18cm}
+$\downarrow$ local directory and normalized notebook paths\par
+\vspace{0.12cm}
+\textbf{Shared reproducibility route}\par
+discover $\rightarrow$ infer requirements $\rightarrow$ create environment $\rightarrow$ execute $\rightarrow$ compare\par
+\vspace{0.18cm}
+$\downarrow$\par
+\vspace{0.12cm}
+\textbf{Evidence and enrichment}\par
+SQLite provenance $\rightarrow$ notebook classification $\rightarrow$ CSV/RML $\rightarrow$ RDF graph
+\end{minipage}}
+\caption{High-level architecture of the cross-platform system.}
+\label{fig:overall-architecture}
+\end{figure}
+
+The main controller first checks required programs, loads configuration, creates folders, prepares the working database, and selects single or batch mode. It then calls the correct platform connector. The connector produces the common information needed by later steps: repository ID, URL, platform, local folder, notebook paths, and normalized metadata. The remaining functions do not need to know whether the files came from Git or a downloaded archive.
+
+This design also makes future extension easier. A new platform needs a connector that returns the same common information, but it does not need a new environment builder or notebook executor. A new classifier or graph mapping can read stored results without changing the download code. Each part can therefore change without rewriting the whole pipeline.
+
+\clearpage
+The layers show where each failure happened. An invalid URL is a connector problem. A failed package installation is an environment problem. An invalid AI response is a classification problem. An invalid mapping is a knowledge-graph problem. Storing the stage gives more useful information than one general ``failed'' status.
+
+\begin{table}[ht]
+\centering
+\caption{Architectural layers, inputs, and outputs.}
+\label{tab:architecture-layers}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.4cm}p{3.6cm}X@{}}
+\toprule
+Layer & Main input & Main output & Responsibility\tabularnewline
+\midrule
+Orchestration & configuration and user choice & prepared run context & dependencies, folders, mode, DB copy\tabularnewline
+Connector & URL and platform & local resource and metadata & validate, describe, acquire\tabularnewline
+Notebook processing & local files & executions and comparisons & discover, install, run, compare\tabularnewline
+Classification & notebook summary & method decisions and review state & assign purpose with provenance\tabularnewline
+Persistence & structured events & relational history & stable identity and repeated activities\tabularnewline
+Semantic publication & database rows and mappings & RDF graph and query results & interoperable representation\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The system uses a working database to protect the original data. On the first run, the source database is copied to the output folder. New tables, columns, and results are added only to this copy. Experiments can therefore start again from the same source, and the original data remains separate from newly generated results.
+
+The database keeps the history of repeated work. A repository is stored once, but every processing attempt creates a new run. A notebook is also stored once, while each execution and classification attempt receives its own row. Normalized repository metadata is different: it stores the most recently fetched description together with the fetch time.
+
+Two clear interfaces separate the main parts. First, every connector returns common metadata and a local folder. Second, the knowledge-graph builder reads CSV files with named columns instead of reading shell variables. The connector interface hides platform differences from notebook execution, while the CSV interface separates graph creation from the operational pipeline.
+
+This design supports both a simple demonstration and a larger experiment. One resource can be followed from its URL to its database row, execution, category, and RDF statements. Batch mode uses the same functions for many resources. The demo therefore shows the real system used by the evaluation.
+
+\clearpage
+\section{Pipeline Control Flow}
+
+The main controller processes one resource at a time. It first finds or creates the repository ID and then creates a new run row. Even if the next step fails, the database still records which resource was processed and which run failed.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.91\textwidth}
+\centering
+\textbf{Resolve resource ID and create RUNNING record}\par
+$\downarrow$\par
+\textbf{Detect platform} $\rightarrow$ \textbf{platform validator}\par
+$\quad$ invalid $\rightarrow$ finalise run and stop\par
+$\downarrow$ valid\par
+\textbf{Fetch and save eight metadata fields}\par
+$\downarrow$\par
+\textbf{Clone/pull Git repository or download/extract Zenodo record}\par
+$\quad$ acquisition failure $\rightarrow$ finalise run and stop\par
+$\downarrow$\par
+\textbf{Register/discover notebooks} $\rightarrow$ \textbf{check Python notebooks}\par
+$\downarrow$\par
+\textbf{requirements} $\rightarrow$ \textbf{environment} $\rightarrow$ \textbf{execute} $\rightarrow$ \textbf{compare}\par
+$\downarrow$\par
+\textbf{classify, clean up, finalise, and summarise}
+\end{minipage}}
+\caption{Control flow for one resource. Every terminal branch stores a final status.}
+\label{fig:control-flow}
+\end{figure}
+
+The source is validated before its metadata is saved. This prevents an unreachable or unsupported URL from receiving a misleading metadata row. GitHub and Codeberg are checked as Git remotes, while Zenodo is checked through its Records API. After validation, the metadata controller calls exactly one platform function and checks that it returned the expected eight fields.
+
+Automatic notebook discovery happens after download because the files must first exist locally. Paths entered by the user can be registered earlier. Before adding a path, the database function checks whether the same notebook already exists, so it does not create duplicates. When no paths are supplied, the pipeline searches the downloaded folder and its subfolders. It then counts all notebooks and Python notebooks. Separate statuses distinguish a resource with no notebooks from one that contains only unsupported notebook languages.
+
+If environment creation, execution, or comparison fails, the current route ends early. Before it ends, the pipeline records the error type and duration, removes the temporary environment when necessary, and saves a final run status. A failed run therefore cannot remain incorrectly marked as \texttt{RUNNING}.
+
+Batch mode reads resources from the database and calls the same controller for each one. It does not use a second, simpler route. If one repository fails, its status is stored and processing continues with the next resource. This is important because failures are part of the research results and should not stop the complete experiment.
+
+\clearpage
+\section{Connector Architecture}
+
+Each platform uses a connector with the same general structure. The main controller provides a URL, the platform detector returns \texttt{github}, \texttt{codeberg}, or \texttt{zenodo}, and the selected connector validates the source, fetches metadata, and downloads the content. Although the internal steps differ, every connector returns the same common type of information.
+
+\begin{table}[ht]
+\centering
+\caption{Connector decisions for the three supported platforms.}
+\label{tab:connector-architecture}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.2cm}XXX@{}}
+\toprule
+Decision & GitHub & Codeberg & Zenodo\tabularnewline
+\midrule
+Detect & host pattern & host pattern & record URL pattern\tabularnewline
+Validate & \texttt{git ls-remote} & \texttt{git ls-remote} & HTTP record response and usable files\tabularnewline
+Describe & GitHub repository API & Forgejo repository API & Zenodo Records API\tabularnewline
+Acquire & clone or pull & clone or pull & select, download, and extract file\tabularnewline
+Normalize ID & owner/repository & owner/repository & numeric record ID\tabularnewline
+Notebook URL rule & remove \texttt{/blob/branch/} & remove \texttt{/src/branch/} & discover inside archive\tabularnewline
+Resource class & Git repository & Git repository & archived research record\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+GitHub and Codeberg both provide a Git remote, so they share clone and update behaviour. They still need different metadata functions because their APIs can organize fields differently. Zenodo uses a separate download process. A Zenodo record can contain several files, so the connector first prefers a source archive and otherwise selects the first supported file. Processing continues only when the record exists and contains a usable download.
+
+The normalized identifier does not include the hostname, but it is always used together with the platform. For example, \texttt{owner/project} on GitHub and the same text on Codeberg are treated as two different resources. The complete original URL is also saved with each run so the exact input remains available.
+
+Connector failures receive clear status values. Examples include an HTTP error, missing Zenodo ID, missing downloadable file, unreachable Git remote, failed clone, or failed archive extraction. These problems are kept separate from notebook execution errors. The evaluation can therefore measure connector success and notebook execution success independently.
+
+The same design can support another platform in the future. A new connector would need platform detection, validation, metadata conversion, download, and a decision about its resource type. If it returns a local folder and the eight common metadata fields, the remaining pipeline can be reused without adding new branches to every later step.
+
+\clearpage
+\section{Metadata Model and Normalization Design}
+
+The metadata controller expects exactly eight fields from every platform. Each connector can read a different JSON structure, but it returns the values in the same order. The controller counts them and sends them to one shared database function. The three platforms therefore use one database structure instead of three separate schemas.
+
+\begin{table}[ht]
+\centering
+\caption{Conceptual mapping into the normalized metadata record.}
+\label{tab:metadata-mapping}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.3cm}XXX@{}}
+\toprule
+Common field & GitHub & Codeberg & Zenodo\tabularnewline
+\midrule
+Title & repository name & repository name & record title\tabularnewline
+Description & description & description & record description\tabularnewline
+Authors & owner login & owner/user name & joined creator names\tabularnewline
+Licence & licence identifier & licence field & record rights/licence ID\tabularnewline
+Keywords & topics & topics & record keywords\tabularnewline
+DOI & empty unless supplied & empty unless supplied & DOI from record\tabularnewline
+Created & \texttt{created\_at} & \texttt{created\_at} & publication/creation date\tabularnewline
+Updated & \texttt{updated\_at} & \texttt{updated\_at} & modification date\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+An empty field is allowed when the source provides no value. The connector must not replace a missing DOI with a URL or guess a licence from a filename. This makes the later metadata-completeness results accurate. A future system may add information from another trusted source, but it would need to record where that new information came from.
+
+The Bash functions return one metadata value per line. For this reason, line breaks inside an API description are converted to spaces before the value is returned. The controller stores the lines in an array and rejects an answer that does not contain eight items. Before the SQL statement is created, single quotes in external text are escaped. SQLite itself creates \texttt{fetched\_at}, so an external API cannot choose the local fetch time.
+
+Descriptive information and pipeline activity are stored separately. The metadata table contains what the platform says about the resource. The runs table contains what the pipeline did. Source creation and update dates are therefore not confused with metadata fetch, run start, or run finish times. The platform stays on the repository row because it is part of the resource identity and decides which connector is used.
+
+When metadata is fetched again, an SQLite upsert updates the existing metadata row for that repository instead of creating a duplicate. Earlier processing runs are not overwritten. The database therefore keeps the newest description together with the complete history of reproducibility attempts.
+
+\clearpage
+\section{Persistence and Database Design}
+
+SQLite is the shared storage used by the Bash pipeline, classifier, and graph exporter. The database separates resources that are stored once from activities that can happen many times. A second execution therefore creates new evidence instead of overwriting the first result.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.91\textwidth}
+\centering
+\texttt{repositories} $1\rightarrow N$ \texttt{notebooks}\qquad
+\texttt{repositories} $1\rightarrow N$ \texttt{repository\_runs}\par
+\texttt{repositories} $1\rightarrow 1$ \texttt{repository\_metadata}\par
+\vspace{0.15cm}
+\texttt{repository\_runs} $1\rightarrow N$ \texttt{notebook\_executions}\par
+\texttt{notebooks} $1\rightarrow N$ \texttt{notebook\_executions}\par
+\vspace{0.15cm}
+\texttt{notebook\_executions} $1\rightarrow 0..1$
+\texttt{notebook\_reproducibility\_metrics}\par
+\texttt{notebooks} $1\rightarrow N$ \texttt{notebook\_classifications}
+\end{minipage}}
+\caption{Main relational cardinalities. Activity tables preserve repeated attempts.}
+\label{fig:database-cardinality}
+\end{figure}
+
+The source and working databases have different purposes. The source is copied only when no working database exists. After that, every write uses the working copy. Database updates only add missing tables or columns. Before adding a column, the pipeline checks \texttt{PRAGMA table\_info}. Old repository rows receive GitHub as a compatibility value because the inherited dataset is GitHub-only. The platform of every new resource is detected from its URL.
+
+A repository is identified by its normalized identifier together with its platform. A notebook is unique inside one repository by its relative path. Each repository has one current metadata row. Runs, executions, metrics, and classifications have their own IDs so every attempt can be traced separately. Foreign keys connect these tables.
+
+Statuses use defined values instead of arbitrary summary text. A run starts as \texttt{RUNNING} and later receives a final status, message, and duration. Notebook execution stores the error type, category, message, cell number, and relevant counts. Comparison metrics are written only when both an original and executed notebook are available. Classification rows store the method, category, confidence, explanation, and review information.
+
+This structure supports both detailed inspection and summary statistics. Repository and run rows provide platform success rates. Execution rows provide error counts. The metadata table shows missing fields, and classification links support results by notebook category. The graph exporter also uses the same database IDs to create stable RDF identifiers, so database records and graph resources can be connected clearly.
+
+\clearpage
+\section{Notebook Classification Architecture}
+
+Classification is designed as a process whose decisions can be checked. It is not only one unexplained AI request. The process has four stages: read the notebook safely, create a limited summary, run two independent classification methods, and combine their answers with human review when needed.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.91\textwidth}
+\centering
+\textbf{Notebook file}\par
+$\downarrow$ parse without executing\par
+filename $\mid$ metadata $\mid$ Markdown $\mid$ code $\mid$ imports $\mid$ outputs\par
+$\swarrow$\hspace{4.8cm}$\searrow$\par
+\textbf{Weighted rule classifier}\hspace{1.2cm}\textbf{AI-model classifier}\par
+$\searrow$\hspace{4.8cm}$\swarrow$\par
+\textbf{Validate labels and compare decisions}\par
+$\downarrow$\par
+agreement $\rightarrow$ accept\qquad disagreement/low confidence $\rightarrow$ human review
+\end{minipage}}
+\caption{Hybrid notebook-classification design.}
+\label{fig:classification-design}
+\end{figure}
+
+The collector reads the notebook JSON without executing any code. It takes selected Markdown and code, records imports and output types, and removes large or unnecessary output content. Limiting the input reduces model cost and the risk of sending secrets or embedded data. The rules and AI model receive the same type of evidence so their results can be compared fairly.
+
+The rule-based method gives points to categories when it finds matching clues. Plotting libraries add points to visualization, machine-learning imports add points to machine learning, and words such as ``tutorial'' or simulation terms support their related categories. The method returns the category with the highest score, a confidence value, and the clues that were matched. Because the rules are saved with a version, a reviewer can see why the category was chosen.
+
+The AI model receives the nine categories, instructions explaining how to choose between them, and the limited notebook summary. It must return one allowed category, a confidence value, and a short explanation in a defined structure. The model provider and model name are stored as configuration. A local or paid model can therefore be tested later without changing the category definitions or database structure.
+
+The pipeline saves both automated answers before choosing the combined result. When the rules and AI model agree, the category can be accepted. When they disagree, return invalid data, or show low confidence, the notebook is marked for review. A human decision is added as a separate record with reviewer information instead of deleting the automated answers. The evaluation can therefore measure the rules, AI model, combined method, and human labels separately.
+
+\clearpage
+\section{Knowledge Graph and Provenance Design}
+
+The knowledge graph extends FAIR Jupyter instead of creating a completely new model. The existing ontology already connects publications, software, notebooks, executions, and reproducibility results. New classes and relations add the three platforms, Zenodo records, pipeline runs, metadata, and classifications required by this project.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.91\textwidth}
+\centering
+\textbf{Working SQLite database}\par
+$\downarrow$ selected queries\par
+\textbf{CSV exports with stable IDs and IRI columns}\par
+$\downarrow$ YARRRML compiled to RML\par
+\textbf{Morph-KGC mapping fragments}\par
+$\downarrow$ merge and deduplicate\par
+\textbf{Combined N-Triples graph}\par
+$\downarrow$ parse checks and SPARQL competency questions
+\end{minipage}}
+\caption{Regenerable knowledge-graph construction route.}
+\label{fig:kg-construction}
+\end{figure}
+
+The ontology defines classes for a repository platform, a Git repository resource, and an archived research record. GitHub and Codeberg resources use the Git-repository class, while Zenodo uses the archived-record class. Both can contain notebook resources, but a Zenodo record is not incorrectly described as a Git repository. The graph also represents metadata, repository runs, notebook executions, output-comparison results, and classifications.
+
+PROV-O provides the general structure for processing history. Platforms are represented as agents. Repositories, notebooks, and results are entities. Pipeline runs, notebook executions, graph creation, and classification are activities. Relations state which activity used a resource and which result it generated. These links create a traceable path from an external platform to the final result, while the shared standard makes the graph easier to combine with other systems.
+
+Named SQL queries export selected database data into CSV files. This keeps graph creation separate from changes inside the operational database. Each CSV contains stable IDs and, where useful, complete RDF identifiers. YARRRML provides the readable mapping rules, while the converted RML files are used by Morph-KGC. Each mapping first creates its own N-Triples file, making errors and triple counts easier to locate. The builder then combines the files, removes duplicate triples, and writes a JSON build summary.
+
+SPARQL test questions check whether the graph works as intended. They verify each resource's platform, the separation of Git repositories and Zenodo records, repository-to-notebook links, run-to-execution links, comparison results, and classifications. The graph is accepted only when its files are valid and the queries return the expected patterns. It therefore becomes a usable representation of pipeline evidence, not only a visualization or unchecked export.

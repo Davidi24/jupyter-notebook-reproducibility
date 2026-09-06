@@ -23,26 +23,26 @@ gantt
     Zenodo connector                    :done, c3, after c2, 12d
 
     section Data Layer
-    Metadata extraction & normalization :active, d1, 2026-07-06, 10d
-    Knowledge graph extension           :        d2, after d1, 12d
-    Notebook type classification        :        d3, after d2, 10d
+    Metadata extraction & normalization :done,   d1, 2026-07-06, 10d
+    Knowledge graph extension           :done,   d2, after d1, 12d
+    Notebook type classification        :done,   d3, after d2, 10d
 
     section Experiments & Analysis
-    Execution pipeline runs             :        x1, after d3, 6d
-    Cross-platform comparison           :        x2, after x1, 5d
-    Reproducibility patterns analysis   :        x3, after x2, 7d
+    Execution pipeline runs             :done,   x1, after d3, 6d
+    Cross-platform comparison           :done,   x2, after x1, 5d
+    Reproducibility patterns analysis   :active, x3, after x2, 7d
 
     section Writing
-    Continuous chapter drafting         :active, w1, 2026-07-06, 50d
-    Full draft assembly                 :        w2, after x3, 4d
-    Supervisor feedback round           :        w3, after w2, 8d
-    Final polish & submission           :crit,   w4, after w3, 2026-09-15
+    Continuous chapter drafting         :done,   w1, 2026-07-06, 2026-09-03
+    Full draft assembly                 :active, w2, 2026-09-04, 4d
+    Supervisor feedback round           :        w3, 2026-09-08, 3d
+    Final polish & submission           :crit,   w4, 2026-09-11, 2026-09-15
 
     section Milestones
     Vision document approved            :milestone, m1, 2026-04-27, 0d
     Architecture finalized              :milestone, m2, 2026-06-01, 0d
     All three connectors working        :milestone, m3, 2026-07-04, 0d
     Knowledge graph populated           :milestone, m4, 2026-07-28, 0d
-    Evaluation complete                 :milestone, m5, 2026-08-25, 0d
+    Evaluation complete                 :milestone, m5, 2026-09-07, 0d
     Thesis submitted                    :milestone, m6, 2026-09-15, 0d
 ```

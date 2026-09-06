@@ -1,0 +1,127 @@
+\chapter{Knowledge-Graph Extension}
+\label{chap:kg}
+
+\section{Relationship to FAIR Jupyter}
+
+The knowledge-graph component extends rather than replaces FAIR Jupyter. The upstream project provides the REPRODUCE-ME-based ontology, mappings for its published reproducibility dataset, and a Morph-KGC materialisation process. The cross-platform extension adds a separate ontology module and seven mappings for the working pipeline tables. Existing mapping files remain useful for publication and article-centred data; the pipeline mappings cover resources, operational results, and notebook-classification activities that were not represented by the original GitHub-oriented model.
+
+This distinction matters when interpreting the final graph. It is a newly materialised graph produced from the local working database, but its vocabulary is designed as an extension of the FAIR Jupyter semantic layer. The build does not download a pre-existing materialised graph and append triples to it. Instead, it combines the extension ontology with newly generated fragments every time the builder runs.
+
+\section{Relational Export}
+
+Morph-KGC can consume several source types, but the existing FAIR Jupyter workflow uses CSV. A Python exporter therefore bridges SQLite and the mapping layer. Seven explicit SQL queries select and rename columns from repositories, metadata, notebooks, runs, executions, reproducibility metrics, and classifications. Explicit queries are preferable to \texttt{SELECT *} because they define a stable mapping contract and can add derived values such as external URLs, effective categories, and resource-type IRIs.
+
+The exporter streams rows in batches rather than retaining a complete table in memory. Column names are taken from the cursor description and written as the header. A batch size suitable for SQLite reduces memory use while avoiding one write call per row. The output directory is created when necessary, and each exported count is printed for later comparison with the graph build summary.
+
+\begin{table}[ht]
+\centering
+\caption{Pipeline CSV exports and semantic purpose.}
+\label{tab:csv-mappings}
+\small
+\begin{tabularx}{\textwidth}{@{}p{5.2cm}X@{}}
+\toprule
+CSV file & Main RDF content\\
+\midrule
+\path{repositories.csv} & resource type, label, identifier, URL, platform, notebook/setup/requirement counts\\
+\path{repository_metadata.csv} & title, description, creator, licence, keywords, DOI, source dates, fetch time\\
+\path{notebooks.csv} & notebook identity, language, and repository relationship\\
+\path{repository_runs.csv} & processing activity, status, message, timing, and repository relationship\\
+\path{notebook_executions.csv} & execution activity, notebook/run links, duration, errors, and cell counts\\
+\path{notebook_reproducibility_metrics.csv} & result entity, execution relationship, comparison counts, and score\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Ontology Model}
+
+The ontology is identified by the \texttt{https://w3id.org/notebookfair} namespace and imports REPRODUCE-ME. It reuses PROV-O, DOAP, Dublin Core Terms, Schema.org, and RDF/RDFS concepts. Reuse reduces vocabulary duplication and makes the new assertions understandable to software that already recognises these standards.
+
+\subsection{Resource Classes}
+
+\texttt{RepositoryResource} is the common parent for a source-code repository or archived record processed by the pipeline. It is a subclass of \texttt{prov:Entity}. The neutral name is retained for compatibility with the relational table, but its definition is intentionally broader than a Git repository.
+
+\path{GitRepositoryResource} is a subclass of both \path{RepositoryResource} and \path{doap:GitRepository}. GitHub and Codeberg rows use this type. \path{ArchivedResearchRecord} is also a subclass of \path{RepositoryResource}, but is declared disjoint with the Git class. Zenodo rows use the archived type. The disjointness statement documents a central conceptual correction: the ability to process extracted files does not make the original record a Git remote.
+
+\texttt{RepositoryPlatform} is a subclass of \texttt{prov:Agent}. The ontology defines named individuals for GitHub, Codeberg, and Zenodo. A resource links to one of these individuals through \texttt{hostedOnPlatform}, which specialises \texttt{prov:wasAttributedTo}.
+
+\subsection{Notebook and Activity Classes}
+
+\texttt{NotebookResource} specialises the REPRODUCE-ME notebook class. It is connected to its parent resource through \texttt{containsNotebook} and the inverse \texttt{isNotebookOf}. \texttt{RepositoryRun} and \texttt{NotebookExecution} are PROV activities. A resource \texttt{hasRun}; a run \texttt{hasExecution}; and an execution records the \texttt{executedNotebook}. These relations permit a resource with several attempts and a run with several notebook executions without duplicating the resource.
+
+\texttt{ReproducibilityResult} is a PROV entity generated by an execution. The forward property is \texttt{hasReproducibilityResult}; its inverse \texttt{resultOfExecution} specialises \texttt{prov:wasGeneratedBy}. Comparison counts and score are attached to this result instead of the repository, because multiple executions may produce different results.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.92\textwidth}
+\centering
+\texttt{RepositoryPlatform}\\
+$\uparrow$ \texttt{hostedOnPlatform}\\[0.15cm]
+\texttt{RepositoryResource} $\rightarrow$ \texttt{NotebookResource} \quad (\texttt{containsNotebook})\\
+$\downarrow$ \texttt{hasRun} \hspace{4.8cm} $\uparrow$ \texttt{executedNotebook}\\
+\texttt{RepositoryRun} $\rightarrow$ \texttt{NotebookExecution} $\rightarrow$ \texttt{ReproducibilityResult}\\
+\hspace{2.4cm}\texttt{hasExecution}\hspace{2.5cm}\texttt{hasReproducibilityResult}
+\end{minipage}}
+\caption{Core classes and object properties in the extension ontology.}
+\label{fig:ontology-core}
+\end{figure}
+
+\subsection{Data Properties}
+
+Resource properties include a repository identifier and counts for notebooks, setup files, and requirement files. Platform individuals have a platform name. Notebook resources have a language. Run properties capture status and duration. Execution properties capture execution status, duration, total/executed code cells, error type, error category, message, cell index, and error count. Result properties capture identical, different, and nondeterministic cell counts plus a decimal reproducibility score.
+
+Descriptive metadata uses Dublin Core where possible: title, description, creator, licence, subject, identifier, created, and modified. The extension adds \texttt{metadataFetchedAt} because the retrieval time describes the local pipeline observation rather than the source resource.
+
+\section{YARRRML and RML Mappings}
+
+Each CSV has a dedicated YARRRML source file. Repository mappings create platform individuals and repository resources, choose the class IRI already calculated by the exporter, and connect the resource to its platform. Metadata mappings reuse the repository subject IRI, so descriptive properties enrich the existing resource rather than creating a disconnected metadata node.
+
+Notebook mappings create notebook IRIs based on database IDs and emit both notebook-to-repository and repository-to-notebook links. Run mappings follow the same bidirectional strategy. Execution mappings connect executions to runs and notebooks. Metric mappings create result IRIs and link them to executions.
+
+Stable IRI templates are essential for joining graphs generated from separate files. The templates use database IDs under paths such as:
+
+\begin{lstlisting}[caption={Representative IRI templates.}]
+https://w3id.org/notebookfair/repository/{id}
+https://w3id.org/notebookfair/notebook/{id}
+https://w3id.org/notebookfair/run/{id}
+https://w3id.org/notebookfair/execution/{id}
+https://w3id.org/notebookfair/result/{id}
+https://w3id.org/notebookfair/platform/{platform}
+\end{lstlisting}
+
+The readable YARRRML rules are compiled into RML Turtle files under a pipeline mapping directory. The builder validates that exactly seven compiled mappings are present. This check prevents a silently incomplete graph when a file has not been compiled or copied.
+
+\section{Materialisation Process}
+
+\texttt{build\_pipeline\_kg.py} orchestrates the current build. It resolves paths relative to the FAIR Jupyter directory, checks that Morph-KGC is installed, parses the ontology with RDFLib, and parses every RML mapping as Turtle. Unless \texttt{--skip-export} is supplied, it invokes the CSV exporter against the working database.
+
+The output area contains configuration, logs, and split-graph directories. Old files matching the generated patterns are removed so current counts cannot be confused with stale fragments. For each mapping, the builder writes a Morph-KGC configuration that points to one RML file and one N-Triples output. It measures execution time, preserves standard output and error in the mapping log, and parses the generated graph to count triples.
+
+After all mappings succeed, RDFLib loads the extension ontology and each graph fragment into one graph and serialises \path{notebookfair-pipeline.nt}. A JSON summary records build time, source database, ontology path, combined graph path, total unique triples, CSV row counts, and per-mapping counts and durations.
+
+The current build flow is:
+
+\begin{center}
+SQLite $\rightarrow$ seven CSV files $\rightarrow$ YARRRML $\rightarrow$ RML $\rightarrow$ Morph-KGC\\
+$\rightarrow$ seven N-Triples fragments $\rightarrow$ combined graph $\rightarrow$ SPARQL tests.
+\end{center}
+
+\section{SPARQL Competency Questions}
+
+Competency queries express the questions the graph must answer. They include:
+
+\begin{itemize}
+  \item list resources and their hosting platforms;
+  \item distinguish Git repository resources from archived research records;
+  \item find notebooks contained in a selected resource;
+  \item trace a repository run to its executions and results;
+  \item group run or execution status by platform;
+  \item retrieve DOI and descriptive metadata for Zenodo resources;
+  \item detect any Zenodo resource incorrectly typed as a Git repository;
+  \item obtain reproducibility scores and cell-difference counts.
+\end{itemize}
+
+A zero-result query can be a successful constraint test, for example when it asks for resources that are simultaneously Zenodo records and Git repository resources. Other queries require non-empty results and known platform counts. The tests should therefore define expected semantics per query instead of treating every empty result as a failure.
+
+\section{Current Status}
+
+The ontology, exporter, seven YARRRML mappings, compiled RML mappings, builder, and initial SPARQL tests have produced a complete first graph version. The seventh mapping represents notebook-classification activities, both automated categories, agreement status, model provenance, warnings, and human decisions. The graph is not considered final in this draft. Remaining work includes reviewing domains and ranges, checking all inverse relations, confirming literal datatypes, aligning the extension more closely with upstream FAIR Jupyter naming, expanding SPARQL assertions, and rebuilding after the final experiments. This status is reported explicitly so that a successful materialisation is not mistaken for a completed semantic evaluation.
