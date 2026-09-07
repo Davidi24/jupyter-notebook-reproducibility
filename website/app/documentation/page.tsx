@@ -1,15 +1,16 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon, PageHeading } from '@/components/AppShell';
 
-type DocTab = 'pipeline' | 'ai-classification' | 'knowledge-graph';
+type DocTab = 'pipeline' | 'ai-classification' | 'evaluation' | 'knowledge-graph';
 
 const TABS: { id: DocTab; label: string; icon: string }[] = [
   { id: 'pipeline', label: 'Pipeline', icon: 'terminal' },
   { id: 'ai-classification', label: 'Classification', icon: 'spark' },
+  { id: 'evaluation', label: 'Evaluation', icon: 'chart' },
   { id: 'knowledge-graph', label: 'Knowledge graph', icon: 'nodes' },
 ];
 
@@ -22,6 +23,10 @@ const HEADINGS: Record<DocTab, { title: string; subtitle: string }> = {
     title: 'Notebook classification',
     subtitle: 'Exactly how imports, notebook text, code patterns, and outputs become a category.',
   },
+  evaluation: {
+    title: 'Evaluation methodology',
+    subtitle: 'How classification quality and cross-platform reproducibility are measured and reported.',
+  },
   'knowledge-graph': {
     title: 'Knowledge graph',
     subtitle: 'RDF knowledge graph construction and querying.',
@@ -29,7 +34,7 @@ const HEADINGS: Record<DocTab, { title: string; subtitle: string }> = {
 };
 
 function isDocTab(value: string | null): value is DocTab {
-  return value === 'pipeline' || value === 'ai-classification' || value === 'knowledge-graph';
+  return value === 'pipeline' || value === 'ai-classification' || value === 'evaluation' || value === 'knowledge-graph';
 }
 
 function DocsHeader() {
@@ -586,6 +591,206 @@ function AiClassificationSection() {
   );
 }
 
+const EVALUATION_METRICS = [
+  {
+    name: 'Accuracy',
+    formula: 'correct predictions / all predictions',
+    uses: 'The final human label and the category predicted by the classifier.',
+    tells: 'The overall percentage of notebooks assigned to the correct category.',
+  },
+  {
+    name: 'Precision',
+    formula: 'true positives / all predicted positives',
+    uses: 'One category at a time; for example, every notebook predicted as machine learning.',
+    tells: 'When the system chooses a category, how often that choice is correct.',
+  },
+  {
+    name: 'Recall',
+    formula: 'true positives / all actual positives',
+    uses: 'One category at a time; for example, every notebook humans labelled machine learning.',
+    tells: 'How many notebooks belonging to a category the system successfully finds.',
+  },
+  {
+    name: 'Macro F1',
+    formula: 'mean of every category\'s F1 score',
+    uses: 'F1 combines precision and recall, then gives every category equal weight.',
+    tells: 'Whether the classifier performs consistently, even when some categories are less common.',
+  },
+  {
+    name: 'Confusion matrix',
+    formula: 'counts grouped by actual label × predicted label',
+    uses: 'Human labels as rows and classifier predictions as columns.',
+    tells: 'Exactly which categories are confused with one another. The diagonal is correct; other cells are errors.',
+  },
+  {
+    name: 'Rule–LLM disagreement',
+    formula: 'different rule/LLM labels / jointly classified notebooks',
+    uses: 'Only notebooks for which both classification methods produced a result.',
+    tells: 'How often the two automated methods need reconciliation or human review.',
+  },
+  {
+    name: 'Cohen\'s kappa',
+    formula: '(observed agreement − chance agreement) / (1 − chance agreement)',
+    uses: 'Two people independently labelling the same notebooks before comparing answers.',
+    tells: 'Human agreement after removing agreement that could happen by chance; 1 is perfect agreement.',
+  },
+];
+
+const EVALUATION_CATEGORIES = [
+  { short: 'DP', label: 'Data preparation', precision: '70.0%', recall: '77.8%', f1: '73.7%', support: 9 },
+  { short: 'DA', label: 'Data analysis', precision: '75.0%', recall: '66.7%', f1: '70.6%', support: 9 },
+  { short: 'VIZ', label: 'Visualization', precision: '75.0%', recall: '75.0%', f1: '75.0%', support: 8 },
+  { short: 'ML', label: 'Machine learning', precision: '77.8%', recall: '77.8%', f1: '77.8%', support: 9 },
+  { short: 'SIM', label: 'Simulation', precision: '100.0%', recall: '75.0%', f1: '85.7%', support: 8 },
+  { short: 'TUT', label: 'Tutorial', precision: '54.5%', recall: '66.7%', f1: '60.0%', support: 9 },
+  { short: 'SD', label: 'Software development', precision: '75.0%', recall: '75.0%', f1: '75.0%', support: 8 },
+];
+
+const CONFUSION_MATRIX = [
+  [7, 1, 0, 0, 0, 1, 0],
+  [1, 6, 1, 0, 0, 1, 0],
+  [0, 1, 6, 0, 0, 1, 0],
+  [1, 0, 0, 7, 0, 1, 0],
+  [0, 0, 0, 1, 6, 0, 1],
+  [1, 0, 1, 0, 0, 6, 1],
+  [0, 0, 0, 1, 0, 1, 6],
+];
+
+const PLATFORM_EVALUATION = [
+  { platform: 'GitHub', attempted: 20, acquired: '19 (95%)', clean: '12 (63.2%)', errors: '5 (26.3%)', failed: '2 (10.5%)', score: '0.78', time: '84 s', issue: 'Missing data files' },
+  { platform: 'Codeberg', attempted: 20, acquired: '18 (90%)', clean: '10 (55.6%)', errors: '5 (27.8%)', failed: '3 (16.7%)', score: '0.71', time: '92 s', issue: 'Dependency resolution' },
+  { platform: 'Zenodo', attempted: 20, acquired: '15 (75%)', clean: '7 (46.7%)', errors: '5 (33.3%)', failed: '3 (20.0%)', score: '0.62', time: '101 s', issue: 'Invalid record or archive' },
+];
+
+function EvaluationSection() {
+  const [view, setView] = useState<'classification' | 'reproducibility'>('classification');
+
+  return (
+    <div className="evaluation-docs">
+      <div className="evaluation-view-bar">
+        <div className="evaluation-view-toggle" role="tablist" aria-label="Evaluation report section">
+          <button type="button" role="tab" aria-selected={view === 'classification'} className={view === 'classification' ? 'active' : ''} onClick={() => setView('classification')}><Icon name="spark" size={15} />Classification</button>
+          <button type="button" role="tab" aria-selected={view === 'reproducibility'} className={view === 'reproducibility' ? 'active' : ''} onClick={() => setView('reproducibility')}><Icon name="chart" size={15} />Reproducibility by platform</button>
+        </div>
+        <span className="evaluation-simulated-pill">ILLUSTRATIVE n=60</span>
+      </div>
+
+      {view === 'classification' && <>
+      <section className="panel evaluation-panel">
+        <div className="panel-heading">
+          <div><h2>Classification evaluation</h2><p>Compare automated predictions with independent human labels</p></div>
+        </div>
+        <div className="evaluation-question-grid single">
+          <article><span>01 · Classification</span><h3>Did the system choose the correct category?</h3><p>Compare rule and LLM predictions with labels assigned manually by human reviewers.</p><strong>Unit measured: notebook</strong></article>
+        </div>
+      </section>
+
+      <section className="panel evaluation-panel">
+        <div className="panel-heading">
+          <div><h2>What each classification metric calculates</h2><p>Use the same manually labelled notebooks for every classifier comparison</p></div>
+        </div>
+        <div className="evaluation-definition-grid">
+          {EVALUATION_METRICS.map((metric) => (
+            <article key={metric.name}>
+              <div><h3>{metric.name}</h3><code>{metric.formula}</code></div>
+              <dl><div><dt>Uses</dt><dd>{metric.uses}</dd></div><div><dt>Tells you</dt><dd>{metric.tells}</dd></div></dl>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel evaluation-panel">
+        <div className="panel-heading">
+          <div><h2>Illustrative classification result</h2><p>Example values for a simulated, manually labelled set of 60 notebooks</p></div>
+        </div>
+        <div className="evaluation-metric-strip">
+          <article><span>Rule accuracy</span><strong>73.3%</strong><small>44 of 60 correct</small></article>
+          <article><span>Rule macro F1</span><strong>74.0%</strong><small>Equal weight per category</small></article>
+          <article><span>LLM accuracy</span><strong>80.0%</strong><small>Requires the LLM to be enabled</small></article>
+          <article><span>Rule–LLM disagreement</span><strong>21.7%</strong><small>13 of 60 predictions differ</small></article>
+          <article><span>Cohen&apos;s kappa</span><strong>0.82</strong><small>Two independent reviewers</small></article>
+        </div>
+        <div className="evaluation-table-wrap">
+          <table className="evaluation-table">
+            <caption>Precision, recall, and F1 by category</caption>
+            <thead><tr><th>Category</th><th>Precision</th><th>Recall</th><th>F1 score</th><th>Support</th></tr></thead>
+            <tbody>{EVALUATION_CATEGORIES.map((category) => (
+              <tr key={category.short}><td><b>{category.short}</b><span>{category.label}</span></td><td>{category.precision}</td><td>{category.recall}</td><td><strong>{category.f1}</strong></td><td>{category.support}</td></tr>
+            ))}</tbody>
+            <tfoot><tr><td>Macro average</td><td>75.3%</td><td>73.4%</td><td>74.0%</td><td>60</td></tr></tfoot>
+          </table>
+        </div>
+      </section>
+
+      <section className="panel evaluation-panel">
+        <div className="panel-heading">
+          <div><h2>Confusion matrix</h2><p>Rows are human labels; columns are rule-based predictions</p></div>
+        </div>
+        <div className="confusion-layout">
+          <div className="confusion-axis-y">Actual human label</div>
+          <div className="evaluation-table-wrap confusion-wrap">
+            <table className="confusion-table">
+              <caption>Predicted category →</caption>
+              <thead><tr><th aria-label="Actual category" />{EVALUATION_CATEGORIES.map((category) => <th key={category.short} title={category.label}>{category.short}</th>)}</tr></thead>
+              <tbody>{CONFUSION_MATRIX.map((row, rowIndex) => (
+                <tr key={EVALUATION_CATEGORIES[rowIndex].short}>
+                  <th scope="row" title={EVALUATION_CATEGORIES[rowIndex].label}>{EVALUATION_CATEGORIES[rowIndex].short}</th>
+                  {row.map((value, columnIndex) => <td className={rowIndex === columnIndex ? 'correct' : value > 0 ? 'mistake' : ''} key={`${rowIndex}-${columnIndex}`}>{value}</td>)}
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+          <div className="confusion-legend"><span><i className="correct" />Diagonal = correct</span><span><i className="mistake" />Off-diagonal = confused category</span><p>Example: the first row shows 7 data-preparation notebooks classified correctly, 1 mistaken for data analysis, and 1 mistaken for a tutorial.</p></div>
+        </div>
+      </section>
+
+      </>}
+
+      {view === 'reproducibility' && <>
+      <section className="panel evaluation-panel">
+        <div className="panel-heading">
+          <div><h2>What is being evaluated?</h2><p>Platform quality is measured at acquisition and execution level</p></div>
+        </div>
+        <div className="evaluation-question-grid single">
+          <article><span>02 · Reproducibility</span><h3>Can the notebook be acquired and re-executed?</h3><p>Compare acquisition success, clean execution, output similarity, running time, and failure reasons across GitHub, Codeberg, and Zenodo.</p><strong>Units reported: repository and notebook</strong></article>
+        </div>
+      </section>
+
+      <section className="panel evaluation-panel">
+        <div className="panel-heading">
+          <div><h2>Reproducibility across platforms</h2><p>Measure acquisition separately from execution so download failures are not hidden inside notebook scores</p></div>
+        </div>
+        <div className="evaluation-table-wrap">
+          <table className="evaluation-table platform-table">
+            <caption>Balanced sample: 20 repositories per platform</caption>
+            <thead><tr><th>Platform</th><th>Attempted</th><th>Acquired</th><th>Clean execution</th><th>Ran with errors</th><th>Execution failed</th><th>Median score</th><th>Median time</th><th>Most common issue</th></tr></thead>
+            <tbody>{PLATFORM_EVALUATION.map((platform) => (
+              <tr key={platform.platform}><td><strong>{platform.platform}</strong></td><td>{platform.attempted}</td><td>{platform.acquired}</td><td>{platform.clean}</td><td>{platform.errors}</td><td>{platform.failed}</td><td><strong>{platform.score}</strong></td><td>{platform.time}</td><td>{platform.issue}</td></tr>
+            ))}</tbody>
+          </table>
+        </div>
+        <div className="evaluation-denominators">
+          <strong>Read the denominators carefully</strong>
+          <p><b>Acquisition rate</b> uses all attempted repositories. Execution percentages use only acquired repositories. The median reproducibility score uses only comparable executed notebooks. Acquisition failures remain a separate reported result; they are not silently converted to a score of zero.</p>
+        </div>
+      </section>
+
+      <section className="panel evaluation-panel">
+        <div className="panel-heading"><div><h2>Reproducibility evaluation procedure</h2><p>How the three platforms are compared fairly</p></div></div>
+        <ol className="evaluation-procedure">
+          <li><span>1</span><div><strong>Freeze a balanced sample</strong><p>Select 20 unique repositories per platform using the same documented inclusion rules.</p></div></li>
+          <li><span>2</span><div><strong>Acquire every repository</strong><p>Record whether cloning or downloading succeeds before notebook execution begins.</p></div></li>
+          <li><span>3</span><div><strong>Run the same pipeline</strong><p>Use the same container limits, dependency strategy, timeout, and eight pipeline stages for every platform.</p></div></li>
+          <li><span>4</span><div><strong>Record every outcome</strong><p>Keep clean runs, runs with cell errors, execution failures, output scores, duration, and failure reasons.</p></div></li>
+          <li><span>5</span><div><strong>Aggregate per repository</strong><p>Use the median notebook score per repository so repositories with many notebooks do not dominate.</p></div></li>
+          <li><span>6</span><div><strong>Compare the platforms</strong><p>Report acquisition rate, execution outcomes, median reproducibility score, median time, and common failure causes.</p></div></li>
+        </ol>
+      </section>
+      </>}
+    </div>
+  );
+}
+
 function KnowledgeGraphSection() {
   return (
     <div className="coming-soon-wrap">
@@ -620,6 +825,7 @@ function DocumentationPageContent() {
           <div style={{ marginTop: 20 }}>
             {tab === 'pipeline' && <PipelineSection />}
             {tab === 'ai-classification' && <AiClassificationSection />}
+            {tab === 'evaluation' && <EvaluationSection />}
             {tab === 'knowledge-graph' && <KnowledgeGraphSection />}
           </div>
         </div>
