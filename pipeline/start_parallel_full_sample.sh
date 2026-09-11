@@ -3,7 +3,7 @@
 # Start the evaluation-sample pipeline in parallel and leave it running.
 #
 # Usage from the project root:
-#   bash pipeline/start_parallel_full_sample_v7.sh
+#   bash pipeline/start_parallel_full_sample.sh
 #
 # Optional environment variables:
 #   WORKER_COUNT=4              # default: 4
@@ -22,7 +22,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-RUNNER="$SCRIPT_DIR/run_full_sample_v7.sh"
+RUNNER="$SCRIPT_DIR/run_full_sample.sh"
 
 WORKER_COUNT="${WORKER_COUNT:-4}"
 ALLOW_DUPLICATE="${ALLOW_DUPLICATE:-0}"
@@ -38,9 +38,9 @@ if [ ! -f "$RUNNER" ]; then
 fi
 
 if [ "$ALLOW_DUPLICATE" != "1" ]; then
-    existing="$(pgrep -af "run_full_sample_v7.sh" || true)"
+    existing="$(pgrep -af "run_full_sample.sh" || true)"
     if [ -n "$existing" ]; then
-        echo "[ERROR] run_full_sample_v7.sh already appears to be running:"
+        echo "[ERROR] run_full_sample.sh already appears to be running:"
         echo "$existing"
         echo ""
         echo "Use ALLOW_DUPLICATE=1 only if you are sure this is a stale/irrelevant match."

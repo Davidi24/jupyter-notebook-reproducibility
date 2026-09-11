@@ -68,6 +68,21 @@ set -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# main.sh exports this before sourcing repo.sh/notebooks.sh, but this script
+# never did — so every "python3 .../analysis/compare_notebook.py" call that
+# notebooks.sh's compare_notebook_outputs_json() makes (via repo.sh's
+# compare_notebook_outputs, called right before every repo is marked SUCCESS)
+# has been dying with "ModuleNotFoundError: No module named 'analysis'"
+# instead of writing to notebook_executions / notebook_reproducibility_metrics.
+# That failure happens inside a `python3 ... | tee -a "$LOG_FILE"` pipeline
+# that nothing checks the exit code of, so it's been silent: the repository_run
+# still finalizes as SUCCESS with zero real reproducibility data recorded for
+# it. Confirmed directly in data/output/logs/5453_urm.py.log (and it is NOT
+# platform-specific — every repo processed by this script since this run
+# started on Sept 6 has 0 rows in notebook_executions, GitHub included; only
+# repos from the old Feb 2026 run, which went through main.sh, have real data).
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
 # Load the PATH/env setup setup_full_run_env.sh wrote (puts ~/bin — where
 # sqlite3/jq get extracted to when there's no root to apt-install them — on
 # PATH, plus pyenv's shims). Done here, unconditionally, so this script works
@@ -151,13 +166,84 @@ source "$PROJECT_ROOT/src/repo.sh"
 # Both are no-ops (effectively) when WORKER_COUNT=1, aside from the harmless
 # WAL/busy_timeout pragmas.
 # -----------------------------------------------------------------------------
+# IMPORTANT: this must be ".timeout 30000" (a sqlite3-CLI meta-command), NOT
+# "-cmd 'PRAGMA busy_timeout=30000;'". The PRAGMA form PRINTS its resulting
+# value ("30000") to stdout on every single invocation, before the real
+# query's output. That silently corrupted every `existing_id=$(sqlite3 ...)`
+# capture in get_or_create_repo_id() (src/repo.sh): for a brand-new repo the
+# real SELECT legitimately returns nothing, but the leaked "30000" made the
+# captured value non-empty, so the function believed the repo already
+# existed (id 30000) and returned that instead of inserting a real row.
+# Every repo in the run got REPO_ID=30000, no `repositories` row was ever
+# created, and every one of those runs wrote an orphaned `repository_runs`
+# row pointing at the nonexistent id 30000. Confirmed by direct reproduction
+# with the real sqlite3 CLI; ".timeout" is a meta-command, not SQL, so it
+# never prints anything.
 sqlite3() {
-    command sqlite3 -cmd "PRAGMA busy_timeout=30000;" "$@"
+    command sqlite3 -cmd ".timeout 30000" "$@"
 }
 # NOTE: journal_mode=WAL is enabled further down, AFTER ensure_working_db —
 # calling sqlite3 on $DB_FILE this early would create an empty database file
 # before ensure_working_db gets a chance to check "does it exist yet?" and
 # copy the real corpus over, silently leaving you with an empty DB.
+
+# -----------------------------------------------------------------------------
+# validate_zenodo() override (src/checks.sh normally defines this).
+#
+# Bug found live in this run: 3 confirmed-real, confirmed-public Zenodo
+# records (e.g. https://zenodo.org/records/11180681, "Time Series Data
+# Preparation for CNN and LSTM" — verified by hand to exist, be open-access,
+# and contain real notebooks) were all marked INVALID_ZENODO_RECORD.
+#
+# Cause: the original validate_zenodo() always sends
+# "Authorization: Bearer $ZENODO_TOKEN" to Zenodo's API, even for fully
+# public records that don't need auth at all. Zenodo's Records API works
+# unauthenticated for open-access records — auth is only needed for
+# restricted/embargoed ones. If the token is malformed or wrong in any way,
+# Zenodo returns 401 Unauthorized, curl's `-f` treats that as failure, and a
+# perfectly good record gets marked invalid before it's ever actually
+# checked. (Confirmed against Zenodo's own API docs: unauth access works for
+# public records; an invalid token gets a 401.)
+#
+# Fix: try unauthenticated first (covers the ~all-public case and can't be
+# broken by a bad token), and only fall back to sending the token if that
+# first attempt fails (covers a genuinely restricted/embargoed record, where
+# a *working* token would be needed anyway).
+# -----------------------------------------------------------------------------
+validate_zenodo() {
+    local record_url="$1"
+    local record_id
+
+    if [[ ! "$record_url" =~ ^https?://(www\.)?zenodo\.org/records?/([0-9]+)([/?#].*)?$ ]]; then
+        log "[ERROR] Invalid Zenodo record URL - $record_url"
+        return 1
+    fi
+    record_id="${BASH_REMATCH[2]}"
+
+    log "[REPO] Validating Zenodo record (unauthenticated): $record_id"
+    if curl -fsS --retry 2 --retry-all-errors --retry-delay 1 \
+        --connect-timeout 10 --max-time 30 \
+        -H "Accept: application/json" \
+        "https://zenodo.org/api/records/$record_id" >/dev/null 2>&1; then
+        log "[REPO] Zenodo record is valid."
+        return 0
+    fi
+
+    if [ -n "${ZENODO_TOKEN:-}" ]; then
+        log "[REPO] Unauthenticated check failed, retrying with ZENODO_TOKEN: $record_id"
+        if curl -fsS --retry 2 --retry-all-errors --retry-delay 1 \
+            --connect-timeout 10 --max-time 30 \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer $ZENODO_TOKEN" \
+            "https://zenodo.org/api/records/$record_id" >/dev/null 2>&1; then
+            log "[REPO] Zenodo record is valid (authenticated)."
+            return 0
+        fi
+    fi
+
+    log "[ERROR] Zenodo record does not exist or is unreachable - $record_url"
+    return 1
+}
 
 if [ "$WORKER_COUNT" -gt 1 ]; then
     if command -v flock >/dev/null 2>&1; then
@@ -249,6 +335,22 @@ if $IS_PRIMARY_WORKER; then
         sqlite3 "$DB_FILE" "DELETE FROM repository_runs WHERE run_status='METADATA_FETCH_FAILED';"
         echo "[SETUP] Cleared $STALE_FAILED run(s) that previously failed only on the metadata"
         echo "        lookup (rate-limit related) — those repos will be retried this pass."
+    fi
+
+    # There is no per-repo timeout anywhere in this pipeline, so a repo that
+    # hangs (a slow/broken install, a notebook cell that never returns, etc.)
+    # can leave its run_status stuck at RUNNING forever — and the "already has
+    # a run" skip further down would then permanently skip it, even after you
+    # kill and restart the worker. Only clean up rows that have been RUNNING
+    # for a genuinely excessive time (2h — well above the ~50min slowest
+    # successful run seen in this dataset so far), so this can never touch a
+    # row that belongs to another worker that is still legitimately, actively
+    # working on it right now.
+    STALE_RUNNING=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM repository_runs WHERE run_status='RUNNING' AND started_at < datetime('now','-2 hours');" 2>/dev/null || echo 0)
+    if [ "${STALE_RUNNING:-0}" -gt 0 ]; then
+        sqlite3 "$DB_FILE" "DELETE FROM repository_runs WHERE run_status='RUNNING' AND started_at < datetime('now','-2 hours');"
+        echo "[SETUP] Cleared $STALE_RUNNING run(s) stuck in RUNNING for >2h (abandoned by a"
+        echo "        killed/crashed previous worker) — those repos will be retried this pass."
     fi
 else
     BACKUP="(taken by worker 0)"

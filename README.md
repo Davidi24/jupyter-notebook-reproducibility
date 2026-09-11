@@ -1,232 +1,180 @@
 # Cross-Platform Jupyter Notebook Reproducibility Pipeline
 
-This repository contains the implementation and thesis materials for a reproducibility pipeline for Jupyter notebooks. The project extends the original FAIR Jupyter workflow so that notebook resources from GitHub, Codeberg, and Zenodo can be processed, classified, evaluated, and represented in a knowledge graph.
+A reproducibility pipeline for Jupyter notebooks collected from **GitHub, Codeberg, and Zenodo**.
 
-The repository contains the pipeline code, evaluation data, generated result samples, knowledge graph material, tests, a web dashboard, and the LaTeX thesis sources.
+The pipeline can:
+
+- execute notebooks
+- evaluate reproducibility
+- classify notebooks
+- store results in SQLite
+- generate a FAIR Jupyter Knowledge Graph
+- visualize results through a web dashboard
+
+---
 
 ## Repository Structure
 
-```text
-analysis/   Python utilities for notebook analysis, comparison, and classification
-binder/     Binder and container setup files for reproducible environments
-config/     Central shell configuration used by the pipeline
-data/       Evaluation data, pipeline input files, and pipeline output files
-docs/       Project documentation and supporting documents
-kg/         FAIR Jupyter knowledge graph extension, mappings, ontology, and SPARQL queries
-pipeline/   Pipeline entry scripts, batch runners, and web-runner bridge scripts
-src/        Core shell modules for repository handling, execution, logging, and classification
-tests/      Shell and Python tests for pipeline behavior and knowledge graph checks
-thesis/     LaTeX thesis source files and thesis template material
-website/    Next.js dashboard for browsing repositories, notebooks, and results
-```
+| Folder | Contains |
+|---|---|
+| `analysis/` | Notebook analysis, comparison, and classification |
+| `binder/` | Binder and container configuration |
+| `config/` | Pipeline configuration |
+| `data/` | Input data and generated results |
+| `docs/` | Project documentation |
+| `kg/` | Knowledge Graph mappings, ontology, and queries |
+| `pipeline/` | Batch and parallel pipeline scripts |
+| `src/` | Core pipeline modules |
+| `tests/` | Pipeline and Knowledge Graph tests |
+| `thesis/` | LaTeX thesis files |
+| `website/` | Next.js results dashboard |
 
-Important data folders:
+### Data
 
-```text
-data/input/    Input lists used by the pipeline
-data/output/   Generated pipeline results, logs, comparison files, and working databases
-```
+| Path | Contains |
+|---|---|
+| `data/input/` | Input lists used by the pipeline |
+| `data/output/` | Generated pipeline results |
 
-## Requirements
+---
 
-The main pipeline is written for a Bash-like environment. On Windows, run it from WSL or another shell that supports Bash commands.
+# Running the Project
 
-Required command-line tools:
+The project consists of three main parts:
 
-```text
-python3
-sqlite3
-jq
-unzip
-git
-pyenv
-jupyter
-```
+**1. Execute → 2. Classify → 3. Build Knowledge Graph**
 
-Python dependencies are listed in:
+Classification runs automatically during execution.  
+The Knowledge Graph is built manually after execution.
 
-```text
-requirements.txt
-```
+---
 
-Install them with:
+## 1. Execute
 
-```bash
-pip install -r requirements.txt
-```
+Run all commands from the repository root.
 
-## Configuration
+### Install dependencies
 
-Optional environment variables are documented in:
+    pip install -r requirements.txt
 
-```text
-.env.example
-```
+### Start the pipeline
 
-To use local overrides, copy it to `.env` and adjust the values:
+    bash run.sh
 
-```bash
-cp .env.example .env
-source .env
-```
+You will be asked to choose:
 
-Common options:
+    1. Single repo mode
+    2. Batch mode
 
-```text
-TARGET_COUNT                 Number of repositories to process in batch mode
-DB_FILE                      Custom SQLite database path
-CLASSIFICATION_ENABLED       Enable or disable notebook classification
-CLASSIFICATION_RULE_ONLY     Use rule-based classification only
-CLASSIFICATION_MODEL         Local Ollama model name for AI-assisted classification
-CLASSIFICATION_OLLAMA_URL    Ollama API URL
-```
+**If you choose `1`:**
 
-By default, pipeline input and output are stored under:
+Enter a repository URL and notebook path manually.
 
-```text
-data/input/
-data/output/
-```
+**If you choose `2`:**
 
-## How to Run the Pipeline
+Repositories are processed from the configured SQLite database.
 
-From the repository root, run:
+### Larger Runs
 
-```bash
-bash run.sh
-```
+Run the full evaluation sample with one worker:
 
-The script checks required tools and then starts the main pipeline menu.
+    bash pipeline/run_full_sample.sh
 
-You can choose:
+Run the sample with multiple workers:
 
-```text
-1. Single repo mode
-   Enter one repository URL and notebook path manually.
+    bash pipeline/start_parallel_full_sample.sh
 
-2. Batch mode
-   Process repositories from the SQLite database.
-```
+### Generated Output
 
-The main results are written to:
+| Path | Contains |
+|---|---|
+| `data/output/db/db.sqlite` | Processed repository, notebook, classification, and reproducibility results |
+| `data/output/logs/` | Pipeline execution logs |
+| `data/output/comparisons/` | Notebook output and reproducibility comparisons |
+| `data/output/cloned_repos/` | Repositories cloned during execution |
 
-```text
-data/output/db/db.sqlite
-data/output/logs/
-data/output/comparisons/
-data/output/cloned_repos/
-```
+---
 
-## Batch and Long Runs
+## 2. Classify
 
-The `pipeline/` folder contains helper scripts for larger runs:
+Classification runs **automatically** for every notebook processed by the pipeline.
 
-```text
-pipeline/run_full_sample.sh
-pipeline/run_full_sample_v6.sh
-pipeline/run_full_sample_v7.sh
-pipeline/run_full_sample_v8.sh
-pipeline/start_parallel_full_sample_v7.sh
-```
+Two classification methods are available:
 
-These scripts are used for larger evaluation batches and parallel execution experiments. Check the comments inside each script before running them, because some options are controlled through environment variables.
+### Rule-Based Classification
 
-## Notebook Classification
+Always runs by default.
 
-Notebook classification code is in:
+Implemented in:
 
-```text
-analysis/notebook_classification/
-```
+    analysis/notebook_classification/rules.py
 
-Documentation for the classification workflow is in:
+It classifies notebooks using imports and notebook text.
 
-```text
-docs/notebook-classification.md
-```
+### Local LLM Classification
 
-The classifier can run with rule-based logic only or with local Ollama assistance, depending on configuration.
+An optional second classification is performed using a local **Ollama** model.
 
-## Knowledge Graph
+If Ollama is unavailable, the pipeline continues normally using only the rule-based result.
 
-The FAIR Jupyter knowledge graph extension is stored in:
+Default model:
 
-```text
-kg/fairjupyter/
-```
+    gemma3:4b
 
-Important subfolders:
+### Classification Options
 
-```text
-kg/fairjupyter/mapping/        RML and YARRRML mappings
-kg/fairjupyter/ontology/       Ontology files
-kg/fairjupyter/pipeline_data/  CSV exports used for graph construction
-kg/fairjupyter/sparql_query/   SPARQL queries for validation and analysis
-```
+Disable classification completely:
 
-Run the knowledge graph test with:
+    CLASSIFICATION_ENABLED=false bash pipeline/run_full_sample.sh
 
-```bash
-bash tests/test_kg.sh
-```
+Use only rule-based classification:
 
-## Tests
+    CLASSIFICATION_RULE_ONLY=true bash pipeline/run_full_sample.sh
 
-Run individual tests from the repository root:
+### Optional: Set Up Ollama
 
-```bash
-bash tests/test_metadata.sh
-bash tests/test_notebook_classification.sh
-bash tests/test_pipeline_classification.sh
-bash tests/test_pipeline_hardening.sh
-bash tests/test_repo_discovery.sh
-bash tests/test_kg.sh
-```
+Install Ollama:
 
-Some tests may require WSL, Docker, pyenv, SQLite, or network access, depending on what they execute.
+    curl -fsSL https://ollama.com/install.sh | sh
 
-## Website Dashboard
+Pull the model:
 
-The web dashboard is in:
+    ollama pull gemma3:4b
 
-```text
-website/
-```
+Start Ollama:
 
-It is a Next.js application for viewing repository, notebook, classification, reproducibility, and knowledge graph information.
+    ollama serve &
 
-Typical local setup:
+Verify that it is running:
 
-```bash
-cd website
-pnpm install
-pnpm dev
-```
+    curl http://localhost:11434/api/tags
 
-## Thesis
+### Manual Classification
 
-Thesis materials are stored in:
+Classify one notebook:
 
-```text
-thesis/
-```
+    python3 -m analysis.notebook_classification classify <notebook.ipynb> --db-file data/output/db/db.sqlite --notebook-id <id>
 
-The main LaTeX project is:
+Create the review queue:
 
-```text
-thesis/my-thesis-latex/
-```
+    python3 -m analysis.notebook_classification review-queue --db-file data/output/db/db.sqlite --output review.csv
 
-The compiled root-level PDF is:
+Apply manual reviews:
 
-```text
-thesis.pdf
-```
+    python3 -m analysis.notebook_classification apply-reviews --db-file data/output/db/db.sqlite --input review.csv
 
-## License
+Evaluate classification:
 
-This project uses the license provided in:
+    python3 -m analysis.notebook_classification evaluate --db-file data/output/db/db.sqlite
 
-```text
-LICENSE
-```
+---
+
+## 3. Build the Knowledge Graph
+
+The Knowledge Graph is **not built automatically**.
+
+After the execution pipeline has produced results, run:
+
+    bash kg/fairjupyter/run_fairjupyter_kg.sh
+
+The script reads the pipeline results and generates the FAIR Jupyter Knowledge Graph.

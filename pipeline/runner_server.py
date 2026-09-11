@@ -19,7 +19,9 @@ from urllib.parse import unquote, urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-JOBS_ROOT = ROOT / "output" / "web-jobs"
+DATA_OUTPUT_ROOT = ROOT / "data" / "output"
+MAIN_DB_DIR = DATA_OUTPUT_ROOT / "db"
+JOBS_ROOT = DATA_OUTPUT_ROOT / "web-jobs"
 IMAGE_NAME = os.environ.get("NOTEBOOKFAIR_PIPELINE_IMAGE", "notebookfair-pipeline:local")
 MAX_BODY_BYTES = 256 * 1024
 MAX_NOTEBOOKS = 2000
@@ -83,6 +85,7 @@ class JobManager:
         self.image_ready = False
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pipeline-job")
         self.processes: dict[str, tuple[subprocess.Popen, str]] = {}
+        MAIN_DB_DIR.mkdir(parents=True, exist_ok=True)
         JOBS_ROOT.mkdir(parents=True, exist_ok=True)
         self._recover_interrupted_jobs()
 
@@ -353,6 +356,7 @@ class JobManager:
                     "--security-opt", "no-new-privileges",
                     "--cap-drop", "ALL",
                     "--volume", f"{ROOT}:/workspace:ro",
+                    "--volume", f"{MAIN_DB_DIR}:/workspace/data/output/db:rw",
                     "--volume", f"{job_dir}:/job:rw",
                     "--volume", "notebookfair-pyenv-versions:/home/jovyan/.pyenv/versions",
                     "--tmpfs", "/job/venvs:rw,exec,nosuid,nodev,size=2g,uid=1000,gid=1000,mode=0755",

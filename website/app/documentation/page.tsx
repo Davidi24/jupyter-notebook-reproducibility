@@ -668,7 +668,7 @@ const CONFUSION_MATRIX = [
 // own analysis/nbprocess — needed because a missing PYTHONPATH export in
 // run_full_sample.sh silently dropped every notebook_executions /
 // notebook_reproducibility_metrics row for this run; fixed in
-// pipeline/run_full_sample_v8.sh). GitHub's numbers are the only ones with
+// pipeline/run_full_sample.sh). GitHub's numbers are the only ones with
 // notebook-level metrics already in the database, and they come from the
 // Feb 2026 baseline batch (main.sh) — a different, earlier run than
 // Codeberg/Zenodo's Sept 2026 full-sample run, not the same controlled

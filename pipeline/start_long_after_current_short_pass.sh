@@ -14,7 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-RUNNER="$SCRIPT_DIR/run_full_sample_v7.sh"
+RUNNER="$SCRIPT_DIR/run_full_sample.sh"
 
 LONG_WORKER_COUNT="${LONG_WORKER_COUNT:-1}"
 LONG_NOTEBOOK_TIMEOUT_SECONDS="${LONG_NOTEBOOK_TIMEOUT_SECONDS:-7200}"
