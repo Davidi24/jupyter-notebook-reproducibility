@@ -3,7 +3,7 @@
 # config.sh — Central configuration for the CPRPMC pipeline
 ###############################################################################
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-INPUT_DIR="$PROJECT_ROOT/input"
+INPUT_DIR="$PROJECT_ROOT/data/input"
 OUTPUT_DIR="$PROJECT_ROOT/data/output"
 REPOS_DIR="$OUTPUT_DIR/cloned_repos"
 COMP_DIR="$OUTPUT_DIR/comparisons"
