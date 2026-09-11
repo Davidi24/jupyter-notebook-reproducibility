@@ -1,0 +1,2105 @@
+{
+  "summary": {
+    "repository_id": "4",
+    "notebook": "Diabetes Classification/Diabetes Classification.ipynb",
+    "url": "https://github.com/anujvyas/Machine-Learning-Projects",
+    "execution_status": "SUCCESS_WITH_ERRORS",
+    "notebook_execution_duration": 11.0,
+    "total_code_cells": 35,
+    "executed_cells": 35,
+    "same_cells_count": 3,
+    "different_cells_count": 32,
+    "nondeterministic_cells_count": 0,
+    "same_cells": "1,12,38",
+    "different_cells": "2,4,5,6,7,8,9,10,11,13,15,16,17,18,19,21,22,23,24,26,27,29,30,31,32,33,34,35,36,39,40,41",
+    "nondeterministic_cells": "",
+    "reproducibility_score": 0.086,
+    "error_type": "FileNotFoundError",
+    "error_category": "FILE_ERROR",
+    "error_message": "[Errno 2] No such file or directory: 'kaggle_diabetes.csv'",
+    "error_cell_index": 2,
+    "error_count": 32
+  },
+  "raw_diff": [
+    {
+      "op": "patch",
+      "key": "cells",
+      "diff": [
+        {
+          "op": "patch",
+          "key": 1,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 1
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:10.248001Z",
+                    "iopub.status.busy": "2026-09-06T16:04:10.247599Z",
+                    "iopub.status.idle": "2026-09-06T16:04:10.743581Z",
+                    "shell.execute_reply": "2026-09-06T16:04:10.742057Z"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 2,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 2
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:10.746786Z",
+                    "iopub.status.busy": "2026-09-06T16:04:10.746410Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.460662Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.458466Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "FileNotFoundError",
+                      "evalue": "[Errno 2] No such file or directory: 'kaggle_diabetes.csv'",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mFileNotFoundError\u001b[0m                         Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[2], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Loading the dataset\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m df \u001b[38;5;241m=\u001b[39m \u001b[43mpd\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mread_csv\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[38;5;124;43mkaggle_diabetes.csv\u001b[39;49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[43m)\u001b[49m\n",
+                        "File \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:1026\u001b[0m, in \u001b[0;36mread_csv\u001b[0;34m(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)\u001b[0m\n\u001b[1;32m   1013\u001b[0m kwds_defaults \u001b[38;5;241m=\u001b[39m _refine_defaults_read(\n\u001b[1;32m   1014\u001b[0m     dialect,\n\u001b[1;32m   1015\u001b[0m     delimiter,\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m   1022\u001b[0m     dtype_backend\u001b[38;5;241m=\u001b[39mdtype_backend,\n\u001b[1;32m   1023\u001b[0m )\n\u001b[1;32m   1024\u001b[0m kwds\u001b[38;5;241m.\u001b[39mupdate(kwds_defaults)\n\u001b[0;32m-> 1026\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[43m_read\u001b[49m\u001b[43m(\u001b[49m\u001b[43mfilepath_or_buffer\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mkwds\u001b[49m\u001b[43m)\u001b[49m\n",
+                        "File \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:620\u001b[0m, in \u001b[0;36m_read\u001b[0;34m(filepath_or_buffer, kwds)\u001b[0m\n\u001b[1;32m    617\u001b[0m _validate_names(kwds\u001b[38;5;241m.\u001b[39mget(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mnames\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;28;01mNone\u001b[39;00m))\n\u001b[1;32m    619\u001b[0m \u001b[38;5;66;03m# Create the parser.\u001b[39;00m\n\u001b[0;32m--> 620\u001b[0m parser \u001b[38;5;241m=\u001b[39m \u001b[43mTextFileReader\u001b[49m\u001b[43m(\u001b[49m\u001b[43mfilepath_or_buffer\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43mkwds\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    622\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m chunksize \u001b[38;5;129;01mor\u001b[39;00m iterator:\n\u001b[1;32m    623\u001b[0m     \u001b[38;5;28;01mreturn\u001b[39;00m parser\n",
+                        "File \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:1620\u001b[0m, in \u001b[0;36mTextFileReader.__init__\u001b[0;34m(self, f, engine, **kwds)\u001b[0m\n\u001b[1;32m   1617\u001b[0m     \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39moptions[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mhas_index_names\u001b[39m\u001b[38;5;124m\"\u001b[39m] \u001b[38;5;241m=\u001b[39m kwds[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mhas_index_names\u001b[39m\u001b[38;5;124m\"\u001b[39m]\n\u001b[1;32m   1619\u001b[0m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles: IOHandles \u001b[38;5;241m|\u001b[39m \u001b[38;5;28;01mNone\u001b[39;00m \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;01mNone\u001b[39;00m\n\u001b[0;32m-> 1620\u001b[0m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39m_engine \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_make_engine\u001b[49m\u001b[43m(\u001b[49m\u001b[43mf\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mengine\u001b[49m\u001b[43m)\u001b[49m\n",
+                        "File \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:1880\u001b[0m, in \u001b[0;36mTextFileReader._make_engine\u001b[0;34m(self, f, engine)\u001b[0m\n\u001b[1;32m   1878\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mb\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;129;01min\u001b[39;00m mode:\n\u001b[1;32m   1879\u001b[0m         mode \u001b[38;5;241m+\u001b[39m\u001b[38;5;241m=\u001b[39m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mb\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[0;32m-> 1880\u001b[0m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles \u001b[38;5;241m=\u001b[39m \u001b[43mget_handle\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1881\u001b[0m \u001b[43m    \u001b[49m\u001b[43mf\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1882\u001b[0m \u001b[43m    \u001b[49m\u001b[43mmode\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1883\u001b[0m \u001b[43m    \u001b[49m\u001b[43mencoding\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mencoding\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mNone\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1884\u001b[0m \u001b[43m    \u001b[49m\u001b[43mcompression\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mcompression\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mNone\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1885\u001b[0m \u001b[43m    \u001b[49m\u001b[43mmemory_map\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmemory_map\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mFalse\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1886\u001b[0m \u001b[43m    \u001b[49m\u001b[43mis_text\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mis_text\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1887\u001b[0m \u001b[43m    \u001b[49m\u001b[43merrors\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mencoding_errors\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mstrict\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1888\u001b[0m \u001b[43m    \u001b[49m\u001b[43mstorage_options\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mstorage_options\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mNone\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1889\u001b[0m \u001b[43m\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1890\u001b[0m \u001b[38;5;28;01massert\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles \u001b[38;5;129;01mis\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28;01mNone\u001b[39;00m\n\u001b[1;32m   1891\u001b[0m f \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles\u001b[38;5;241m.\u001b[39mhandle\n",
+                        "File \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/common.py:873\u001b[0m, in \u001b[0;36mget_handle\u001b[0;34m(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)\u001b[0m\n\u001b[1;32m    868\u001b[0m \u001b[38;5;28;01melif\u001b[39;00m \u001b[38;5;28misinstance\u001b[39m(handle, \u001b[38;5;28mstr\u001b[39m):\n\u001b[1;32m    869\u001b[0m     \u001b[38;5;66;03m# Check whether the filename is to be opened in binary mode.\u001b[39;00m\n\u001b[1;32m    870\u001b[0m     \u001b[38;5;66;03m# Binary mode does not support 'encoding' and 'newline'.\u001b[39;00m\n\u001b[1;32m    871\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m ioargs\u001b[38;5;241m.\u001b[39mencoding \u001b[38;5;129;01mand\u001b[39;00m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mb\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;129;01min\u001b[39;00m ioargs\u001b[38;5;241m.\u001b[39mmode:\n\u001b[1;32m    872\u001b[0m         \u001b[38;5;66;03m# Encoding\u001b[39;00m\n\u001b[0;32m--> 873\u001b[0m         handle \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;43mopen\u001b[39;49m\u001b[43m(\u001b[49m\n\u001b[1;32m    874\u001b[0m \u001b[43m            \u001b[49m\u001b[43mhandle\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    875\u001b[0m \u001b[43m            \u001b[49m\u001b[43mioargs\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mmode\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    876\u001b[0m \u001b[43m            \u001b[49m\u001b[43mencoding\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mioargs\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mencoding\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    877\u001b[0m \u001b[43m            \u001b[49m\u001b[43merrors\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43merrors\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    878\u001b[0m \u001b[43m            \u001b[49m\u001b[43mnewline\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\n\u001b[1;32m    879\u001b[0m \u001b[43m        \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    880\u001b[0m     \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    881\u001b[0m         \u001b[38;5;66;03m# Binary mode\u001b[39;00m\n\u001b[1;32m    882\u001b[0m         handle \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mopen\u001b[39m(handle, ioargs\u001b[38;5;241m.\u001b[39mmode)\n",
+                        "\u001b[0;31mFileNotFoundError\u001b[0m: [Errno 2] No such file or directory: 'kaggle_diabetes.csv'"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 4,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 3
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.718422Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.718027Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.738407Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.737183Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[3], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns number of rows and columns of the dataset\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mshape\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 5,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 4
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.741197Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.740827Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.770919Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.768235Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[4], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns an object with all of the column headers \u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mcolumns\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 6,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 5
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.776632Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.776002Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.805180Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.803132Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[5], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns different datatypes for each columns (float, int, string, bool, etc.)\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mdtypes\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 7,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 6
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.809031Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.808670Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.834390Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.832602Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[6], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns the first x number of rows when head(num). Without a number it returns 5\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mhead()\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 8,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 7
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.838468Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.838104Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.862160Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.860891Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[7], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns basic information on all columns\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39minfo()\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 9,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 8
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.866628Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.866263Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.889627Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.888221Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[8], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns basic statistics on numeric columns\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mdescribe()\u001b[38;5;241m.\u001b[39mT\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 10,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 9
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.893682Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.893283Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.919251Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.917628Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[9], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns true for a column having null values, else false\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39misnull()\u001b[38;5;241m.\u001b[39many()\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 11,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 10
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.922735Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.922373Z",
+                    "iopub.status.idle": "2026-09-06T16:04:11.950553Z",
+                    "shell.execute_reply": "2026-09-06T16:04:11.948987Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[10], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m df \u001b[38;5;241m=\u001b[39m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mrename(columns\u001b[38;5;241m=\u001b[39m{\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mDiabetesPedigreeFunction\u001b[39m\u001b[38;5;124m'\u001b[39m:\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mDPF\u001b[39m\u001b[38;5;124m'\u001b[39m})\n\u001b[1;32m      2\u001b[0m df\u001b[38;5;241m.\u001b[39mhead()\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 12,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 11
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:11.954197Z",
+                    "iopub.status.busy": "2026-09-06T16:04:11.953835Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.455751Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.453156Z"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 13,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 12
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.462130Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.461362Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.568370Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.566552Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[12], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting the Outcomes based on the number of dataset entries\u001b[39;00m\n\u001b[1;32m      2\u001b[0m plt\u001b[38;5;241m.\u001b[39mfigure(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m10\u001b[39m,\u001b[38;5;241m7\u001b[39m))\n\u001b[0;32m----> 3\u001b[0m sns\u001b[38;5;241m.\u001b[39mcountplot(x\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOutcome\u001b[39m\u001b[38;5;124m'\u001b[39m, data\u001b[38;5;241m=\u001b[39m\u001b[43mdf\u001b[49m)\n\u001b[1;32m      5\u001b[0m \u001b[38;5;66;03m# Removing the unwanted spines\u001b[39;00m\n\u001b[1;32m      6\u001b[0m plt\u001b[38;5;241m.\u001b[39mgca()\u001b[38;5;241m.\u001b[39mspines[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mtop\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mset_visible(\u001b[38;5;28;01mFalse\u001b[39;00m)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    },
+                    {
+                      "data": {
+                        "text/plain": "<Figure size 1000x700 with 0 Axes>"
+                      },
+                      "metadata": {},
+                      "output_type": "display_data"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 15,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 13
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.572157Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.571811Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.601321Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.599838Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[13], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Replacing the 0 values from ['Glucose','BloodPressure','SkinThickness','Insulin','BMI'] by NaN\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m df_copy \u001b[38;5;241m=\u001b[39m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mcopy(deep\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\u001b[1;32m      3\u001b[0m df_copy[[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mInsulin\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBMI\u001b[39m\u001b[38;5;124m'\u001b[39m]] \u001b[38;5;241m=\u001b[39m df_copy[[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mInsulin\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBMI\u001b[39m\u001b[38;5;124m'\u001b[39m]]\u001b[38;5;241m.\u001b[39mreplace(\u001b[38;5;241m0\u001b[39m,np\u001b[38;5;241m.\u001b[39mNaN)\n\u001b[1;32m      4\u001b[0m df_copy\u001b[38;5;241m.\u001b[39misnull()\u001b[38;5;241m.\u001b[39msum()\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 16,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 14
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.604558Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.604194Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.632021Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.629930Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df_copy' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[14], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# To fill these Nan values the data distribution needs to be understood\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Plotting histogram of dataset before replacing NaN values\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m p \u001b[38;5;241m=\u001b[39m \u001b[43mdf_copy\u001b[49m\u001b[38;5;241m.\u001b[39mhist(figsize \u001b[38;5;241m=\u001b[39m (\u001b[38;5;241m15\u001b[39m,\u001b[38;5;241m15\u001b[39m))\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 17,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 15
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.636003Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.635596Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.667368Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.665669Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df_copy' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[15], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Replacing NaN value by mean, median depending upon distribution\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf_copy\u001b[49m[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mfillna(df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mmean(), inplace\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\u001b[1;32m      3\u001b[0m df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mfillna(df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mmean(), inplace\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\u001b[1;32m      4\u001b[0m df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mfillna(df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mmedian(), inplace\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 18,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 16
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.670601Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.670247Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.693876Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.692268Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df_copy' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[16], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting histogram of dataset after replacing NaN values\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m p \u001b[38;5;241m=\u001b[39m \u001b[43mdf_copy\u001b[49m\u001b[38;5;241m.\u001b[39mhist(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m15\u001b[39m,\u001b[38;5;241m15\u001b[39m))\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 19,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 17
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.697207Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.696856Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.722463Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.720729Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'df_copy' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[17], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m \u001b[43mdf_copy\u001b[49m\u001b[38;5;241m.\u001b[39misnull()\u001b[38;5;241m.\u001b[39msum()\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 21,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 18
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.726179Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.725836Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.753607Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.750902Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "ModuleNotFoundError",
+                      "evalue": "No module named 'sklearn'",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[18], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m train_test_split\n\u001b[1;32m      3\u001b[0m X \u001b[38;5;241m=\u001b[39m df\u001b[38;5;241m.\u001b[39mdrop(columns\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOutcome\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      4\u001b[0m y \u001b[38;5;241m=\u001b[39m df[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOutcome\u001b[39m\u001b[38;5;124m'\u001b[39m]\n",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 22,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 19
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.758167Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.757777Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.780874Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.779491Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "ModuleNotFoundError",
+                      "evalue": "No module named 'sklearn'",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[19], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Feature Scaling\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mpreprocessing\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m StandardScaler\n\u001b[1;32m      3\u001b[0m sc \u001b[38;5;241m=\u001b[39m StandardScaler()\n\u001b[1;32m      4\u001b[0m X_train \u001b[38;5;241m=\u001b[39m sc\u001b[38;5;241m.\u001b[39mfit_transform(X_train)\n",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 23,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 20
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.784736Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.784180Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.808694Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.806466Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "ModuleNotFoundError",
+                      "evalue": "No module named 'sklearn'",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[20], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Using GridSearchCV to find the best algorithm for this problem\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m GridSearchCV\n\u001b[1;32m      3\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m ShuffleSplit\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mlinear_model\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m LogisticRegression\n",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 24,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 21
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.811994Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.811646Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.845398Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.843264Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'X_train' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[21], line 50\u001b[0m\n\u001b[1;32m     42\u001b[0m         scores\u001b[38;5;241m.\u001b[39mappend({\n\u001b[1;32m     43\u001b[0m             \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mmodel\u001b[39m\u001b[38;5;124m'\u001b[39m: model_name,\n\u001b[1;32m     44\u001b[0m             \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mbest_parameters\u001b[39m\u001b[38;5;124m'\u001b[39m: gs\u001b[38;5;241m.\u001b[39mbest_params_,\n\u001b[1;32m     45\u001b[0m             \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mscore\u001b[39m\u001b[38;5;124m'\u001b[39m: gs\u001b[38;5;241m.\u001b[39mbest_score_\n\u001b[1;32m     46\u001b[0m         })\n\u001b[1;32m     48\u001b[0m     \u001b[38;5;28;01mreturn\u001b[39;00m pd\u001b[38;5;241m.\u001b[39mDataFrame(scores, columns\u001b[38;5;241m=\u001b[39m[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mmodel\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mbest_parameters\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mscore\u001b[39m\u001b[38;5;124m'\u001b[39m])\n\u001b[0;32m---> 50\u001b[0m find_best_model(\u001b[43mX_train\u001b[49m, y_train)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'X_train' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 26,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 22
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.849336Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.848973Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.874432Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.872433Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "ModuleNotFoundError",
+                      "evalue": "No module named 'sklearn'",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[22], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Using cross_val_score for gaining average accuracy\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m cross_val_score\n\u001b[1;32m      3\u001b[0m scores \u001b[38;5;241m=\u001b[39m cross_val_score(RandomForestClassifier(n_estimators\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m20\u001b[39m, random_state\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m0\u001b[39m), X_train, y_train, cv\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m5\u001b[39m)\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mAverage Accuracy : \u001b[39m\u001b[38;5;132;01m{}\u001b[39;00m\u001b[38;5;124m%\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;241m.\u001b[39mformat(\u001b[38;5;28mround\u001b[39m(\u001b[38;5;28msum\u001b[39m(scores)\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m100\u001b[39m\u001b[38;5;241m/\u001b[39m\u001b[38;5;28mlen\u001b[39m(scores)), \u001b[38;5;241m3\u001b[39m))\n",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 27,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 23
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.879927Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.879134Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.905986Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.903771Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'RandomForestClassifier' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[23], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Creating Random Forest Model\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m classifier \u001b[38;5;241m=\u001b[39m \u001b[43mRandomForestClassifier\u001b[49m(n_estimators\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m20\u001b[39m, random_state\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m0\u001b[39m)\n\u001b[1;32m      3\u001b[0m classifier\u001b[38;5;241m.\u001b[39mfit(X_train, y_train)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'RandomForestClassifier' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 29,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 24
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.909281Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.908946Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.937582Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.935434Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "ModuleNotFoundError",
+                      "evalue": "No module named 'sklearn'",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[24], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Creating a confusion matrix\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmetrics\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m confusion_matrix, classification_report, accuracy_score\n\u001b[1;32m      3\u001b[0m y_pred \u001b[38;5;241m=\u001b[39m classifier\u001b[38;5;241m.\u001b[39mpredict(X_test)\n\u001b[1;32m      4\u001b[0m cm \u001b[38;5;241m=\u001b[39m confusion_matrix(y_test, y_pred)\n",
+                        "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 30,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 25
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.940946Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.940608Z",
+                    "iopub.status.idle": "2026-09-06T16:04:13.977836Z",
+                    "shell.execute_reply": "2026-09-06T16:04:13.975448Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'cm' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[25], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting the confusion matrix\u001b[39;00m\n\u001b[1;32m      2\u001b[0m plt\u001b[38;5;241m.\u001b[39mfigure(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m10\u001b[39m,\u001b[38;5;241m7\u001b[39m))\n\u001b[0;32m----> 3\u001b[0m p \u001b[38;5;241m=\u001b[39m sns\u001b[38;5;241m.\u001b[39mheatmap(\u001b[43mcm\u001b[49m, annot\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m, cmap\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mBlues\u001b[39m\u001b[38;5;124m\"\u001b[39m, fmt\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mg\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      4\u001b[0m plt\u001b[38;5;241m.\u001b[39mtitle(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mConfusion matrix for Random Forest Classifier Model - Test Set\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      5\u001b[0m plt\u001b[38;5;241m.\u001b[39mxlabel(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mPredicted Values\u001b[39m\u001b[38;5;124m'\u001b[39m)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'cm' is not defined"
+                      ]
+                    },
+                    {
+                      "data": {
+                        "text/plain": "<Figure size 1000x700 with 0 Axes>"
+                      },
+                      "metadata": {},
+                      "output_type": "display_data"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 31,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 26
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:13.982317Z",
+                    "iopub.status.busy": "2026-09-06T16:04:13.981949Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.008744Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.007041Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'accuracy_score' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[26], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Accuracy Score\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m score \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mround\u001b[39m(\u001b[43maccuracy_score\u001b[49m(y_test, y_pred),\u001b[38;5;241m4\u001b[39m)\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m100\u001b[39m\n\u001b[1;32m      3\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAccuracy on test set: \u001b[39m\u001b[38;5;132;01m{}\u001b[39;00m\u001b[38;5;124m%\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m.\u001b[39mformat(score))\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'accuracy_score' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 32,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 27
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.012150Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.011812Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.045844Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.042336Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'classification_report' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[27], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Classification Report\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[43mclassification_report\u001b[49m(y_test, y_pred))\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'classification_report' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 33,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 28
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.050771Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.050407Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.074505Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.073505Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'classifier' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[28], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Creating a confusion matrix for training set\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m y_train_pred \u001b[38;5;241m=\u001b[39m \u001b[43mclassifier\u001b[49m\u001b[38;5;241m.\u001b[39mpredict(X_train)\n\u001b[1;32m      3\u001b[0m cm \u001b[38;5;241m=\u001b[39m confusion_matrix(y_train, y_train_pred)\n\u001b[1;32m      4\u001b[0m cm\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'classifier' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 34,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 29
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.081834Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.080669Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.112000Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.109856Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'cm' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[29], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting the confusion matrix\u001b[39;00m\n\u001b[1;32m      2\u001b[0m plt\u001b[38;5;241m.\u001b[39mfigure(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m10\u001b[39m,\u001b[38;5;241m7\u001b[39m))\n\u001b[0;32m----> 3\u001b[0m p \u001b[38;5;241m=\u001b[39m sns\u001b[38;5;241m.\u001b[39mheatmap(\u001b[43mcm\u001b[49m, annot\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m, cmap\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mBlues\u001b[39m\u001b[38;5;124m\"\u001b[39m, fmt\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mg\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      4\u001b[0m plt\u001b[38;5;241m.\u001b[39mtitle(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mConfusion matrix for Random Forest Classifier Model - Train Set\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      5\u001b[0m plt\u001b[38;5;241m.\u001b[39mxlabel(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mPredicted Values\u001b[39m\u001b[38;5;124m'\u001b[39m)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'cm' is not defined"
+                      ]
+                    },
+                    {
+                      "data": {
+                        "text/plain": "<Figure size 1000x700 with 0 Axes>"
+                      },
+                      "metadata": {},
+                      "output_type": "display_data"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 35,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 30
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.116461Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.116038Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.144970Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.142083Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'accuracy_score' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[30], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Accuracy Score\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m score \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mround\u001b[39m(\u001b[43maccuracy_score\u001b[49m(y_train, y_train_pred),\u001b[38;5;241m4\u001b[39m)\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m100\u001b[39m\n\u001b[1;32m      3\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAccuracy on trainning set: \u001b[39m\u001b[38;5;132;01m{}\u001b[39;00m\u001b[38;5;124m%\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m.\u001b[39mformat(score))\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'accuracy_score' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 36,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 31
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.149558Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.149147Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.172618Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.170291Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'classification_report' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[31], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Classification Report\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[43mclassification_report\u001b[49m(y_train, y_train_pred))\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'classification_report' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 38,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 32
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.180063Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.177658Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.188084Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.186338Z"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 39,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 33
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.191363Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.191079Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.225865Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.224570Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'sc' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[33], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Prediction 1\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Input sequence: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m prediction \u001b[38;5;241m=\u001b[39m \u001b[43mpredict_diabetes\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m2\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m81\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m72\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m15\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m76\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m30.1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m0.547\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m25\u001b[39;49m\u001b[43m)\u001b[49m[\u001b[38;5;241m0\u001b[39m]\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m prediction:\n\u001b[1;32m      5\u001b[0m   \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOops! You have diabetes.\u001b[39m\u001b[38;5;124m'\u001b[39m)\n",
+                        "Cell \u001b[0;32mIn[32], line 13\u001b[0m, in \u001b[0;36mpredict_diabetes\u001b[0;34m(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)\u001b[0m\n\u001b[1;32m     10\u001b[0m age \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mint\u001b[39m(Age)\n\u001b[1;32m     12\u001b[0m x \u001b[38;5;241m=\u001b[39m [[preg, glucose, bp, st, insulin, bmi, dpf, age]]\n\u001b[0;32m---> 13\u001b[0m x \u001b[38;5;241m=\u001b[39m \u001b[43msc\u001b[49m\u001b[38;5;241m.\u001b[39mtransform(x)\n\u001b[1;32m     15\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m classifier\u001b[38;5;241m.\u001b[39mpredict(x)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'sc' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 40,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 34
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.229178Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.228783Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.263320Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.262034Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'sc' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[34], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Prediction 2\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Input sequence: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m prediction \u001b[38;5;241m=\u001b[39m \u001b[43mpredict_diabetes\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m117\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m88\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m24\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m145\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m34.5\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m0.403\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m40\u001b[39;49m\u001b[43m)\u001b[49m[\u001b[38;5;241m0\u001b[39m]\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m prediction:\n\u001b[1;32m      5\u001b[0m   \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOops! You have diabetes.\u001b[39m\u001b[38;5;124m'\u001b[39m)\n",
+                        "Cell \u001b[0;32mIn[32], line 13\u001b[0m, in \u001b[0;36mpredict_diabetes\u001b[0;34m(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)\u001b[0m\n\u001b[1;32m     10\u001b[0m age \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mint\u001b[39m(Age)\n\u001b[1;32m     12\u001b[0m x \u001b[38;5;241m=\u001b[39m [[preg, glucose, bp, st, insulin, bmi, dpf, age]]\n\u001b[0;32m---> 13\u001b[0m x \u001b[38;5;241m=\u001b[39m \u001b[43msc\u001b[49m\u001b[38;5;241m.\u001b[39mtransform(x)\n\u001b[1;32m     15\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m classifier\u001b[38;5;241m.\u001b[39mpredict(x)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'sc' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 41,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 35
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:04:14.266624Z",
+                    "iopub.status.busy": "2026-09-06T16:04:14.266273Z",
+                    "iopub.status.idle": "2026-09-06T16:04:14.303021Z",
+                    "shell.execute_reply": "2026-09-06T16:04:14.300226Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "ename": "NameError",
+                      "evalue": "name 'sc' is not defined",
+                      "output_type": "error",
+                      "traceback": [
+                        "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+                        "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+                        "Cell \u001b[0;32mIn[35], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Prediction 2\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Input sequence: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m prediction \u001b[38;5;241m=\u001b[39m \u001b[43mpredict_diabetes\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m5\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m120\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m92\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m10\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m81\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m26.1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m0.551\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m67\u001b[39;49m\u001b[43m)\u001b[49m[\u001b[38;5;241m0\u001b[39m]\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m prediction:\n\u001b[1;32m      5\u001b[0m   \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOops! You have diabetes.\u001b[39m\u001b[38;5;124m'\u001b[39m)\n",
+                        "Cell \u001b[0;32mIn[32], line 13\u001b[0m, in \u001b[0;36mpredict_diabetes\u001b[0;34m(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)\u001b[0m\n\u001b[1;32m     10\u001b[0m age \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mint\u001b[39m(Age)\n\u001b[1;32m     12\u001b[0m x \u001b[38;5;241m=\u001b[39m [[preg, glucose, bp, st, insulin, bmi, dpf, age]]\n\u001b[0;32m---> 13\u001b[0m x \u001b[38;5;241m=\u001b[39m \u001b[43msc\u001b[49m\u001b[38;5;241m.\u001b[39mtransform(x)\n\u001b[1;32m     15\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m classifier\u001b[38;5;241m.\u001b[39mpredict(x)\n",
+                        "\u001b[0;31mNameError\u001b[0m: name 'sc' is not defined"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "op": "patch",
+      "key": "metadata",
+      "diff": [
+        {
+          "op": "patch",
+          "key": "language_info",
+          "diff": [
+            {
+              "op": "patch",
+              "key": "version",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    "3.10.12"
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "nb_errors": [
+    {
+      "cell_index": 2,
+      "error_type": "FileNotFoundError",
+      "error_message": "[Errno 2] No such file or directory: 'kaggle_diabetes.csv'",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mFileNotFoundError\u001b[0m                         Traceback (most recent call last)\nCell \u001b[0;32mIn[2], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Loading the dataset\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m df \u001b[38;5;241m=\u001b[39m \u001b[43mpd\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mread_csv\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[38;5;124;43mkaggle_diabetes.csv\u001b[39;49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[43m)\u001b[49m\n\nFile \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:1026\u001b[0m, in \u001b[0;36mread_csv\u001b[0;34m(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)\u001b[0m\n\u001b[1;32m   1013\u001b[0m kwds_defaults \u001b[38;5;241m=\u001b[39m _refine_defaults_read(\n\u001b[1;32m   1014\u001b[0m     dialect,\n\u001b[1;32m   1015\u001b[0m     delimiter,\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m   1022\u001b[0m     dtype_backend\u001b[38;5;241m=\u001b[39mdtype_backend,\n\u001b[1;32m   1023\u001b[0m )\n\u001b[1;32m   1024\u001b[0m kwds\u001b[38;5;241m.\u001b[39mupdate(kwds_defaults)\n\u001b[0;32m-> 1026\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[43m_read\u001b[49m\u001b[43m(\u001b[49m\u001b[43mfilepath_or_buffer\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mkwds\u001b[49m\u001b[43m)\u001b[49m\n\nFile \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:620\u001b[0m, in \u001b[0;36m_read\u001b[0;34m(filepath_or_buffer, kwds)\u001b[0m\n\u001b[1;32m    617\u001b[0m _validate_names(kwds\u001b[38;5;241m.\u001b[39mget(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mnames\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;28;01mNone\u001b[39;00m))\n\u001b[1;32m    619\u001b[0m \u001b[38;5;66;03m# Create the parser.\u001b[39;00m\n\u001b[0;32m--> 620\u001b[0m parser \u001b[38;5;241m=\u001b[39m \u001b[43mTextFileReader\u001b[49m\u001b[43m(\u001b[49m\u001b[43mfilepath_or_buffer\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43mkwds\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    622\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m chunksize \u001b[38;5;129;01mor\u001b[39;00m iterator:\n\u001b[1;32m    623\u001b[0m     \u001b[38;5;28;01mreturn\u001b[39;00m parser\n\nFile \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:1620\u001b[0m, in \u001b[0;36mTextFileReader.__init__\u001b[0;34m(self, f, engine, **kwds)\u001b[0m\n\u001b[1;32m   1617\u001b[0m     \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39moptions[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mhas_index_names\u001b[39m\u001b[38;5;124m\"\u001b[39m] \u001b[38;5;241m=\u001b[39m kwds[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mhas_index_names\u001b[39m\u001b[38;5;124m\"\u001b[39m]\n\u001b[1;32m   1619\u001b[0m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles: IOHandles \u001b[38;5;241m|\u001b[39m \u001b[38;5;28;01mNone\u001b[39;00m \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;01mNone\u001b[39;00m\n\u001b[0;32m-> 1620\u001b[0m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39m_engine \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_make_engine\u001b[49m\u001b[43m(\u001b[49m\u001b[43mf\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mengine\u001b[49m\u001b[43m)\u001b[49m\n\nFile \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/parsers/readers.py:1880\u001b[0m, in \u001b[0;36mTextFileReader._make_engine\u001b[0;34m(self, f, engine)\u001b[0m\n\u001b[1;32m   1878\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mb\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;129;01min\u001b[39;00m mode:\n\u001b[1;32m   1879\u001b[0m         mode \u001b[38;5;241m+\u001b[39m\u001b[38;5;241m=\u001b[39m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mb\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[0;32m-> 1880\u001b[0m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles \u001b[38;5;241m=\u001b[39m \u001b[43mget_handle\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1881\u001b[0m \u001b[43m    \u001b[49m\u001b[43mf\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1882\u001b[0m \u001b[43m    \u001b[49m\u001b[43mmode\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1883\u001b[0m \u001b[43m    \u001b[49m\u001b[43mencoding\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mencoding\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mNone\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1884\u001b[0m \u001b[43m    \u001b[49m\u001b[43mcompression\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mcompression\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mNone\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1885\u001b[0m \u001b[43m    \u001b[49m\u001b[43mmemory_map\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmemory_map\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mFalse\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1886\u001b[0m \u001b[43m    \u001b[49m\u001b[43mis_text\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mis_text\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1887\u001b[0m \u001b[43m    \u001b[49m\u001b[43merrors\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mencoding_errors\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mstrict\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1888\u001b[0m \u001b[43m    \u001b[49m\u001b[43mstorage_options\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43moptions\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mget\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mstorage_options\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43;01mNone\u001b[39;49;00m\u001b[43m)\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1889\u001b[0m \u001b[43m\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1890\u001b[0m \u001b[38;5;28;01massert\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles \u001b[38;5;129;01mis\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28;01mNone\u001b[39;00m\n\u001b[1;32m   1891\u001b[0m f \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mhandles\u001b[38;5;241m.\u001b[39mhandle\n\nFile \u001b[0;32m~/.repo_venvs/4_Machine-Learning-Projects/lib/python3.10/site-packages/pandas/io/common.py:873\u001b[0m, in \u001b[0;36mget_handle\u001b[0;34m(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)\u001b[0m\n\u001b[1;32m    868\u001b[0m \u001b[38;5;28;01melif\u001b[39;00m \u001b[38;5;28misinstance\u001b[39m(handle, \u001b[38;5;28mstr\u001b[39m):\n\u001b[1;32m    869\u001b[0m     \u001b[38;5;66;03m# Check whether the filename is to be opened in binary mode.\u001b[39;00m\n\u001b[1;32m    870\u001b[0m     \u001b[38;5;66;03m# Binary mode does not support 'encoding' and 'newline'.\u001b[39;00m\n\u001b[1;32m    871\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m ioargs\u001b[38;5;241m.\u001b[39mencoding \u001b[38;5;129;01mand\u001b[39;00m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mb\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;129;01min\u001b[39;00m ioargs\u001b[38;5;241m.\u001b[39mmode:\n\u001b[1;32m    872\u001b[0m         \u001b[38;5;66;03m# Encoding\u001b[39;00m\n\u001b[0;32m--> 873\u001b[0m         handle \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;43mopen\u001b[39;49m\u001b[43m(\u001b[49m\n\u001b[1;32m    874\u001b[0m \u001b[43m            \u001b[49m\u001b[43mhandle\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    875\u001b[0m \u001b[43m            \u001b[49m\u001b[43mioargs\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mmode\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    876\u001b[0m \u001b[43m            \u001b[49m\u001b[43mencoding\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mioargs\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mencoding\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    877\u001b[0m \u001b[43m            \u001b[49m\u001b[43merrors\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43merrors\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    878\u001b[0m \u001b[43m            \u001b[49m\u001b[43mnewline\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\n\u001b[1;32m    879\u001b[0m \u001b[43m        \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    880\u001b[0m     \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    881\u001b[0m         \u001b[38;5;66;03m# Binary mode\u001b[39;00m\n\u001b[1;32m    882\u001b[0m         handle \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mopen\u001b[39m(handle, ioargs\u001b[38;5;241m.\u001b[39mmode)\n\n\u001b[0;31mFileNotFoundError\u001b[0m: [Errno 2] No such file or directory: 'kaggle_diabetes.csv'"
+    },
+    {
+      "cell_index": 4,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[3], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns number of rows and columns of the dataset\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mshape\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 5,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[4], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns an object with all of the column headers \u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mcolumns\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 6,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[5], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns different datatypes for each columns (float, int, string, bool, etc.)\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mdtypes\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 7,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[6], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns the first x number of rows when head(num). Without a number it returns 5\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mhead()\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 8,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[7], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns basic information on all columns\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39minfo()\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 9,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[8], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns basic statistics on numeric columns\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mdescribe()\u001b[38;5;241m.\u001b[39mT\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 10,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[9], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Returns true for a column having null values, else false\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39misnull()\u001b[38;5;241m.\u001b[39many()\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 11,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[10], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m df \u001b[38;5;241m=\u001b[39m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mrename(columns\u001b[38;5;241m=\u001b[39m{\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mDiabetesPedigreeFunction\u001b[39m\u001b[38;5;124m'\u001b[39m:\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mDPF\u001b[39m\u001b[38;5;124m'\u001b[39m})\n\u001b[1;32m      2\u001b[0m df\u001b[38;5;241m.\u001b[39mhead()\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 13,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[12], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting the Outcomes based on the number of dataset entries\u001b[39;00m\n\u001b[1;32m      2\u001b[0m plt\u001b[38;5;241m.\u001b[39mfigure(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m10\u001b[39m,\u001b[38;5;241m7\u001b[39m))\n\u001b[0;32m----> 3\u001b[0m sns\u001b[38;5;241m.\u001b[39mcountplot(x\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOutcome\u001b[39m\u001b[38;5;124m'\u001b[39m, data\u001b[38;5;241m=\u001b[39m\u001b[43mdf\u001b[49m)\n\u001b[1;32m      5\u001b[0m \u001b[38;5;66;03m# Removing the unwanted spines\u001b[39;00m\n\u001b[1;32m      6\u001b[0m plt\u001b[38;5;241m.\u001b[39mgca()\u001b[38;5;241m.\u001b[39mspines[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mtop\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mset_visible(\u001b[38;5;28;01mFalse\u001b[39;00m)\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 15,
+      "error_type": "NameError",
+      "error_message": "name 'df' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[13], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Replacing the 0 values from ['Glucose','BloodPressure','SkinThickness','Insulin','BMI'] by NaN\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m df_copy \u001b[38;5;241m=\u001b[39m \u001b[43mdf\u001b[49m\u001b[38;5;241m.\u001b[39mcopy(deep\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\u001b[1;32m      3\u001b[0m df_copy[[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mInsulin\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBMI\u001b[39m\u001b[38;5;124m'\u001b[39m]] \u001b[38;5;241m=\u001b[39m df_copy[[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mInsulin\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBMI\u001b[39m\u001b[38;5;124m'\u001b[39m]]\u001b[38;5;241m.\u001b[39mreplace(\u001b[38;5;241m0\u001b[39m,np\u001b[38;5;241m.\u001b[39mNaN)\n\u001b[1;32m      4\u001b[0m df_copy\u001b[38;5;241m.\u001b[39misnull()\u001b[38;5;241m.\u001b[39msum()\n\n\u001b[0;31mNameError\u001b[0m: name 'df' is not defined"
+    },
+    {
+      "cell_index": 16,
+      "error_type": "NameError",
+      "error_message": "name 'df_copy' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[14], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# To fill these Nan values the data distribution needs to be understood\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Plotting histogram of dataset before replacing NaN values\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m p \u001b[38;5;241m=\u001b[39m \u001b[43mdf_copy\u001b[49m\u001b[38;5;241m.\u001b[39mhist(figsize \u001b[38;5;241m=\u001b[39m (\u001b[38;5;241m15\u001b[39m,\u001b[38;5;241m15\u001b[39m))\n\n\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+    },
+    {
+      "cell_index": 17,
+      "error_type": "NameError",
+      "error_message": "name 'df_copy' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[15], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Replacing NaN value by mean, median depending upon distribution\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[43mdf_copy\u001b[49m[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mfillna(df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mGlucose\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mmean(), inplace\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\u001b[1;32m      3\u001b[0m df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mfillna(df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mBloodPressure\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mmean(), inplace\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\u001b[1;32m      4\u001b[0m df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mfillna(df_copy[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSkinThickness\u001b[39m\u001b[38;5;124m'\u001b[39m]\u001b[38;5;241m.\u001b[39mmedian(), inplace\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m)\n\n\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+    },
+    {
+      "cell_index": 18,
+      "error_type": "NameError",
+      "error_message": "name 'df_copy' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[16], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting histogram of dataset after replacing NaN values\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m p \u001b[38;5;241m=\u001b[39m \u001b[43mdf_copy\u001b[49m\u001b[38;5;241m.\u001b[39mhist(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m15\u001b[39m,\u001b[38;5;241m15\u001b[39m))\n\n\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+    },
+    {
+      "cell_index": 19,
+      "error_type": "NameError",
+      "error_message": "name 'df_copy' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[17], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m \u001b[43mdf_copy\u001b[49m\u001b[38;5;241m.\u001b[39misnull()\u001b[38;5;241m.\u001b[39msum()\n\n\u001b[0;31mNameError\u001b[0m: name 'df_copy' is not defined"
+    },
+    {
+      "cell_index": 21,
+      "error_type": "ModuleNotFoundError",
+      "error_message": "No module named 'sklearn'",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)\nCell \u001b[0;32mIn[18], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m train_test_split\n\u001b[1;32m      3\u001b[0m X \u001b[38;5;241m=\u001b[39m df\u001b[38;5;241m.\u001b[39mdrop(columns\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOutcome\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      4\u001b[0m y \u001b[38;5;241m=\u001b[39m df[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOutcome\u001b[39m\u001b[38;5;124m'\u001b[39m]\n\n\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+    },
+    {
+      "cell_index": 22,
+      "error_type": "ModuleNotFoundError",
+      "error_message": "No module named 'sklearn'",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)\nCell \u001b[0;32mIn[19], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Feature Scaling\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mpreprocessing\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m StandardScaler\n\u001b[1;32m      3\u001b[0m sc \u001b[38;5;241m=\u001b[39m StandardScaler()\n\u001b[1;32m      4\u001b[0m X_train \u001b[38;5;241m=\u001b[39m sc\u001b[38;5;241m.\u001b[39mfit_transform(X_train)\n\n\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+    },
+    {
+      "cell_index": 23,
+      "error_type": "ModuleNotFoundError",
+      "error_message": "No module named 'sklearn'",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)\nCell \u001b[0;32mIn[20], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Using GridSearchCV to find the best algorithm for this problem\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m GridSearchCV\n\u001b[1;32m      3\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m ShuffleSplit\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mlinear_model\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m LogisticRegression\n\n\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+    },
+    {
+      "cell_index": 24,
+      "error_type": "NameError",
+      "error_message": "name 'X_train' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[21], line 50\u001b[0m\n\u001b[1;32m     42\u001b[0m         scores\u001b[38;5;241m.\u001b[39mappend({\n\u001b[1;32m     43\u001b[0m             \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mmodel\u001b[39m\u001b[38;5;124m'\u001b[39m: model_name,\n\u001b[1;32m     44\u001b[0m             \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mbest_parameters\u001b[39m\u001b[38;5;124m'\u001b[39m: gs\u001b[38;5;241m.\u001b[39mbest_params_,\n\u001b[1;32m     45\u001b[0m             \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mscore\u001b[39m\u001b[38;5;124m'\u001b[39m: gs\u001b[38;5;241m.\u001b[39mbest_score_\n\u001b[1;32m     46\u001b[0m         })\n\u001b[1;32m     48\u001b[0m     \u001b[38;5;28;01mreturn\u001b[39;00m pd\u001b[38;5;241m.\u001b[39mDataFrame(scores, columns\u001b[38;5;241m=\u001b[39m[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mmodel\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mbest_parameters\u001b[39m\u001b[38;5;124m'\u001b[39m,\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mscore\u001b[39m\u001b[38;5;124m'\u001b[39m])\n\u001b[0;32m---> 50\u001b[0m find_best_model(\u001b[43mX_train\u001b[49m, y_train)\n\n\u001b[0;31mNameError\u001b[0m: name 'X_train' is not defined"
+    },
+    {
+      "cell_index": 26,
+      "error_type": "ModuleNotFoundError",
+      "error_message": "No module named 'sklearn'",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)\nCell \u001b[0;32mIn[22], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Using cross_val_score for gaining average accuracy\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmodel_selection\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m cross_val_score\n\u001b[1;32m      3\u001b[0m scores \u001b[38;5;241m=\u001b[39m cross_val_score(RandomForestClassifier(n_estimators\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m20\u001b[39m, random_state\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m0\u001b[39m), X_train, y_train, cv\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m5\u001b[39m)\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mAverage Accuracy : \u001b[39m\u001b[38;5;132;01m{}\u001b[39;00m\u001b[38;5;124m%\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;241m.\u001b[39mformat(\u001b[38;5;28mround\u001b[39m(\u001b[38;5;28msum\u001b[39m(scores)\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m100\u001b[39m\u001b[38;5;241m/\u001b[39m\u001b[38;5;28mlen\u001b[39m(scores)), \u001b[38;5;241m3\u001b[39m))\n\n\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+    },
+    {
+      "cell_index": 27,
+      "error_type": "NameError",
+      "error_message": "name 'RandomForestClassifier' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[23], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Creating Random Forest Model\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m classifier \u001b[38;5;241m=\u001b[39m \u001b[43mRandomForestClassifier\u001b[49m(n_estimators\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m20\u001b[39m, random_state\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m0\u001b[39m)\n\u001b[1;32m      3\u001b[0m classifier\u001b[38;5;241m.\u001b[39mfit(X_train, y_train)\n\n\u001b[0;31mNameError\u001b[0m: name 'RandomForestClassifier' is not defined"
+    },
+    {
+      "cell_index": 29,
+      "error_type": "ModuleNotFoundError",
+      "error_message": "No module named 'sklearn'",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)\nCell \u001b[0;32mIn[24], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Creating a confusion matrix\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;21;01msklearn\u001b[39;00m\u001b[38;5;21;01m.\u001b[39;00m\u001b[38;5;21;01mmetrics\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[38;5;28;01mimport\u001b[39;00m confusion_matrix, classification_report, accuracy_score\n\u001b[1;32m      3\u001b[0m y_pred \u001b[38;5;241m=\u001b[39m classifier\u001b[38;5;241m.\u001b[39mpredict(X_test)\n\u001b[1;32m      4\u001b[0m cm \u001b[38;5;241m=\u001b[39m confusion_matrix(y_test, y_pred)\n\n\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'sklearn'"
+    },
+    {
+      "cell_index": 30,
+      "error_type": "NameError",
+      "error_message": "name 'cm' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[25], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting the confusion matrix\u001b[39;00m\n\u001b[1;32m      2\u001b[0m plt\u001b[38;5;241m.\u001b[39mfigure(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m10\u001b[39m,\u001b[38;5;241m7\u001b[39m))\n\u001b[0;32m----> 3\u001b[0m p \u001b[38;5;241m=\u001b[39m sns\u001b[38;5;241m.\u001b[39mheatmap(\u001b[43mcm\u001b[49m, annot\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m, cmap\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mBlues\u001b[39m\u001b[38;5;124m\"\u001b[39m, fmt\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mg\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      4\u001b[0m plt\u001b[38;5;241m.\u001b[39mtitle(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mConfusion matrix for Random Forest Classifier Model - Test Set\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      5\u001b[0m plt\u001b[38;5;241m.\u001b[39mxlabel(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mPredicted Values\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\n\u001b[0;31mNameError\u001b[0m: name 'cm' is not defined"
+    },
+    {
+      "cell_index": 31,
+      "error_type": "NameError",
+      "error_message": "name 'accuracy_score' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[26], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Accuracy Score\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m score \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mround\u001b[39m(\u001b[43maccuracy_score\u001b[49m(y_test, y_pred),\u001b[38;5;241m4\u001b[39m)\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m100\u001b[39m\n\u001b[1;32m      3\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAccuracy on test set: \u001b[39m\u001b[38;5;132;01m{}\u001b[39;00m\u001b[38;5;124m%\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m.\u001b[39mformat(score))\n\n\u001b[0;31mNameError\u001b[0m: name 'accuracy_score' is not defined"
+    },
+    {
+      "cell_index": 32,
+      "error_type": "NameError",
+      "error_message": "name 'classification_report' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[27], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Classification Report\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[43mclassification_report\u001b[49m(y_test, y_pred))\n\n\u001b[0;31mNameError\u001b[0m: name 'classification_report' is not defined"
+    },
+    {
+      "cell_index": 33,
+      "error_type": "NameError",
+      "error_message": "name 'classifier' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[28], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Creating a confusion matrix for training set\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m y_train_pred \u001b[38;5;241m=\u001b[39m \u001b[43mclassifier\u001b[49m\u001b[38;5;241m.\u001b[39mpredict(X_train)\n\u001b[1;32m      3\u001b[0m cm \u001b[38;5;241m=\u001b[39m confusion_matrix(y_train, y_train_pred)\n\u001b[1;32m      4\u001b[0m cm\n\n\u001b[0;31mNameError\u001b[0m: name 'classifier' is not defined"
+    },
+    {
+      "cell_index": 34,
+      "error_type": "NameError",
+      "error_message": "name 'cm' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[29], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Plotting the confusion matrix\u001b[39;00m\n\u001b[1;32m      2\u001b[0m plt\u001b[38;5;241m.\u001b[39mfigure(figsize\u001b[38;5;241m=\u001b[39m(\u001b[38;5;241m10\u001b[39m,\u001b[38;5;241m7\u001b[39m))\n\u001b[0;32m----> 3\u001b[0m p \u001b[38;5;241m=\u001b[39m sns\u001b[38;5;241m.\u001b[39mheatmap(\u001b[43mcm\u001b[49m, annot\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mTrue\u001b[39;00m, cmap\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mBlues\u001b[39m\u001b[38;5;124m\"\u001b[39m, fmt\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mg\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      4\u001b[0m plt\u001b[38;5;241m.\u001b[39mtitle(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mConfusion matrix for Random Forest Classifier Model - Train Set\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      5\u001b[0m plt\u001b[38;5;241m.\u001b[39mxlabel(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mPredicted Values\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\n\u001b[0;31mNameError\u001b[0m: name 'cm' is not defined"
+    },
+    {
+      "cell_index": 35,
+      "error_type": "NameError",
+      "error_message": "name 'accuracy_score' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[30], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Accuracy Score\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m score \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mround\u001b[39m(\u001b[43maccuracy_score\u001b[49m(y_train, y_train_pred),\u001b[38;5;241m4\u001b[39m)\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m100\u001b[39m\n\u001b[1;32m      3\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAccuracy on trainning set: \u001b[39m\u001b[38;5;132;01m{}\u001b[39;00m\u001b[38;5;124m%\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m.\u001b[39mformat(score))\n\n\u001b[0;31mNameError\u001b[0m: name 'accuracy_score' is not defined"
+    },
+    {
+      "cell_index": 36,
+      "error_type": "NameError",
+      "error_message": "name 'classification_report' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[31], line 2\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Classification Report\u001b[39;00m\n\u001b[0;32m----> 2\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[43mclassification_report\u001b[49m(y_train, y_train_pred))\n\n\u001b[0;31mNameError\u001b[0m: name 'classification_report' is not defined"
+    },
+    {
+      "cell_index": 39,
+      "error_type": "NameError",
+      "error_message": "name 'sc' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[33], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Prediction 1\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Input sequence: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m prediction \u001b[38;5;241m=\u001b[39m \u001b[43mpredict_diabetes\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m2\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m81\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m72\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m15\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m76\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m30.1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m0.547\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m25\u001b[39;49m\u001b[43m)\u001b[49m[\u001b[38;5;241m0\u001b[39m]\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m prediction:\n\u001b[1;32m      5\u001b[0m   \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOops! You have diabetes.\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\nCell \u001b[0;32mIn[32], line 13\u001b[0m, in \u001b[0;36mpredict_diabetes\u001b[0;34m(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)\u001b[0m\n\u001b[1;32m     10\u001b[0m age \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mint\u001b[39m(Age)\n\u001b[1;32m     12\u001b[0m x \u001b[38;5;241m=\u001b[39m [[preg, glucose, bp, st, insulin, bmi, dpf, age]]\n\u001b[0;32m---> 13\u001b[0m x \u001b[38;5;241m=\u001b[39m \u001b[43msc\u001b[49m\u001b[38;5;241m.\u001b[39mtransform(x)\n\u001b[1;32m     15\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m classifier\u001b[38;5;241m.\u001b[39mpredict(x)\n\n\u001b[0;31mNameError\u001b[0m: name 'sc' is not defined"
+    },
+    {
+      "cell_index": 40,
+      "error_type": "NameError",
+      "error_message": "name 'sc' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[34], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Prediction 2\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Input sequence: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m prediction \u001b[38;5;241m=\u001b[39m \u001b[43mpredict_diabetes\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m117\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m88\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m24\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m145\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m34.5\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m0.403\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m40\u001b[39;49m\u001b[43m)\u001b[49m[\u001b[38;5;241m0\u001b[39m]\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m prediction:\n\u001b[1;32m      5\u001b[0m   \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOops! You have diabetes.\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\nCell \u001b[0;32mIn[32], line 13\u001b[0m, in \u001b[0;36mpredict_diabetes\u001b[0;34m(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)\u001b[0m\n\u001b[1;32m     10\u001b[0m age \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mint\u001b[39m(Age)\n\u001b[1;32m     12\u001b[0m x \u001b[38;5;241m=\u001b[39m [[preg, glucose, bp, st, insulin, bmi, dpf, age]]\n\u001b[0;32m---> 13\u001b[0m x \u001b[38;5;241m=\u001b[39m \u001b[43msc\u001b[49m\u001b[38;5;241m.\u001b[39mtransform(x)\n\u001b[1;32m     15\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m classifier\u001b[38;5;241m.\u001b[39mpredict(x)\n\n\u001b[0;31mNameError\u001b[0m: name 'sc' is not defined"
+    },
+    {
+      "cell_index": 41,
+      "error_type": "NameError",
+      "error_message": "name 'sc' is not defined",
+      "traceback": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)\nCell \u001b[0;32mIn[35], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# Prediction 2\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Input sequence: Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m prediction \u001b[38;5;241m=\u001b[39m \u001b[43mpredict_diabetes\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m5\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m120\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m92\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m10\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m81\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m26.1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m0.551\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m67\u001b[39;49m\u001b[43m)\u001b[49m[\u001b[38;5;241m0\u001b[39m]\n\u001b[1;32m      4\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m prediction:\n\u001b[1;32m      5\u001b[0m   \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mOops! You have diabetes.\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\nCell \u001b[0;32mIn[32], line 13\u001b[0m, in \u001b[0;36mpredict_diabetes\u001b[0;34m(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)\u001b[0m\n\u001b[1;32m     10\u001b[0m age \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mint\u001b[39m(Age)\n\u001b[1;32m     12\u001b[0m x \u001b[38;5;241m=\u001b[39m [[preg, glucose, bp, st, insulin, bmi, dpf, age]]\n\u001b[0;32m---> 13\u001b[0m x \u001b[38;5;241m=\u001b[39m \u001b[43msc\u001b[49m\u001b[38;5;241m.\u001b[39mtransform(x)\n\u001b[1;32m     15\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m classifier\u001b[38;5;241m.\u001b[39mpredict(x)\n\n\u001b[0;31mNameError\u001b[0m: name 'sc' is not defined"
+    }
+  ]
+}

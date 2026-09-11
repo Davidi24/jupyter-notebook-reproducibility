@@ -1,0 +1,28 @@
+[
+  {
+    "platform": "codeberg",
+    "successful_repositories": 40,
+    "candidate_notebooks": 73,
+    "measured_notebooks": 73,
+    "missing_notebooks": 0,
+    "average_reproducibility_percent": 37.09,
+    "cell_weighted_reproducibility_percent": 33.03,
+    "identical_cells": 550,
+    "different_cells": 1115,
+    "nondeterministic_cells": 27,
+    "total_code_cells": 1665
+  },
+  {
+    "platform": "zenodo",
+    "successful_repositories": 20,
+    "candidate_notebooks": 33,
+    "measured_notebooks": 33,
+    "missing_notebooks": 0,
+    "average_reproducibility_percent": 27.06,
+    "cell_weighted_reproducibility_percent": 22.22,
+    "identical_cells": 188,
+    "different_cells": 658,
+    "nondeterministic_cells": 9,
+    "total_code_cells": 846
+  }
+]

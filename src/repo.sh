@@ -321,7 +321,12 @@ process_repo() {
         while IFS= read -r nb; do
             rel="${nb#$REPO_DIR/}"
             [ -n "$discovered" ] && discovered="${discovered};${rel}" || discovered="$rel"
-        done < <(find "$REPO_DIR" -name "*.ipynb" | sort)
+        done < <(find "$REPO_DIR" \
+            -name "*.ipynb" \
+            -not -path "*/.ipynb_checkpoints/*" \
+            -not -name "*_output.ipynb" \
+            -not -name "*_output_output.ipynb" \
+            | sort)
 
         if [ -z "$discovered" ]; then
             finalize_repository_run "$RUN_ID" "NO_NOTEBOOKS" "No .ipynb files found in repo" "$(elapsed_sec "$REPO_START_TIME")"
@@ -346,6 +351,18 @@ process_repo() {
     fi
     if [ "$python_notebooks" -eq 0 ]; then
         finalize_repository_run "$RUN_ID" "NO_PYTHON_NOTEBOOKS" "No Python notebooks found" "$(elapsed_sec "$REPO_START_TIME")"
+        return 0
+    fi
+
+    if [ "${FAST_FIRST:-false}" = "true" ] &&
+       [[ "${FAST_FIRST_MAX_NOTEBOOKS:-0}" =~ ^[0-9]+$ ]] &&
+       [ "${FAST_FIRST_MAX_NOTEBOOKS:-0}" -gt 0 ] &&
+       [ "$python_notebooks" -gt "$FAST_FIRST_MAX_NOTEBOOKS" ]; then
+        finalize_repository_run \
+            "$RUN_ID" \
+            "DEFERRED_LONG_REPO" \
+            "Deferred during fast-first pass because it has $python_notebooks Python notebooks (limit: $FAST_FIRST_MAX_NOTEBOOKS)" \
+            "$(elapsed_sec "$REPO_START_TIME")"
         return 0
     fi
 
@@ -468,21 +485,32 @@ zenodo_record_id() {
 # Get the file download link for a Zenodo record ID
 zenodo_download_url() {
     local id="$1"
-    local -a headers=(-H "Accept: application/json")
+    local response
 
-    if [ -n "${ZENODO_TOKEN:-}" ]; then
-        headers+=(-H "Authorization: Bearer $ZENODO_TOKEN")
-    fi
-
-    curl -fsS \
+    if ! response=$(curl -fsS \
         --retry 2 \
         --retry-all-errors \
         --retry-delay 1 \
         --connect-timeout 10 \
         --max-time 30 \
-        "${headers[@]}" \
-        "https://zenodo.org/api/records/$id" |
-        python3 -c '
+        -H "Accept: application/json" \
+        "https://zenodo.org/api/records/$id"); then
+        if [ -n "${ZENODO_TOKEN:-}" ]; then
+            response=$(curl -fsS \
+                --retry 2 \
+                --retry-all-errors \
+                --retry-delay 1 \
+                --connect-timeout 10 \
+                --max-time 30 \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $ZENODO_TOKEN" \
+                "https://zenodo.org/api/records/$id") || return 1
+        else
+            return 1
+        fi
+    fi
+
+    echo "$response" | python3 -c '
 import json
 import sys
 
@@ -511,11 +539,6 @@ print(download_url)
 fetch_zenodo_direct_files() {
     local id="$1" dest="$2"
     local metadata_file="$dest/_zenodo_record.json"
-    local -a headers=(-H "Accept: application/json")
-
-    if [ -n "${ZENODO_TOKEN:-}" ]; then
-        headers+=(-H "Authorization: Bearer $ZENODO_TOKEN")
-    fi
 
     mkdir -p "$dest"
     if ! curl -fsS \
@@ -524,12 +547,29 @@ fetch_zenodo_direct_files() {
         --retry-delay 1 \
         --connect-timeout 10 \
         --max-time 60 \
-        "${headers[@]}" \
+        -H "Accept: application/json" \
         -o "$metadata_file" \
         "https://zenodo.org/api/records/$id"; then
-        rm -f "$metadata_file"
-        log "[ZENODO] Record metadata download failed"
-        return 1
+        if [ -n "${ZENODO_TOKEN:-}" ]; then
+            if ! curl -fsS \
+                --retry 2 \
+                --retry-all-errors \
+                --retry-delay 1 \
+                --connect-timeout 10 \
+                --max-time 60 \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $ZENODO_TOKEN" \
+                -o "$metadata_file" \
+                "https://zenodo.org/api/records/$id"; then
+                rm -f "$metadata_file"
+                log "[ZENODO] Record metadata download failed"
+                return 1
+            fi
+        else
+            rm -f "$metadata_file"
+            log "[ZENODO] Record metadata download failed"
+            return 1
+        fi
     fi
 
     if python3 - "$metadata_file" "$dest" <<'PY'
@@ -559,9 +599,10 @@ if declared_total > limit:
     raise SystemExit(1)
 
 headers = {"User-Agent": "NotebookFair"}
+auth_headers = dict(headers)
 token = os.environ.get("ZENODO_TOKEN", "").strip()
 if token:
-    headers["Authorization"] = f"Bearer {token}"
+    auth_headers["Authorization"] = f"Bearer {token}"
 
 downloaded = 0
 for item in downloadable:
@@ -588,16 +629,22 @@ for item in downloadable:
         downloaded_before_attempt = downloaded
         temporary.unlink(missing_ok=True)
         try:
-            with urlopen(Request(url, headers=headers), timeout=60) as response, temporary.open("wb") as output:
-                while True:
-                    chunk = response.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    downloaded += len(chunk)
-                    if downloaded > limit:
-                        print(f"[ZENODO] Downloads exceeded the {limit // (1024 * 1024)} MB safety limit", file=sys.stderr)
-                        raise SystemExit(1)
-                    output.write(chunk)
+            try:
+                response = urlopen(Request(url, headers=headers), timeout=60)
+            except OSError:
+                if not token:
+                    raise
+                response = urlopen(Request(url, headers=auth_headers), timeout=60)
+            with response, temporary.open("wb") as output:
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        downloaded += len(chunk)
+                        if downloaded > limit:
+                            print(f"[ZENODO] Downloads exceeded the {limit // (1024 * 1024)} MB safety limit", file=sys.stderr)
+                            raise SystemExit(1)
+                        output.write(chunk)
             temporary.replace(target)
             break
         except (OSError, TimeoutError) as error:
@@ -651,20 +698,27 @@ fetch_zenodo() {
         return 1
     fi
 
-    local -a download_headers=()
-    if [ -n "${ZENODO_TOKEN:-}" ]; then
-        download_headers+=(-H "Authorization: Bearer $ZENODO_TOKEN")
-    fi
-
     if ! curl -fsSL \
         --connect-timeout 10 \
         --max-time 300 \
-        "${download_headers[@]}" \
         -o "$dest/_zenodo_archive.zip" \
         "$dl"; then
-        rm -f "$dest/_zenodo_archive.zip"
-        log "[ZENODO] ZIP download failed"
-        return 1
+        if [ -n "${ZENODO_TOKEN:-}" ]; then
+            if ! curl -fsSL \
+                --connect-timeout 10 \
+                --max-time 300 \
+                -H "Authorization: Bearer $ZENODO_TOKEN" \
+                -o "$dest/_zenodo_archive.zip" \
+                "$dl"; then
+                rm -f "$dest/_zenodo_archive.zip"
+                log "[ZENODO] ZIP download failed"
+                return 1
+            fi
+        else
+            rm -f "$dest/_zenodo_archive.zip"
+            log "[ZENODO] ZIP download failed"
+            return 1
+        fi
     fi
     if ! python3 - "$dest/_zenodo_archive.zip" "$dest" <<'PY'
 from pathlib import Path
@@ -809,13 +863,8 @@ fetch_codeberg_metadata() {
 fetch_zenodo_metadata() {
     local record_id
     local response
-    local -a headers=(-H "Accept: application/json")
 
     record_id=$(zenodo_record_id "$1")
-
-    if [ -n "${ZENODO_TOKEN:-}" ]; then
-        headers+=(-H "Authorization: Bearer $ZENODO_TOKEN")
-    fi
 
     if ! response=$(curl -fsS \
         --retry 2 \
@@ -823,10 +872,25 @@ fetch_zenodo_metadata() {
         --retry-delay 1 \
         --connect-timeout 10 \
         --max-time 30 \
-        "${headers[@]}" \
+        -H "Accept: application/json" \
         "https://zenodo.org/api/records/$record_id"); then
-        echo "[METADATA] Zenodo API: no data for record $record_id" >&2
-        return 1
+        if [ -n "${ZENODO_TOKEN:-}" ]; then
+            response=$(curl -fsS \
+                --retry 2 \
+                --retry-all-errors \
+                --retry-delay 1 \
+                --connect-timeout 10 \
+                --max-time 30 \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $ZENODO_TOKEN" \
+                "https://zenodo.org/api/records/$record_id") || {
+                echo "[METADATA] Zenodo API: no data for record $record_id" >&2
+                return 1
+            }
+        else
+            echo "[METADATA] Zenodo API: no data for record $record_id" >&2
+            return 1
+        fi
     fi
 
     echo "$response" | jq -r '

@@ -15,6 +15,8 @@ eval "$(pyenv init -)"
 VENV_BASE_DIR="${VENV_BASE_DIR:-$HOME/.repo_venvs}"
 PIP_CACHE_DIR="${PIP_CACHE_DIR:-$PYENV_ROOT/versions/.notebookfair-pip-cache}"
 export PIP_CACHE_DIR
+NOTEBOOK_TIMEOUT_SECONDS="${NOTEBOOK_TIMEOUT_SECONDS:-1800}"
+export NOTEBOOK_TIMEOUT_SECONDS
 
 # Error state — mirrors DOCKER_ERROR_TYPE / DOCKER_ERROR_MESSAGE in docker.sh
 ENV_ERROR_TYPE=""
@@ -325,7 +327,7 @@ run_in_pyenv_env() {
         # file paths inside the notebook resolve correctly
         (
             cd "$notebook_dir"
-            "$REPO_VENV_DIR/bin/jupyter" nbconvert \
+            timeout "$NOTEBOOK_TIMEOUT_SECONDS" "$REPO_VENV_DIR/bin/jupyter" nbconvert \
                 --to notebook \
                 --execute \
                 --allow-errors \
@@ -338,6 +340,12 @@ run_in_pyenv_env() {
         local end_ts
         end_ts=$(date +%s)
         local duration=$(( end_ts - start_ts ))
+
+        if [ "$exit_code" -eq 124 ]; then
+            log "[PYENV] Notebook timed out after ${NOTEBOOK_TIMEOUT_SECONDS}s: $NOTEBOOK_PATH"
+            echo "EXEC_FAIL|$REPO_NAME|$NOTEBOOK_PATH|$duration|NOTEBOOK_TIMEOUT" | tee -a "$EXEC_LOG"
+            continue
+        fi
 
         if [ ! -f "$output_nb" ]; then
             log "[PYENV] Output notebook not created for $NOTEBOOK_PATH (exit $exit_code)"

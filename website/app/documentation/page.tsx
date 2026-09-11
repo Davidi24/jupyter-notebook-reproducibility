@@ -628,39 +628,107 @@ const EVALUATION_METRICS = [
     uses: 'Only notebooks for which both classification methods produced a result.',
     tells: 'How often the two automated methods need reconciliation or human review.',
   },
-  {
-    name: 'Cohen\'s kappa',
-    formula: '(observed agreement − chance agreement) / (1 − chance agreement)',
-    uses: 'Two people independently labelling the same notebooks before comparing answers.',
-    tells: 'Human agreement after removing agreement that could happen by chance; 1 is perfect agreement.',
-  },
 ];
 
 const EVALUATION_CATEGORIES = [
-  { short: 'DP', label: 'Data preparation', precision: '70.0%', recall: '77.8%', f1: '73.7%', support: 9 },
-  { short: 'DA', label: 'Data analysis', precision: '75.0%', recall: '66.7%', f1: '70.6%', support: 9 },
-  { short: 'VIZ', label: 'Visualization', precision: '75.0%', recall: '75.0%', f1: '75.0%', support: 8 },
-  { short: 'ML', label: 'Machine learning', precision: '77.8%', recall: '77.8%', f1: '77.8%', support: 9 },
-  { short: 'SIM', label: 'Simulation', precision: '100.0%', recall: '75.0%', f1: '85.7%', support: 8 },
-  { short: 'TUT', label: 'Tutorial', precision: '54.5%', recall: '66.7%', f1: '60.0%', support: 9 },
-  { short: 'SD', label: 'Software development', precision: '75.0%', recall: '75.0%', f1: '75.0%', support: 8 },
+  { short: 'DP', label: 'Data preparation', precision: '69.0%', recall: '78.4%', f1: '73.4%', support: 51 },
+  { short: 'DA', label: 'Data analysis', precision: '73.9%', recall: '66.7%', f1: '70.1%', support: 51 },
+  { short: 'VIZ', label: 'Visualization', precision: '73.9%', recall: '73.9%', f1: '73.9%', support: 46 },
+  { short: 'ML', label: 'Machine learning', precision: '76.9%', recall: '78.4%', f1: '77.7%', support: 51 },
+  { short: 'SIM', label: 'Simulation', precision: '100.0%', recall: '73.9%', f1: '85.0%', support: 46 },
+  { short: 'TUT', label: 'Tutorial', precision: '55.7%', recall: '66.7%', f1: '60.7%', support: 51 },
+  { short: 'SD', label: 'Software development', precision: '75.6%', recall: '73.9%', f1: '74.7%', support: 46 },
+];
+
+const EXAMPLE_CLASSIFICATIONS = [
+  { notebook: '00.getting_started.ipynb', repo: 'Deep-Learning-For-Hackers', rule: 'Tutorial', llm: 'Tutorial', human: 'Tutorial', agree: true },
+  { notebook: 'Comparison of CBOW, SkipGram…', repo: 'nlp-in-practice', rule: 'Data analysis', llm: 'Machine learning', human: 'Machine learning', agree: false },
+  { notebook: 'tutorial.ipynb', repo: 'xMIP', rule: 'Tutorial', llm: 'Tutorial', human: 'Tutorial', agree: true },
+  { notebook: 'Chapter 1.ipynb', repo: 'Hands-On-Data-Preprocessing', rule: 'Data preparation', llm: 'Tutorial', human: 'Tutorial', agree: false },
+  { notebook: 'tile_example.ipynb', repo: 'GEDTM30', rule: 'Machine learning', llm: 'Machine learning', human: 'Machine learning', agree: true },
+  { notebook: 'co2_emissions_by_source.ipynb', repo: 'climate-notebooks', rule: 'Data analysis', llm: 'Visualization', human: 'Visualization', agree: false },
+  { notebook: 'beam_steering.ipynb', repo: 'IQC-URA-Gaussian-beam-simulation', rule: 'Simulation', llm: 'Simulation', human: 'Simulation', agree: true },
+  { notebook: 'minimal-pipeline.ipynb', repo: 'BoggleCV', rule: 'Software development', llm: 'Machine learning', human: 'Software development', agree: false },
 ];
 
 const CONFUSION_MATRIX = [
-  [7, 1, 0, 0, 0, 1, 0],
-  [1, 6, 1, 0, 0, 1, 0],
-  [0, 1, 6, 0, 0, 1, 0],
-  [1, 0, 0, 7, 0, 1, 0],
-  [0, 0, 0, 1, 6, 0, 1],
-  [1, 0, 1, 0, 0, 6, 1],
-  [0, 0, 0, 1, 0, 1, 6],
+  [40, 6, 0, 0, 0, 5, 0],
+  [6, 34, 6, 0, 0, 5, 0],
+  [0, 6, 34, 0, 0, 6, 0],
+  [6, 0, 0, 40, 0, 5, 0],
+  [0, 0, 0, 6, 34, 0, 6],
+  [6, 0, 6, 0, 0, 34, 5],
+  [0, 0, 0, 6, 0, 6, 34],
 ];
 
+// Measured from the working pipeline database (output/db/db.sqlite) and, for
+// Codeberg/Zenodo, from analysis/measure_platform_reproducibility.py (which
+// diffs each repo's original notebook against its executed *_output.ipynb
+// directly on disk, using the same cell-comparison logic as the pipeline's
+// own analysis/nbprocess — needed because a missing PYTHONPATH export in
+// run_full_sample.sh silently dropped every notebook_executions /
+// notebook_reproducibility_metrics row for this run; fixed in
+// pipeline/run_full_sample_v8.sh). GitHub's numbers are the only ones with
+// notebook-level metrics already in the database, and they come from the
+// Feb 2026 baseline batch (main.sh) — a different, earlier run than
+// Codeberg/Zenodo's Sept 2026 full-sample run, not the same controlled
+// sample. "Acquired" = repository successfully cloned/downloaded. "Still
+// pending" = acquired but deferred for a later, non-fast-first pass because
+// it has many notebooks. "Executed & measured" = run_status SUCCESS.
 const PLATFORM_EVALUATION = [
-  { platform: 'GitHub', attempted: 20, acquired: '19 (95%)', clean: '12 (63.2%)', errors: '5 (26.3%)', failed: '2 (10.5%)', score: '0.78', time: '84 s', issue: 'Missing data files' },
-  { platform: 'Codeberg', attempted: 20, acquired: '18 (90%)', clean: '10 (55.6%)', errors: '5 (27.8%)', failed: '3 (16.7%)', score: '0.71', time: '92 s', issue: 'Dependency resolution' },
-  { platform: 'Zenodo', attempted: 20, acquired: '15 (75%)', clean: '7 (46.7%)', errors: '5 (33.3%)', failed: '3 (20.0%)', score: '0.62', time: '101 s', issue: 'Invalid record or archive' },
+  {
+    platform: 'GitHub', sample: 'Feb 2026 baseline batch',
+    attempted: 116, acquired: '115 (99.1%)', executed: '89 (77.4%)', pending: '0 (0%)',
+    avgScore: '24.3%', cellWeighted: '20.3%', scoreValue: 0.2433,
+    time: '2 min', issue: 'Kernel not found (20 repos)',
+  },
+  {
+    platform: 'Codeberg', sample: 'Sept 2026 full-sample run (in progress)',
+    attempted: 65, acquired: '64 (98.5%)', executed: '40 (62.5%)', pending: '21 (32.3%)',
+    avgScore: '37.1%', cellWeighted: '33.0%', scoreValue: 0.3709,
+    time: '5 min', issue: 'Environment setup failed (2 repos)',
+  },
+  {
+    platform: 'Zenodo', sample: 'Sept 2026 full-sample run (in progress)',
+    attempted: 50, acquired: '39 (78.0%)', executed: '20 (51.3%)', pending: '11 (22.0%)',
+    avgScore: '27.1%', cellWeighted: '22.2%', scoreValue: 0.2706,
+    time: '4 min', issue: 'Zenodo download failed (7 records)',
+  },
 ];
+
+function PlatformReproducibilityChart() {
+  return (
+    <div className="repro-chart">
+      <div className="repro-chart-head">
+        <h3>How reproducible is each platform?</h3>
+        <p>Average per-notebook reproducibility score across executed notebooks &middot; 0% = no cells matched, 100% = identical output</p>
+      </div>
+      <div className="repro-chart-rows">
+        {PLATFORM_EVALUATION.map((platform) => {
+          const pct = Math.max(0, Math.min(100, platform.scoreValue * 100));
+          return (
+            <div className="repro-chart-row" key={platform.platform}>
+              <span className="repro-chart-label">{platform.platform}</span>
+              <div className="repro-chart-track-wrap">
+                <div className="repro-chart-track">
+                  <span className="repro-chart-tick" style={{ left: '25%' }} />
+                  <span className="repro-chart-tick" style={{ left: '50%' }} />
+                  <span className="repro-chart-tick" style={{ left: '75%' }} />
+                  <div className="repro-chart-bar" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="repro-chart-value" style={{ left: `calc(${pct}% + 8px)` }}>{platform.avgScore}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="repro-chart-axis">
+        <span className="repro-chart-axis-spacer" />
+        <span className="repro-chart-axis-ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></span>
+      </div>
+    </div>
+  );
+}
 
 function EvaluationSection() {
   const [view, setView] = useState<'classification' | 'reproducibility'>('classification');
@@ -672,7 +740,9 @@ function EvaluationSection() {
           <button type="button" role="tab" aria-selected={view === 'classification'} className={view === 'classification' ? 'active' : ''} onClick={() => setView('classification')}><Icon name="spark" size={15} />Classification</button>
           <button type="button" role="tab" aria-selected={view === 'reproducibility'} className={view === 'reproducibility' ? 'active' : ''} onClick={() => setView('reproducibility')}><Icon name="chart" size={15} />Reproducibility by platform</button>
         </div>
-        <span className="evaluation-simulated-pill">ILLUSTRATIVE n=60</span>
+        {view === 'classification'
+          ? <span className="evaluation-simulated-pill">ILLUSTRATIVE n=342</span>
+          : <span className="evaluation-observed-pill">LIVE PIPELINE DATA</span>}
       </div>
 
       {view === 'classification' && <>
@@ -701,14 +771,13 @@ function EvaluationSection() {
 
       <section className="panel evaluation-panel">
         <div className="panel-heading">
-          <div><h2>Illustrative classification result</h2><p>Example values for a simulated, manually labelled set of 60 notebooks</p></div>
+          <div><h2>Illustrative classification result</h2><p>Example values for a simulated, manually labelled set of 342 notebooks</p></div>
         </div>
         <div className="evaluation-metric-strip">
-          <article><span>Rule accuracy</span><strong>73.3%</strong><small>44 of 60 correct</small></article>
-          <article><span>Rule macro F1</span><strong>74.0%</strong><small>Equal weight per category</small></article>
-          <article><span>LLM accuracy</span><strong>80.0%</strong><small>Requires the LLM to be enabled</small></article>
-          <article><span>Rule–LLM disagreement</span><strong>21.7%</strong><small>13 of 60 predictions differ</small></article>
-          <article><span>Cohen&apos;s kappa</span><strong>0.82</strong><small>Two independent reviewers</small></article>
+          <article><span>Rule accuracy</span><strong>73.1%</strong><small>250 of 342 correct</small></article>
+          <article><span>Rule macro F1</span><strong>73.6%</strong><small>Equal weight per category</small></article>
+          <article><span>LLM accuracy</span><strong>80.1%</strong><small>Requires the LLM to be enabled</small></article>
+          <article><span>Rule–LLM disagreement</span><strong>21.6%</strong><small>74 of 342 predictions differ</small></article>
         </div>
         <div className="evaluation-table-wrap">
           <table className="evaluation-table">
@@ -717,7 +786,22 @@ function EvaluationSection() {
             <tbody>{EVALUATION_CATEGORIES.map((category) => (
               <tr key={category.short}><td><b>{category.short}</b><span>{category.label}</span></td><td>{category.precision}</td><td>{category.recall}</td><td><strong>{category.f1}</strong></td><td>{category.support}</td></tr>
             ))}</tbody>
-            <tfoot><tr><td>Macro average</td><td>75.3%</td><td>73.4%</td><td>74.0%</td><td>60</td></tr></tfoot>
+            <tfoot><tr><td>Macro average</td><td>75.0%</td><td>73.1%</td><td>73.6%</td><td>342</td></tr></tfoot>
+          </table>
+        </div>
+        <div className="evaluation-table-wrap" style={{ marginTop: 18 }}>
+          <table className="evaluation-table">
+            <caption>Example notebooks: rule vs. LLM vs. human label</caption>
+            <thead><tr><th>Notebook</th><th>Rule category</th><th>LLM category</th><th>Human category</th><th>Agreement</th></tr></thead>
+            <tbody>{EXAMPLE_CLASSIFICATIONS.map((row) => (
+              <tr key={row.notebook}>
+                <td><b>{row.notebook}</b><span>{row.repo}</span></td>
+                <td>{row.rule}</td>
+                <td>{row.llm}</td>
+                <td><strong>{row.human}</strong></td>
+                <td>{row.agree ? <span className="evaluation-observed-pill" style={{ fontSize: 8 }}>ALL AGREE</span> : <span className="evaluation-simulated-pill" style={{ fontSize: 8 }}>REVIEWED</span>}</td>
+              </tr>
+            ))}</tbody>
           </table>
         </div>
       </section>
@@ -740,7 +824,7 @@ function EvaluationSection() {
               ))}</tbody>
             </table>
           </div>
-          <div className="confusion-legend"><span><i className="correct" />Diagonal = correct</span><span><i className="mistake" />Off-diagonal = confused category</span><p>Example: the first row shows 7 data-preparation notebooks classified correctly, 1 mistaken for data analysis, and 1 mistaken for a tutorial.</p></div>
+          <div className="confusion-legend"><span><i className="correct" />Diagonal = correct</span><span><i className="mistake" />Off-diagonal = confused category</span><p>Example: the first row shows 40 data-preparation notebooks classified correctly, 6 mistaken for data analysis, and 5 mistaken for a tutorial.</p></div>
         </div>
       </section>
 
@@ -752,7 +836,7 @@ function EvaluationSection() {
           <div><h2>What is being evaluated?</h2><p>Platform quality is measured at acquisition and execution level</p></div>
         </div>
         <div className="evaluation-question-grid single">
-          <article><span>02 · Reproducibility</span><h3>Can the notebook be acquired and re-executed?</h3><p>Compare acquisition success, clean execution, output similarity, running time, and failure reasons across GitHub, Codeberg, and Zenodo.</p><strong>Units reported: repository and notebook</strong></article>
+          <article><span>02 · Reproducibility</span><h3>Can the notebook be acquired and re-executed?</h3><p>Compare acquisition, successful execution, reproducibility score, running time, and failure reasons across GitHub, Codeberg, and Zenodo.</p><strong>Units reported: repository and notebook</strong></article>
         </div>
       </section>
 
@@ -760,19 +844,17 @@ function EvaluationSection() {
         <div className="panel-heading">
           <div><h2>Reproducibility across platforms</h2><p>Measure acquisition separately from execution so download failures are not hidden inside notebook scores</p></div>
         </div>
+        <p className="evaluation-sample-note">GitHub is measured from the Feb 2026 baseline batch; Codeberg and Zenodo are measured from the Sept 2026 full-sample run, which is still in progress &mdash; sample sizes are not yet balanced across platforms.</p>
         <div className="evaluation-table-wrap">
           <table className="evaluation-table platform-table">
-            <caption>Balanced sample: 20 repositories per platform</caption>
-            <thead><tr><th>Platform</th><th>Attempted</th><th>Acquired</th><th>Clean execution</th><th>Ran with errors</th><th>Execution failed</th><th>Median score</th><th>Median time</th><th>Most common issue</th></tr></thead>
+            <caption>Current pipeline results, by platform and run</caption>
+            <thead><tr><th>Platform</th><th>Attempted</th><th>Acquired</th><th>Executed &amp; measured</th><th>Still pending</th><th>Avg. score</th><th>Cell-weighted</th><th>Median time</th><th>Most common issue</th></tr></thead>
             <tbody>{PLATFORM_EVALUATION.map((platform) => (
-              <tr key={platform.platform}><td><strong>{platform.platform}</strong></td><td>{platform.attempted}</td><td>{platform.acquired}</td><td>{platform.clean}</td><td>{platform.errors}</td><td>{platform.failed}</td><td><strong>{platform.score}</strong></td><td>{platform.time}</td><td>{platform.issue}</td></tr>
+              <tr key={platform.platform}><td><strong>{platform.platform}</strong></td><td>{platform.attempted}</td><td>{platform.acquired}</td><td>{platform.executed}</td><td>{platform.pending}</td><td><strong>{platform.avgScore}</strong></td><td>{platform.cellWeighted}</td><td>{platform.time}</td><td>{platform.issue}</td></tr>
             ))}</tbody>
           </table>
         </div>
-        <div className="evaluation-denominators">
-          <strong>Read the denominators carefully</strong>
-          <p><b>Acquisition rate</b> uses all attempted repositories. Execution percentages use only acquired repositories. The median reproducibility score uses only comparable executed notebooks. Acquisition failures remain a separate reported result; they are not silently converted to a score of zero.</p>
-        </div>
+        <PlatformReproducibilityChart />
       </section>
 
       <section className="panel evaluation-panel">

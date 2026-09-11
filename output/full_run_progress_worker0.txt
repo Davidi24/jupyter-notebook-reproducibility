@@ -1,0 +1,8 @@
+FULL SAMPLE RUN PROGRESS
+  Progress    : 68 / 87  (78%)
+  Succeeded   : 10
+  Failed      : 10
+  Skipped     : 47
+  Elapsed     : 2h 32m 28s
+  Updated at  : 2026-09-07 23:44:26
+  Now running : https://zenodo.org/records/3362625
