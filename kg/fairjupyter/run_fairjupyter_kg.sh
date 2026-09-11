@@ -16,6 +16,6 @@ else
 fi
 
 "$PYTHON_BIN" "$FAIRJUPYTER_DIR/build_pipeline_kg.py" \
-    --db-file "$PROJECT_ROOT/output/db/db.sqlite" \
-    --output-dir "$PROJECT_ROOT/output/kg" \
+    --db-file "$PROJECT_ROOT/data/output/db/db.sqlite" \
+    --output-dir "$PROJECT_ROOT/data/output/kg" \
     "$@"

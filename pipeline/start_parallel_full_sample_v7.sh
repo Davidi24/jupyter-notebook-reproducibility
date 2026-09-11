@@ -48,9 +48,9 @@ if [ "$ALLOW_DUPLICATE" != "1" ]; then
     fi
 fi
 
-mkdir -p "$PROJECT_ROOT/output/launcher"
+mkdir -p "$PROJECT_ROOT/data/output/launcher"
 RUN_ID="$(date '+%Y%m%d-%H%M%S')"
-RUN_DIR="$PROJECT_ROOT/output/launcher/full-sample-$RUN_ID"
+RUN_DIR="$PROJECT_ROOT/data/output/launcher/full-sample-$RUN_ID"
 mkdir -p "$RUN_DIR"
 
 echo "[START] Project      : $PROJECT_ROOT"
@@ -82,17 +82,17 @@ for i in $(seq 0 $((WORKER_COUNT - 1))); do
     echo "$pid worker${i} $log_file" | tee -a "$PIDS_FILE"
 done
 
-echo "$RUN_DIR" > "$PROJECT_ROOT/output/launcher/latest_full_sample_run.txt"
+echo "$RUN_DIR" > "$PROJECT_ROOT/data/output/launcher/latest_full_sample_run.txt"
 
 echo ""
 echo "[START] Launched workers. They are detached and will keep running."
 echo "[START] Progress files:"
 for i in $(seq 0 $((WORKER_COUNT - 1))); do
-    echo "  $PROJECT_ROOT/output/full_run_progress_worker${i}.txt"
+    echo "  $PROJECT_ROOT/data/output/full_run_progress_worker${i}.txt"
 done
 echo ""
 echo "[START] Check worker processes:"
 echo "  ps -p \$(awk '{print \$1}' '$PIDS_FILE' | paste -sd, -) -o pid,etime,cmd"
 echo ""
 echo "[START] Check sample totals from the database:"
-echo "  sqlite3 -header -column '$PROJECT_ROOT/output/db/db.sqlite' \"SELECT run_status, COUNT(*) FROM repository_runs GROUP BY run_status;\""
+echo "  sqlite3 -header -column '$PROJECT_ROOT/data/output/db/db.sqlite' \"SELECT run_status, COUNT(*) FROM repository_runs GROUP BY run_status;\""

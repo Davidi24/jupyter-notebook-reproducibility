@@ -173,8 +173,8 @@ def aggregate(rows: list[dict]):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--db", default="output/db/db.sqlite")
-    parser.add_argument("--cloned-repos", default="output/cloned_repos")
+    parser.add_argument("--db", default="data/output/db/db.sqlite")
+    parser.add_argument("--cloned-repos", default="data/output/cloned_repos")
     parser.add_argument("--platform", action="append", default=["codeberg", "zenodo"])
     parser.add_argument("--output-dir", default="output")
     args = parser.parse_args()

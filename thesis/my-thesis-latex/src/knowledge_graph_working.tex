@@ -34,7 +34,7 @@ The original \texttt{reproduce-me.owl} is preserved. New terms are kept in a sep
 \clearpage
 \section{Relational Data Export}
 
-\texttt{export\_pipeline\_csv.py} is the bridge between SQLite and the FAIR Jupyter mapping workflow. It resolves the default database as \texttt{output/db/db.sqlite} and writes to \texttt{kg/fairjupyter/pipeline\_data/}. The SQLite connection uses a read-only URI, so graph construction cannot change pipeline evidence.
+\texttt{export\_pipeline\_csv.py} is the bridge between SQLite and the FAIR Jupyter mapping workflow. It resolves the default database as \texttt{data/output/db/db.sqlite} and writes to \texttt{kg/fairjupyter/pipeline\_data/}. The SQLite connection uses a read-only URI, so graph construction cannot change pipeline evidence.
 
 Seven named SQL queries define the export contract. They select columns in a fixed order rather than using \texttt{SELECT *}. The repository query additionally creates a complete platform URL and chooses the RDF resource type. GitHub and Codeberg rows become \texttt{GitRepositoryResource}; Zenodo rows become \texttt{ArchivedResearchRecord}. The classification query calculates \texttt{effective\_category} as the final human category when present, otherwise the provisional category.
 
@@ -158,7 +158,7 @@ The compiler can write current RML files or run with \texttt{--check}. Check mod
 
 \texttt{build\_pipeline\_kg.py} controls materialisation. It checks that Morph-KGC can be imported, locates all seven mappings, parses the extension ontology as RDF/XML, and parses every mapping as Turtle. These steps catch syntax problems before a long data conversion starts.
 
-Unless \texttt{--skip-export} is used, the builder calls the CSV exporter with the selected database and pipeline-data directory. It then prepares three output folders below \texttt{output/kg}: \texttt{config}, \texttt{logs}, and \texttt{split\_graph}. Old generated INI, log, and N-Triples files are removed by their exact patterns. Source ontology and mapping files are never deleted.
+Unless \texttt{--skip-export} is used, the builder calls the CSV exporter with the selected database and pipeline-data directory. It then prepares three output folders below \texttt{data/output/kg}: \texttt{config}, \texttt{logs}, and \texttt{split\_graph}. Old generated INI, log, and N-Triples files are removed by their exact patterns. Source ontology and mapping files are never deleted.
 
 For each mapping, \texttt{write\_config} creates a Morph-KGC INI file. The configuration specifies one mapping, N-Triples output, one process, logging level, and a dedicated log path. Running mappings separately gives each relational dataset its own fragment and timing. If Morph-KGC fails, the builder reports the mapping name and log rather than continuing with an incomplete graph.
 
@@ -172,10 +172,10 @@ For each mapping, \texttt{write\_config} creates a Morph-KGC INI file. The confi
 Location & Content\tabularnewline
 \midrule
 \texttt{pipeline\_data/} & seven current CSV inputs\tabularnewline
-\texttt{output/kg/config/} & one Morph-KGC configuration per mapping\tabularnewline
-\texttt{output/kg/logs/} & mapping log, standard output, and standard error\tabularnewline
-\path{output/kg/split_graph/} & one \texttt{.nt} fragment per mapping\tabularnewline
-\texttt{output/kg/} & combined graph and JSON build summary\tabularnewline
+\texttt{data/output/kg/config/} & one Morph-KGC configuration per mapping\tabularnewline
+\texttt{data/output/kg/logs/} & mapping log, standard output, and standard error\tabularnewline
+\path{data/output/kg/split_graph/} & one \texttt{.nt} fragment per mapping\tabularnewline
+\texttt{data/output/kg/} & combined graph and JSON build summary\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -195,7 +195,7 @@ The complete route can be run through the wrapper:
 bash kg/fairjupyter/run_fairjupyter_kg.sh
 \end{lstlisting}
 
-The wrapper resolves the project root and chooses Python from the FAIR Jupyter virtual environment on Linux or Windows. It then passes the working database and \texttt{output/kg} directory to the builder. A caller can set \texttt{PYTHON\_BIN} explicitly or pass \texttt{--skip-export} when validating unchanged CSV files.
+The wrapper resolves the project root and chooses Python from the FAIR Jupyter virtual environment on Linux or Windows. It then passes the working database and \texttt{data/output/kg} directory to the builder. A caller can set \texttt{PYTHON\_BIN} explicitly or pass \texttt{--skip-export} when validating unchanged CSV files.
 
 \begin{figure}[ht]
 \centering

@@ -18,7 +18,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUTPUT_DIR="$PROJECT_ROOT/output"
+OUTPUT_DIR="$PROJECT_ROOT/data/output"
 REPOS_DIR="$OUTPUT_DIR/cloned_repos"
 COMP_DIR="$OUTPUT_DIR/comparisons"
 
@@ -61,4 +61,4 @@ else
     echo "[CLEANUP] keeping comparison files; set CLEAN_COMPARISONS=true to remove them"
 fi
 
-echo "[CLEANUP] kept: output/db, output/logs, output/pdf, output/kg, output/full_run_progress.txt"
+echo "[CLEANUP] kept: data/output/db, data/output/logs, data/output/pdf, data/output/kg, data/output/full_run_progress.txt"

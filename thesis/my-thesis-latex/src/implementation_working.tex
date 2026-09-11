@@ -30,7 +30,7 @@ File & Main responsibility\tabularnewline
 \end{tabularx}
 \end{table}
 
-After loading these files, \texttt{initialize\_directories} creates the input folder and the output folders for cloned or extracted resources, comparisons, logs, and the working database. \texttt{ensure\_working\_db} copies \texttt{data/db.sqlite} only when \texttt{output/db/db.sqlite} does not yet exist. All later SQL uses \texttt{DB\_FILE}, which points to the working copy. Finally, \texttt{ensure\_pipeline\_tables} creates missing tables and applies compatible column migrations. The controller reaches the mode selection only after this preparation has succeeded.
+After loading these files, \texttt{initialize\_directories} creates the input folder and the output folders for cloned or extracted resources, comparisons, logs, and the working database. \texttt{ensure\_working\_db} copies \texttt{data/db.sqlite} only when \texttt{data/output/db/db.sqlite} does not yet exist. All later SQL uses \texttt{DB\_FILE}, which points to the working copy. Finally, \texttt{ensure\_pipeline\_tables} creates missing tables and applies compatible column migrations. The controller reaches the mode selection only after this preparation has succeeded.
 
 \clearpage
 \section{Run Creation, Single and Batch Processing}
@@ -215,7 +215,7 @@ Stored resource ID & \texttt{3362625}\tabularnewline
 Validation & HTTP request to \texttt{/api/records/3362625}\tabularnewline
 DOI & \texttt{10.5281/zenodo.3362625}\tabularnewline
 Acquisition & API-selected archive download and extraction\tabularnewline
-Local result & directory below \texttt{output/cloned\_repos/}\tabularnewline
+Local result & directory below \texttt{data/output/cloned\_repos/}\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -375,7 +375,7 @@ For a notebook with $n$ code cells and $i$ unchanged cells, the stored score is
   1, & n=0.
   \end{cases}
 \]
-The summary inserts one \path{notebook_executions} row and one linked \path{notebook_reproducibility_metrics} row. It also writes the detailed diff to \path{output/comparisons/}. The original notebook is never overwritten.
+The summary inserts one \path{notebook_executions} row and one linked \path{notebook_reproducibility_metrics} row. It also writes the detailed diff to \path{data/output/comparisons/}. The original notebook is never overwritten.
 
 Execution and comparison use database uniqueness at the run-and-notebook level. A notebook appears once in one repository run, while another run can create a new execution and metrics pair. The JSON file contains the readable summary, raw notebook diff, and extracted runtime errors. The relational rows retain the fields needed for aggregate queries, and the JSON keeps details that would be inconvenient to split across many SQL columns.
 

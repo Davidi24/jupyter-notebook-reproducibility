@@ -22,9 +22,9 @@ CLASSIFICATION_ENABLED="${CLASSIFICATION_ENABLED:-true}"
 CLASSIFICATION_MODEL="${CLASSIFICATION_MODEL:-gemma3:4b}"
 CLASSIFICATION_TIMEOUT="${CLASSIFICATION_TIMEOUT:-300}"
 
-mkdir -p "$PROJECT_ROOT/output/launcher"
+mkdir -p "$PROJECT_ROOT/data/output/launcher"
 WATCH_ID="$(date '+%Y%m%d-%H%M%S')"
-WATCH_DIR="$PROJECT_ROOT/output/launcher/long-after-short-$WATCH_ID"
+WATCH_DIR="$PROJECT_ROOT/data/output/launcher/long-after-short-$WATCH_ID"
 mkdir -p "$WATCH_DIR"
 WATCH_LOG="$WATCH_DIR/watcher.out"
 
@@ -33,8 +33,8 @@ log() {
 }
 
 current_run_dir=""
-if [ -f "$PROJECT_ROOT/output/launcher/latest_full_sample_run.txt" ]; then
-    current_run_dir="$(cat "$PROJECT_ROOT/output/launcher/latest_full_sample_run.txt")"
+if [ -f "$PROJECT_ROOT/data/output/launcher/latest_full_sample_run.txt" ]; then
+    current_run_dir="$(cat "$PROJECT_ROOT/data/output/launcher/latest_full_sample_run.txt")"
 fi
 
 log "[WATCH] Project: $PROJECT_ROOT"
@@ -56,10 +56,10 @@ fi
 log "[WATCH] Fast-first pass appears finished. Preparing deferred long-repo pass."
 
 source "$HOME/pipeline_env.sh" 2>/dev/null || true
-sqlite3 -cmd ".timeout 30000" "$PROJECT_ROOT/output/db/db.sqlite" \
+sqlite3 -cmd ".timeout 30000" "$PROJECT_ROOT/data/output/db/db.sqlite" \
     "DELETE FROM repository_runs WHERE run_status='DEFERRED_LONG_REPO';"
 
-LONG_RUN_DIR="$PROJECT_ROOT/output/launcher/long-pass-$WATCH_ID"
+LONG_RUN_DIR="$PROJECT_ROOT/data/output/launcher/long-pass-$WATCH_ID"
 mkdir -p "$LONG_RUN_DIR"
 : > "$LONG_RUN_DIR/pids.txt"
 
@@ -84,5 +84,5 @@ for i in $(seq 0 $((LONG_WORKER_COUNT - 1))); do
     log "[WATCH] Started long worker $i as PID $pid"
 done
 
-echo "$LONG_RUN_DIR" > "$PROJECT_ROOT/output/launcher/latest_long_sample_run.txt"
+echo "$LONG_RUN_DIR" > "$PROJECT_ROOT/data/output/launcher/latest_long_sample_run.txt"
 log "[WATCH] Long phase launched and detached: $LONG_RUN_DIR"

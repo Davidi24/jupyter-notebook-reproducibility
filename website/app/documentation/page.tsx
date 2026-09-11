@@ -661,7 +661,7 @@ const CONFUSION_MATRIX = [
   [0, 0, 0, 6, 0, 6, 34],
 ];
 
-// Measured from the working pipeline database (output/db/db.sqlite) and, for
+// Measured from the working pipeline database (data/output/db/db.sqlite) and, for
 // Codeberg/Zenodo, from analysis/measure_platform_reproducibility.py (which
 // diffs each repo's original notebook against its executed *_output.ipynb
 // directly on disk, using the same cell-comparison logic as the pipeline's

@@ -64,9 +64,9 @@ Classify every notebook below a directory and store results in the pipeline DB:
 
 ```bash
 python -B -m analysis.notebook_classification classify \
-  output/cloned_repos/example-repository \
-  --db-file output/db/db.sqlite \
-  --output output/classification-results.json
+  data/output/cloned_repos/example-repository \
+  --db-file data/output/db/db.sqlite \
+  --output data/output/classification-results.json
 ```
 
 The command returns the rule result, local-LLM result, agreement status,
@@ -90,16 +90,16 @@ Export rows requiring review:
 
 ```bash
 python -B -m analysis.notebook_classification review-queue \
-  --db-file output/db/db.sqlite \
-  --output output/classification-review.csv
+  --db-file data/output/db/db.sqlite \
+  --output data/output/classification-review.csv
 ```
 
 For an unbiased random annotation sample that hides both automated predictions:
 
 ```bash
 python -B -m analysis.notebook_classification review-queue \
-  --db-file output/db/db.sqlite \
-  --output output/classification-blind-sample.csv \
+  --db-file data/output/db/db.sqlite \
+  --output data/output/classification-blind-sample.csv \
   --include-all --blind --sample-size 100 --seed 2026
 ```
 
@@ -107,7 +107,7 @@ Save one human decision:
 
 ```bash
 python -B -m analysis.notebook_classification review \
-  --db-file output/db/db.sqlite \
+  --db-file data/output/db/db.sqlite \
   --classification-id 1 \
   --category visualization \
   --reviewer David \
@@ -121,8 +121,8 @@ the CSV decisions in one batch:
 
 ```bash
 python -B -m analysis.notebook_classification apply-reviews \
-  --db-file output/db/db.sqlite \
-  --input output/classification-blind-sample.csv
+  --db-file data/output/db/db.sqlite \
+  --input data/output/classification-blind-sample.csv
 ```
 
 ## Evaluation
@@ -132,8 +132,8 @@ recall, macro F1, per-category support, and rule/LLM disagreement rate:
 
 ```bash
 python -B -m analysis.notebook_classification evaluate \
-  --db-file output/db/db.sqlite \
-  --output output/classification-evaluation.json
+  --db-file data/output/db/db.sqlite \
+  --output data/output/classification-evaluation.json
 ```
 
 Agreement is not proof of correctness. The final experiment should therefore

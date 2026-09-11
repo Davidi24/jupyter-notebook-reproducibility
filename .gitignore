@@ -12,20 +12,21 @@ __pycache__/
 *.sqlite3
 
 # Pipeline runtime output
-output/cloned_repos/
-output/comparisons/
-output/db/
-output/kg/
-output/logs/
-output/pdf/
-output/web-jobs/
+output/
+data/output/cloned_repos/
+data/output/comparisons/
+data/output/db/
+data/output/kg/
+data/output/logs/
+data/output/pdf/
+data/output/web-jobs/
 
 # Local scratch and archived verification bundles
 _to_delete/
 tmp/
 
 # Local FAIR Jupyter KG environment
-code/fairjupyter/.venv/
+kg/fairjupyter/.venv/
 
 # Website dependencies, build output, and local platform state
 website/node_modules/

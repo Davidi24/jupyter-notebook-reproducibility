@@ -18,7 +18,7 @@
 #   bash pipeline/run_full_sample.sh
 #
 # It writes into the SAME working database run.sh normally uses
-# (output/db/db.sqlite) — a timestamped backup is taken automatically before
+# (data/output/db/db.sqlite) — a timestamped backup is taken automatically before
 # anything is written. Existing rows (e.g. from an earlier pilot or from
 # Sheeba's original corpus) are left alone; this only adds/updates rows for
 # the 252 sample repos.
@@ -54,7 +54,7 @@
 # enabled below instead of failing on "database is locked") and safe for
 # shared pyenv Python installs (serialized with a file lock so two workers
 # never build the same interpreter at once). Each worker gets its own
-# progress file: output/full_run_progress_worker<N>.txt. Pick WORKER_COUNT
+# progress file: data/output/full_run_progress_worker<N>.txt. Pick WORKER_COUNT
 # based on your machine — more workers only help until you run out of CPU
 # cores / RAM / disk I/O; 3-4 is a reasonable starting point on a laptop.
 ###############################################################################
@@ -77,7 +77,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # That failure happens inside a `python3 ... | tee -a "$LOG_FILE"` pipeline
 # that nothing checks the exit code of, so it's been silent: the repository_run
 # still finalizes as SUCCESS with zero real reproducibility data recorded for
-# it. Confirmed directly in output/logs/5453_urm.py.log (and it is NOT
+# it. Confirmed directly in data/output/logs/5453_urm.py.log (and it is NOT
 # platform-specific — every repo processed by this script since this run
 # started on Sept 6 has 0 rows in notebook_executions, GitHub included; only
 # repos from the old Feb 2026 run, which went through main.sh, have real data).
@@ -406,11 +406,11 @@ echo ""
 
 # Progress file — a plain text file you can check from ANY OTHER terminal at
 # any time while this is running (it can take hours), e.g.:
-#   cat output/full_run_progress.txt
-#   watch -n 30 cat output/full_run_progress*.txt
+#   cat data/output/full_run_progress.txt
+#   watch -n 30 cat data/output/full_run_progress*.txt
 WORKER_SUFFIX=""
 [ "$WORKER_COUNT" -gt 1 ] && WORKER_SUFFIX="_worker${WORKER_INDEX}"
-PROGRESS_FILE="$PROJECT_ROOT/output/full_run_progress${WORKER_SUFFIX}.txt"
+PROGRESS_FILE="$PROJECT_ROOT/data/output/full_run_progress${WORKER_SUFFIX}.txt"
 mkdir -p "$(dirname "$PROGRESS_FILE")"
 
 DONE=0

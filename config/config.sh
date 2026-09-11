@@ -4,7 +4,7 @@
 ###############################################################################
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INPUT_DIR="$PROJECT_ROOT/input"
-OUTPUT_DIR="$PROJECT_ROOT/output"
+OUTPUT_DIR="$PROJECT_ROOT/data/output"
 REPOS_DIR="$OUTPUT_DIR/cloned_repos"
 COMP_DIR="$OUTPUT_DIR/comparisons"
 LOG_DIR="$OUTPUT_DIR/logs"
@@ -14,7 +14,7 @@ DB_DIR="$PROJECT_ROOT/data"
 SOURCE_DB_FILE="$DB_DIR/db.sqlite"
 
 # Output DB — created fresh by pipeline, stores all execution results
-OUTPUT_DB_DIR="$PROJECT_ROOT/output/db"
+OUTPUT_DB_DIR="$PROJECT_ROOT/data/output/db"
 OUTPUT_DB_FILE="$OUTPUT_DB_DIR/db.sqlite"
 DB_FILE="$OUTPUT_DB_FILE"
 

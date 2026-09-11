@@ -2,8 +2,8 @@
 set -e
 cd "$(dirname "$0")/../.."
 
-REAL_DB="output/db/db.sqlite"
-BACKUP="output/db/db.sqlite.bak"
+REAL_DB="data/output/db/db.sqlite"
+BACKUP="data/output/db/db.sqlite.bak"
 
 # --- EDIT THESE: your test targets ---
 CODEBERG_REPO="tplasdio/ipynb-py-convert"

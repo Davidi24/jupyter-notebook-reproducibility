@@ -42,7 +42,7 @@ The status distinction is deliberate. ``First version'' means that code exists a
 
 \subsection{Data Safety}
 
-The original database is treated as input evidence and must not be modified. The system uses a copy-on-first-run policy: if a working database is absent, the source is copied to \texttt{output/db/db.sqlite}; subsequent schema migration and execution results target only the working copy. If neither file exists, an empty working database can be created. This requirement was selected to make pipeline experiments recoverable and to separate source provenance from derived results.
+The original database is treated as input evidence and must not be modified. The system uses a copy-on-first-run policy: if a working database is absent, the source is copied to \texttt{data/output/db/db.sqlite}; subsequent schema migration and execution results target only the working copy. If neither file exists, an empty working database can be created. This requirement was selected to make pipeline experiments recoverable and to separate source provenance from derived results.
 
 \subsection{Comparability}
 
