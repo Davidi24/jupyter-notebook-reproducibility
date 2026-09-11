@@ -5,7 +5,7 @@ The operational pipeline stores evidence in SQLite because shell and Python func
 
 \section{Relationship to FAIR Jupyter Knowledge Graph}
 
-FAIR Jupyter provides the semantic baseline: the REPRODUCE-ME ontology, mappings for its original publication-centred dataset, and a Morph-KGC materialisation route \cite{samuel2024fairjupyter}. Its existing data covers articles, authors, GitHub repositories, notebooks, code features, requirements, executions, and reproducibility results. Those files remain in \texttt{code/fairjupyter/mapping/} and are not replaced by the extension.
+FAIR Jupyter provides the semantic baseline: the REPRODUCE-ME ontology, mappings for its original publication-centred dataset, and a Morph-KGC materialisation route \cite{samuel2024fairjupyter}. Its existing data covers articles, authors, GitHub repositories, notebooks, code features, requirements, executions, and reproducibility results. Those files remain in \texttt{kg/fairjupyter/mapping/} and are not replaced by the extension.
 
 The cross-platform pipeline produces a second, operational data view. Its rows describe GitHub and Codeberg repositories, Zenodo archived records, current metadata, processing attempts, notebook executions, output comparisons, and notebook classifications. Seven new mapping files translate these rows under the same Notebook FAIR namespace.
 
@@ -34,7 +34,7 @@ The original \texttt{reproduce-me.owl} is preserved. New terms are kept in a sep
 \clearpage
 \section{Relational Data Export}
 
-\texttt{export\_pipeline\_csv.py} is the bridge between SQLite and the FAIR Jupyter mapping workflow. It resolves the default database as \texttt{output/db/db.sqlite} and writes to \texttt{code/fairjupyter/pipeline\_data/}. The SQLite connection uses a read-only URI, so graph construction cannot change pipeline evidence.
+\texttt{export\_pipeline\_csv.py} is the bridge between SQLite and the FAIR Jupyter mapping workflow. It resolves the default database as \texttt{output/db/db.sqlite} and writes to \texttt{kg/fairjupyter/pipeline\_data/}. The SQLite connection uses a read-only URI, so graph construction cannot change pipeline evidence.
 
 Seven named SQL queries define the export contract. They select columns in a fixed order rather than using \texttt{SELECT *}. The repository query additionally creates a complete platform URL and chooses the RDF resource type. GitHub and Codeberg rows become \texttt{GitRepositoryResource}; Zenodo rows become \texttt{ArchivedResearchRecord}. The classification query calculates \texttt{effective\_category} as the final human category when present, otherwise the provisional category.
 
@@ -192,7 +192,7 @@ The build summary records the UTC build time, source database, ontology, combine
 The complete route can be run through the wrapper:
 
 \begin{lstlisting}[language=bash,caption={Complete graph build command.}]
-bash code/fairjupyter/run_fairjupyter_kg.sh
+bash kg/fairjupyter/run_fairjupyter_kg.sh
 \end{lstlisting}
 
 The wrapper resolves the project root and chooses Python from the FAIR Jupyter virtual environment on Linux or Windows. It then passes the working database and \texttt{output/kg} directory to the builder. A caller can set \texttt{PYTHON\_BIN} explicitly or pass \texttt{--skip-export} when validating unchanged CSV files.

@@ -168,7 +168,7 @@ def main() -> int:
     try:
         if importlib.util.find_spec("morph_kgc") is None:
             raise RuntimeError(
-                "Morph-KGC is not installed. Create code/fairjupyter/.venv and "
+                "Morph-KGC is not installed. Create kg/fairjupyter/.venv and "
                 "install requirements-kg.txt."
             )
 

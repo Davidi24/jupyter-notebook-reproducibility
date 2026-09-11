@@ -150,7 +150,7 @@ Only classifications connected to a registered notebook ID are exported to RDF.
 
 ```bash
 python -B -m unittest tests.test_notebook_classification -v
-python -B code/fairjupyter/compile_pipeline_mappings.py --check
+python -B kg/fairjupyter/compile_pipeline_mappings.py --check
 ```
 
 The automated tests mock the model response for speed and determinism. A separate

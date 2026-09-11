@@ -3,7 +3,7 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-FAIRJUPYTER_DIR="$PROJECT_ROOT/code/fairjupyter"
+FAIRJUPYTER_DIR="$PROJECT_ROOT/kg/fairjupyter"
 
 if [ -x "$FAIRJUPYTER_DIR/.venv/bin/python" ]; then
     PYTHON_BIN="$FAIRJUPYTER_DIR/.venv/bin/python"
