@@ -39,6 +39,7 @@ def _classification_parser(subparsers):
     parser = subparsers.add_parser("classify", help="Classify notebooks or directories.")
     parser.add_argument("paths", nargs="+", help="Notebook files or directories.")
     parser.add_argument("--rule-only", action="store_true", help="Skip the local LLM.")
+    parser.add_argument("--llm-only", action="store_true", help="Skip the rule-based classifier.")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Installed Ollama model name.")
     parser.add_argument("--ollama-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
@@ -100,6 +101,12 @@ def parse_arguments(argv=None):
 
 
 def _run_classify(arguments):
+    if arguments.rule_only and arguments.llm_only:
+        raise ValueError(
+            "--rule-only and --llm-only cannot both be set — at least one "
+            "classification method must run. Choose --rule-only, --llm-only, "
+            "or neither to run both."
+        )
     paths = _notebook_paths(arguments.paths)
     if not paths:
         raise ValueError("No .ipynb files were found")
@@ -114,6 +121,7 @@ def _run_classify(arguments):
         for path in paths:
             result = classify_notebook(
                 path,
+                use_rules=not arguments.llm_only,
                 use_llm=not arguments.rule_only,
                 model=arguments.model,
                 base_url=arguments.ollama_url,

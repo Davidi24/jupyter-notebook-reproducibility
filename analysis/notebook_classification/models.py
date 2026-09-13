@@ -27,7 +27,7 @@ class ClassificationResult:
     notebook_sha256: str
     collector_version: str
     collection_stats: dict
-    rule_result: ClassifierResult
+    rule_result: ClassifierResult | None
     llm_result: ClassifierResult | None
     agreement_status: str
     needs_human_review: bool

@@ -28,6 +28,25 @@ def _notebook_hash(path, collected):
 
 
 def _reconcile(rule_result, llm_result, llm_error, confidence_threshold):
+    if rule_result is None and llm_result is None:
+        warning = (
+            "Neither classifier produced a result; human clarification is required."
+            if llm_error is None
+            else (
+                "The local LLM was unavailable and the rule-based classifier was not "
+                f"requested; human clarification is required: {llm_error}"
+            )
+        )
+        return "LLM_UNAVAILABLE", True, warning, None
+
+    if rule_result is None:
+        return (
+            "RULE_NOT_REQUESTED",
+            True,
+            "The rule-based classifier was not requested; human clarification is required.",
+            llm_result.primary_category,
+        )
+
     if llm_result is None:
         status = "LLM_NOT_REQUESTED" if llm_error is None else "LLM_UNAVAILABLE"
         warning = (
@@ -86,6 +105,7 @@ def _reconcile(rule_result, llm_result, llm_error, confidence_threshold):
 
 def classify_notebook(
     path,
+    use_rules=True,
     use_llm=True,
     model=DEFAULT_MODEL,
     base_url=DEFAULT_BASE_URL,
@@ -93,8 +113,14 @@ def classify_notebook(
     confidence_threshold=0.55,
     llm_requester=None,
 ):
+    if not use_rules and not use_llm:
+        raise ValueError(
+            "At least one classification method must be enabled: choose the "
+            "rule-based classifier, the AI-based classifier, or both."
+        )
+
     collected = collect_notebook(path)
-    rule_result = classify_with_rules(collected)
+    rule_result = classify_with_rules(collected) if use_rules else None
     llm_result = None
     llm_error = None
 

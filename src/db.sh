@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS notebooks (id INTEGER PRIMARY KEY AUTOINCREMENT, repo
 CREATE TABLE IF NOT EXISTS repository_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, repository_id INTEGER NOT NULL, url TEXT, run_status TEXT NOT NULL, error_message TEXT, started_at TEXT, finished_at TEXT, duration_seconds FLOAT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (repository_id) REFERENCES repositories(id));
 CREATE TABLE IF NOT EXISTS notebook_executions (id INTEGER PRIMARY KEY AUTOINCREMENT, repository_run_id INTEGER NOT NULL, repository_id INTEGER NOT NULL, notebook_id INTEGER NOT NULL, notebook_name TEXT, url TEXT, execution_status TEXT, execution_duration FLOAT, total_code_cells INTEGER, executed_cells INTEGER, error_type TEXT, error_category TEXT, error_message TEXT, error_cell_index INTEGER, error_count INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(repository_run_id, notebook_id), FOREIGN KEY (repository_run_id) REFERENCES repository_runs(id), FOREIGN KEY (repository_id) REFERENCES repositories(id), FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
 CREATE TABLE IF NOT EXISTS notebook_reproducibility_metrics (id INTEGER PRIMARY KEY AUTOINCREMENT, repository_run_id INTEGER NOT NULL, notebook_execution_id INTEGER NOT NULL, repository_id INTEGER NOT NULL, notebook_id INTEGER NOT NULL, total_code_cells INTEGER, identical_cells_count INTEGER, different_cells_count INTEGER, nondeterministic_cells_count INTEGER, identical_cells TEXT, different_cells TEXT, nondeterministic_cells TEXT, reproducibility_score REAL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(repository_run_id, notebook_id), FOREIGN KEY (repository_run_id) REFERENCES repository_runs(id), FOREIGN KEY (notebook_execution_id) REFERENCES notebook_executions(id), FOREIGN KEY (repository_id) REFERENCES repositories(id), FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
-CREATE TABLE IF NOT EXISTS notebook_classifications (id INTEGER PRIMARY KEY AUTOINCREMENT, notebook_id INTEGER, notebook_path TEXT NOT NULL, notebook_sha256 TEXT NOT NULL, rule_category TEXT NOT NULL, rule_confidence REAL NOT NULL, llm_category TEXT, llm_confidence REAL, llm_model TEXT, llm_prompt_version TEXT, agreement_status TEXT NOT NULL, needs_human_review INTEGER NOT NULL DEFAULT 1, warning TEXT, provisional_category TEXT, final_category TEXT, human_reviewer TEXT, human_note TEXT, human_reviewed_at TEXT, result_json TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
+CREATE TABLE IF NOT EXISTS notebook_classifications (id INTEGER PRIMARY KEY AUTOINCREMENT, notebook_id INTEGER, notebook_path TEXT NOT NULL, notebook_sha256 TEXT NOT NULL, rule_category TEXT, rule_confidence REAL, llm_category TEXT, llm_confidence REAL, llm_model TEXT, llm_prompt_version TEXT, agreement_status TEXT NOT NULL, needs_human_review INTEGER NOT NULL DEFAULT 1, warning TEXT, provisional_category TEXT, final_category TEXT, human_reviewer TEXT, human_note TEXT, human_reviewed_at TEXT, result_json TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
 CREATE INDEX IF NOT EXISTS idx_notebook_classifications_notebook ON notebook_classifications(notebook_id);
 CREATE INDEX IF NOT EXISTS idx_notebook_classifications_review ON notebook_classifications(needs_human_review, agreement_status);
 
@@ -41,6 +41,21 @@ SQLEOF
     if ! column_exists repository_metadata doi; then
         sqlite3 "$DB_FILE" "ALTER TABLE repository_metadata ADD COLUMN doi TEXT DEFAULT '';"
         echo "[DB] Migration: added 'doi' column to repository_metadata"
+    fi
+
+    # Migration: an existing notebook_classifications table may still require
+    # rule_category/rule_confidence (older schema, before --llm-only existed).
+    # SQLite cannot drop a NOT NULL constraint in place, so the table is rebuilt.
+    if [ "$(sqlite3 "$DB_FILE" "PRAGMA table_info(notebook_classifications);" | awk -F'|' '$2=="rule_category" {print $4}')" = "1" ]; then
+        sqlite3 "$DB_FILE" << 'SQLEOF'
+ALTER TABLE notebook_classifications RENAME TO notebook_classifications_pre_llm_only;
+CREATE TABLE notebook_classifications (id INTEGER PRIMARY KEY AUTOINCREMENT, notebook_id INTEGER, notebook_path TEXT NOT NULL, notebook_sha256 TEXT NOT NULL, rule_category TEXT, rule_confidence REAL, llm_category TEXT, llm_confidence REAL, llm_model TEXT, llm_prompt_version TEXT, agreement_status TEXT NOT NULL, needs_human_review INTEGER NOT NULL DEFAULT 1, warning TEXT, provisional_category TEXT, final_category TEXT, human_reviewer TEXT, human_note TEXT, human_reviewed_at TEXT, result_json TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (notebook_id) REFERENCES notebooks(id));
+INSERT INTO notebook_classifications SELECT * FROM notebook_classifications_pre_llm_only;
+DROP TABLE notebook_classifications_pre_llm_only;
+CREATE INDEX IF NOT EXISTS idx_notebook_classifications_notebook ON notebook_classifications(notebook_id);
+CREATE INDEX IF NOT EXISTS idx_notebook_classifications_review ON notebook_classifications(needs_human_review, agreement_status);
+SQLEOF
+        echo "[DB] Migration: relaxed rule_category/rule_confidence to allow --llm-only rows"
     fi
 }
 

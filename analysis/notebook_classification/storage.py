@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS notebook_classifications (
     notebook_id INTEGER,
     notebook_path TEXT NOT NULL,
     notebook_sha256 TEXT NOT NULL,
-    rule_category TEXT NOT NULL,
-    rule_confidence REAL NOT NULL,
+    rule_category TEXT,
+    rule_confidence REAL,
     llm_category TEXT,
     llm_confidence REAL,
     llm_model TEXT,
@@ -52,6 +52,28 @@ def open_database(path):
 def ensure_classification_table(connection):
     connection.executescript(CLASSIFICATION_TABLE_SQL)
     connection.commit()
+    _relax_rule_columns_if_needed(connection)
+
+
+def _relax_rule_columns_if_needed(connection):
+    """Rebuild notebook_classifications if rule_category/rule_confidence are
+    still NOT NULL from before --llm-only existed. SQLite cannot drop a NOT
+    NULL constraint in place, so the table is recreated and repopulated."""
+    columns = connection.execute("PRAGMA table_info(notebook_classifications)").fetchall()
+    rule_category_column = next((row for row in columns if row["name"] == "rule_category"), None)
+    if rule_category_column is None or not rule_category_column["notnull"]:
+        return
+    connection.executescript(
+        """
+        ALTER TABLE notebook_classifications RENAME TO notebook_classifications_pre_llm_only;
+        """
+        + CLASSIFICATION_TABLE_SQL
+        + """
+        INSERT INTO notebook_classifications SELECT * FROM notebook_classifications_pre_llm_only;
+        DROP TABLE notebook_classifications_pre_llm_only;
+        """
+    )
+    connection.commit()
 
 
 def resolve_notebook_id(connection, notebook_path):
@@ -74,6 +96,7 @@ def resolve_notebook_id(connection, notebook_path):
 def save_classification(connection, result, notebook_id=None):
     if notebook_id is None:
         notebook_id = resolve_notebook_id(connection, result.notebook_path)
+    rule = result.rule_result
     llm = result.llm_result
     cursor = connection.execute(
         """
@@ -90,8 +113,8 @@ def save_classification(connection, result, notebook_id=None):
             notebook_id,
             result.notebook_path,
             result.notebook_sha256,
-            result.rule_result.primary_category,
-            result.rule_result.confidence,
+            rule.primary_category if rule else None,
+            rule.confidence if rule else None,
             llm.primary_category if llm else None,
             llm.confidence if llm else None,
             llm.model_name if llm else None,

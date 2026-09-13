@@ -67,7 +67,7 @@ def evaluate_reviewed_classifications(connection):
         ORDER BY id
         """
     ).fetchall()
-    comparable = [row for row in rows if row["llm_category"]]
+    comparable = [row for row in rows if row["llm_category"] and row["rule_category"]]
     disagreements = sum(
         row["rule_category"] != row["llm_category"] for row in comparable
     )

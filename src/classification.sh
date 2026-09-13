@@ -61,6 +61,8 @@ classify_repository_notebooks() {
 
         if [ "$CLASSIFICATION_RULE_ONLY" = "true" ]; then
             command+=(--rule-only)
+        elif [ "$CLASSIFICATION_LLM_ONLY" = "true" ]; then
+            command+=(--llm-only)
         fi
 
         log "[CLASSIFICATION] Classifying: $notebook_path"
