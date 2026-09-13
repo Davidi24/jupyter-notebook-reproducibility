@@ -1,0 +1,78 @@
+\section{Environment Reconstruction, Notebook Execution, and Output Comparison}
+\label{sec:environment-execution}
+
+After classification, the implementation moves into the reproducibility part of the pipeline. These stages reuse the platform-independent processing route inherited from the original system. Their purpose is to create an executable Python environment, run the notebooks, and compare the newly generated outputs with the outputs stored in the original notebook.
+
+The first step is requirement reconstruction. The implementation combines two sources of dependency evidence. The first source is declared dependency files, such as \texttt{requirements.txt} or setup files supplied with the resource. These files are preferred because they may contain explicit package versions. The second source is the notebook code itself. The pipeline converts notebooks to temporary Python files and extracts imported modules.
+
+Not every import should become a package installation. Standard-library modules such as \texttt{json}, \texttt{pathlib}, or \texttt{sqlite3} are skipped because they are part of Python. Local modules found inside the resource are also skipped because they do not need to be installed from PyPI. Remaining imports are treated as external package candidates. The declared requirements and inferred imports are then merged, cleaned, sorted, and written into a resource-level \texttt{requirements.txt}.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.88\textwidth}
+\centering
+declared requirement files $+$ notebook imports\par
+$\downarrow$\par
+remove standard-library and local modules\par
+$\downarrow$\par
+merge and deduplicate\par
+$\downarrow$\par
+resource-level \texttt{requirements.txt}
+\end{minipage}}
+\caption{Requirement reconstruction flow.}
+\label{fig:requirement-reconstruction-flow}
+\end{figure}
+
+The next step is Python-version selection. The implementation checks common version hints in the resource, such as \texttt{binder/runtime.txt}, a root \texttt{runtime.txt}, \texttt{.python-version}, \texttt{python\_requires} in \texttt{setup.py}, and Python-version information in \texttt{setup.cfg}. If no usable version hint is found, the implementation falls back to Python~3.10.
+
+The selected Python version is managed through pyenv. If the version is already installed, it is reused. If only a major/minor version is specified, the implementation resolves it to a suitable patch version. If installation fails or the interpreter binary is missing, the run receives an environment-related failure status. This keeps Python installation problems separate from notebook runtime errors.
+
+A new virtual environment is created for the current resource. The implementation upgrades basic packaging tools, installs Jupyter and \texttt{nbconvert}, and then installs the detected requirements. Requirement entries are installed one by one so that failed packages can be logged individually. Supplied setup paths are also installed when available. The environment is temporary and is removed after failure or successful processing, which prevents dependencies from one resource from affecting another resource.
+
+\begin{table}[ht]
+\centering
+\caption{Environment reconstruction variables and failure states.}
+\label{tab:environment-state}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{4.6cm}X@{}}
+\toprule
+Variable/Status & Meaning & Why it matters\tabularnewline
+\midrule
+\texttt{REPO\_VENV\_DIR} & temporary environment dedicated to the current resource & isolates dependencies between resources\tabularnewline
+\texttt{REPO\_PYTHON} & selected interpreter inside that environment & used to run \texttt{nbconvert} against the correct version\tabularnewline
+\texttt{REPO\_PIP} & package installer inside the same environment & installs requirements without touching the system Python\tabularnewline
+\texttt{PYTHON\_INSTALL\_}\linebreak\texttt{FAIL} & pyenv could not install the resolved interpreter & separates a Python-installation problem from a package problem\tabularnewline
+\texttt{PYTHON\_BINARY\_}\linebreak\texttt{MISSING} & the resolved interpreter binary could not be found & distinguishes a broken pyenv install from a install failure\tabularnewline
+\texttt{ENV\_ERROR\_TYPE} & structured failure category returned to the controller & lets later queries group environment failures by type\tabularnewline
+\texttt{ENV\_ERROR\_}\linebreak\texttt{MESSAGE} & readable explanation stored on the run & keeps a human-readable reason alongside the structured type\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Notebook execution is performed with \texttt{nbconvert}. Each notebook is executed from its own directory so that relative file paths used inside the notebook still work. The executed version is saved with an \texttt{\_output.ipynb} suffix beside the original. The original notebook is never overwritten. The implementation allows runtime errors to remain in the executed notebook because these errors are part of the reproducibility evidence.
+
+The execution stage records whether an output notebook was created successfully, whether it contains error cells, or whether execution failed before producing an output file. If no output notebook is created for any selected notebook, the resource receives a notebook-execution failure. If outputs exist, the pipeline continues to comparison.
+
+The comparison stage loads the original and executed notebooks. It uses a notebook-difference process to compare cell-level content. Execution counts and notebook metadata are ignored because they do not represent result changes. Source changes and output changes are recorded separately, and output differences are grouped into categories such as numeric, textual, or structural.
+
+The implementation also checks notebook code for possible nondeterministic behaviour. Signals such as random-number generation, current time, environment variables, or UUID generation can explain why an output may differ between runs. These signals do not prove that an output difference is acceptable, but they provide useful evidence when interpreting comparison results.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.88\textwidth}
+\centering
+resource-level requirements $\rightarrow$ select Python $\rightarrow$ create virtual environment\par
+$\downarrow$\par
+install packages\par
+$\downarrow$\par
+execute notebook with \texttt{nbconvert} $\rightarrow$ create \texttt{\_output.ipynb}\par
+$\downarrow$\par
+compare original and executed notebook\par
+$\downarrow$\par
+store execution and metric records
+\end{minipage}}
+\caption{Execution and comparison flow.}
+\label{fig:execution-comparison-flow}
+\end{figure}
+
+At the end of this stage, each processed notebook has execution evidence and, when possible, output-comparison evidence. The detailed comparison is written as JSON, while the main values are stored in the database for later querying and graph publication.

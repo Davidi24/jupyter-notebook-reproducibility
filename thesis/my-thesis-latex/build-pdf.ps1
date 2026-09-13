@@ -5,12 +5,12 @@ $repositoryRoot = [System.IO.Path]::GetFullPath(
     (Join-Path $scriptDirectory "..\..")
 )
 $buildDirectory = Join-Path $repositoryRoot "tmp\pdfs\thesis-build"
-$outputDirectory = Join-Path $repositoryRoot "output\pdf"
 $builtPdf = Join-Path $buildDirectory "thesis.pdf"
-$destinationPdf = Join-Path $outputDirectory "david-keci-master-thesis-draft.pdf"
+$destinationPdf = Join-Path $repositoryRoot "thesis.pdf"
+$oldDraftPdfDirectory = Join-Path $repositoryRoot "output\pdf"
+$oldDraftPdfPattern = "david-keci-master-thesis-draft*.pdf"
 
 New-Item -ItemType Directory -Path $buildDirectory -Force | Out-Null
-New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
 
 Push-Location $scriptDirectory
 try {
@@ -33,7 +33,12 @@ if (-not (Test-Path -LiteralPath $builtPdf)) {
     throw "The LaTeX build finished without creating $builtPdf"
 }
 
-# Replace the previous draft only after a successful build.
+# Replace the root thesis PDF only after a successful build.
 Copy-Item -LiteralPath $builtPdf -Destination $destinationPdf -Force
+
+if (Test-Path -LiteralPath $oldDraftPdfDirectory) {
+    Get-ChildItem -LiteralPath $oldDraftPdfDirectory -Filter $oldDraftPdfPattern -File |
+        Remove-Item -Force
+}
 
 Write-Host "Updated PDF: $destinationPdf"

@@ -47,7 +47,7 @@ The thesis makes the following contributions:
 
 \begin{itemize}[leftmargin=1.4em]
   \item \textbf{Collecting resources from several platforms.} The pipeline detects GitHub, Codeberg, and Zenodo inputs and selects the correct route. It uses Git operations for GitHub and Codeberg, and the Zenodo API to download archived files.
-  \item \textbf{Normalized metadata and database storage.} Eight common metadata fields are stored separately from execution results. The database records the platform, uses normalized identifiers, updates existing rows instead of duplicating them, and keeps the source database read-only.
+  \item \textbf{Normalized metadata and database storage.} Eight common metadata fields are stored separately from execution results, with one refreshable metadata row per resource, while every processing run, execution, and classification attempt is kept as a new history row. The database records the platform, uses normalized identifiers, and keeps the source database read-only.
   \item \textbf{One shared reproducibility workflow.} After collection, resources from all platforms use the same steps for notebook discovery, dependency detection, Python environment creation, notebook execution, output comparison, logging, and result storage.
   \item \textbf{Hybrid notebook classification.} A transparent, weighted rule-based classifier is combined with an AI model. The system stores their agreement, confidence, and need for human review instead of saving only a category label.
   \item \textbf{Knowledge-graph extension.} The pipeline exports database tables to CSV and maps them to RDF. The FAIR Jupyter model is extended to describe platforms, archived records, processing runs, notebook executions, reproducibility scores, normalized metadata, and classification provenance. SPARQL queries are used to check and explore the graph.
@@ -64,10 +64,6 @@ The remainder of the thesis is organized as follows:
   \item[\textbf{Chapter 2}] explains computational reproducibility, Jupyter notebooks, hosting platforms, software environment reconstruction, notebook classification, FAIR principles, and related research.
   \item[\textbf{Chapter 3}] defines the system, data, input-output, quality, and evaluation requirements based on the original pipeline and the research questions.
   \item[\textbf{Chapter 4}] presents the system architecture, pipeline flow, platform connectors, normalized database, notebook classifier, and provenance model.
-  \item[\textbf{Chapter 5}] explains how platform detection, GitHub, Codeberg, and Zenodo support, metadata collection, notebook processing, environment creation, execution, comparison, and testing were implemented.
-  \item[\textbf{Chapter 6}] defines the notebook categories and explains the rule-based classifier, AI-based classifier, combined decision process, pipeline connection, and error handling.
-  \item[\textbf{Chapter 7}] explains how database data is exported, mapped to the extended ontology, converted into an RDF knowledge graph, and tested with SPARQL queries.
-  \item[\textbf{Chapter 8}] evaluates the platform connectors, metadata completeness, notebook execution, classification accuracy, knowledge graph, pipeline integration, and observed errors.
-  \item[\textbf{Chapter 9}] answers the research questions and discusses design choices, study limitations, validity risks, and ethical and operational concerns.
-  \item[\textbf{Chapter 10}] summarizes the contributions, presents the conclusions, and identifies possible future improvements.
+  \item[\textbf{Chapter 5}] explains the implementation. It covers the cross-platform pipeline, the notebook classifier, and the knowledge-graph extension in one chapter.
+  \item[\textbf{Chapter 6}] evaluates the platform connectors, metadata storage, database outputs, knowledge-graph build, notebook classification, and remaining experimental work.
 \end{description}

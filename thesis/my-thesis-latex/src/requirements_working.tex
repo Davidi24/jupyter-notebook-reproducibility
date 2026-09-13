@@ -9,7 +9,7 @@ The starting point is an existing pipeline for Python notebooks stored on GitHub
 
 The process starts with a resource URL or a resource already listed in the database. It ends with database results, notebook categories, and an RDF graph that can be rebuilt. The extension must recognize GitHub, Codeberg, and Zenodo; download their content; convert their metadata into common fields; execute Python notebooks through the same main route; and record where each resource came from. It must also classify notebook purpose so the results can be compared by platform and category.
 
-\begin{table}[ht]
+\begin{table}[H]
 \centering
 \caption{Scope of the thesis system.}
 \label{tab:scope}
@@ -38,7 +38,7 @@ A notebook that runs successfully is not automatically scientifically correct. A
 
 Functional requirements describe actions that the system must perform. Each requirement below can be checked with a command, database query, generated file, or test result. The requirements describe behaviour instead of individual function names, so they remain valid if the code is reorganized later.
 
-\begin{table}[ht]
+\begin{table}[H]
 \centering
 \caption{Functional requirements of the extended pipeline.}
 \label{tab:functional-requirements}
@@ -70,76 +70,83 @@ Together, these requirements describe one complete route from an input URL to re
 \clearpage
 \section{Non-Functional Requirements}
 
-Non-functional requirements describe how safely, clearly, and reliably the system must work. They are important because the pipeline downloads external resources, reads several APIs, and executes research code.
+Non-functional requirements define the quality conditions under which the functional requirements must be fulfilled. They do not add new pipeline steps. Instead, they state how the pipeline must behave while collecting external resources, reading platform APIs, modifying database copies, executing notebooks, and publishing RDF results.
 
-\begin{table}[ht]
+For this thesis, the most important quality goals are data safety, comparability, traceability, repeatability, robustness, security, and maintainability. These goals are necessary because a successful demonstration is not enough: the system must also protect the original data, explain how a result was produced, and remain understandable when new platforms or notebook samples are added.
+
+\begin{table}[H]
 \centering
-\caption{Quality requirements and their design consequences.}
+\caption{Non-functional requirements of the extended pipeline.}
 \label{tab:nonfunctional-requirements}
-\small
-\begin{tabularx}{\textwidth}{@{}p{2.4cm}XX@{}}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{1.05cm}>{\raggedright\arraybackslash}p{2.45cm}>{\raggedright\arraybackslash}p{5.1cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
-Quality & Requirement & Observable consequence\tabularnewline
+ID & Quality goal & Meaning in this thesis & Verification evidence\tabularnewline
 \midrule
-Data safety & Preserve the source database unchanged. & All writes target a working copy.\tabularnewline
-Comparability & Use common fields and statuses across platforms. & Results can be grouped without platform-specific joins.\tabularnewline
-Traceability & Keep source, run, execution, model, and result provenance. & An output can be followed back to its activity.\tabularnewline
-Repeatability & Make generated data reproducible from inputs and versioned rules. & CSV and RDF outputs can be deleted and rebuilt.\tabularnewline
-Robustness & Turn expected failures into classified evidence. & One bad resource does not terminate a batch.\tabularnewline
-Security & Treat URLs, archives, API text, and notebooks as untrusted. & Inputs are constrained, escaped, and run in controlled environments.\tabularnewline
-Maintainability & Isolate platform-specific behaviour behind one contract. & A connector can change without rewriting execution.\tabularnewline
+NFR1 & Data safety & Keep the source database unchanged and write new results only to the working copy. & Source database checksum or timestamp does not change.\tabularnewline
+NFR2 & Comparability & Store platform results with shared fields, statuses, and metric definitions. & One query groups results by platform and status.\tabularnewline
+NFR3 & Traceability & Link each result to platform, resource, run, execution, and classification method. & Foreign keys and RDF links connect the steps.\tabularnewline
+NFR4 & Repeatability & Rebuild CSV and RDF outputs from the database, ontology, and mappings. & Generated files can be deleted and recreated.\tabularnewline
+NFR5 & Robustness & Record expected failures without stopping the whole batch. & Failed resources keep status rows; later resources continue.\tabularnewline
+NFR6 & Security & Treat URLs, archives, API text, tokens, and notebooks as untrusted. & Tokens are not logged; text is escaped; execution is isolated.\tabularnewline
+NFR7 & Maintainability & Keep platform logic in connectors and notebook processing in shared stages. & Connector changes do not rewrite execution or RDF export.\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Comparability does not mean pretending that all platforms are identical. Information with the same meaning should use the same field, while important platform differences remain visible. For example, every resource has a platform and title, but Zenodo remains an archived record and can have a DOI. Every processing attempt also uses the same main status values, while detailed messages still explain platform-specific errors.
+NFR1 protects the research baseline. The inherited GitHub database is input evidence, so the extension may read it but must not overwrite it. The first pipeline run creates a working copy in \texttt{data/output/db/}; all schema migrations, metadata rows, execution rows, and classification rows are then written to that copy. This makes experiments reversible because a new run can start again from the unchanged source database.
 
-Traceability is required for classification as well as execution. Each category must record how it was produced, which model or rule version was used, its confidence, its time, and whether a person reviewed it. Old decisions must still be understandable after the classifier changes. The graph follows the same idea: ontology and mapping files are saved as source files, while CSV and N-Triples files are generated again when needed.
+NFR2 and NFR3 make the results interpretable. Comparability does not mean that the platforms are treated as identical. It means that equivalent information, such as title, licence, run status, and output-comparison metrics, is stored in the same structure. At the same time, provenance keeps important differences visible: Zenodo remains an archived record, GitHub and Codeberg remain Git repositories, and every result can be followed from platform to resource, run, notebook execution, metric row, and classification activity.
 
-The system also needs clear security rules. API tokens are read from environment variables and must not be written to logs or the database. Text from APIs is escaped before it is added to SQL. Extracted archive files must stay inside the repository folder. A separate Python environment prevents package conflicts, but it is not a complete security sandbox. Untrusted notebooks would need stronger filesystem and network restrictions before this pipeline could be offered as a public service.
+NFR4 separates source evidence from generated artefacts. The working database, YARRRML/RML mappings, and ontology are the sources for semantic publication. CSV exports, N-Triples fragments, the combined graph, and SPARQL result files are generated outputs. They should therefore be rebuildable instead of manually edited. This requirement supports later verification because reviewers can inspect both the source rules and the generated graph.
 
-These requirements matter even when a short demonstration looks successful. A pipeline that overwrites the original database, loses failed runs, or removes the source platform would not meet the research goal, even if it produced a final results table.
+NFR5 ensures that failures remain useful evidence. A batch may contain an unreachable repository, a missing Zenodo file, a package-installation failure, or a notebook execution error. These cases should be stored with a clear status and message so that error analysis can include them. They should not erase earlier results or prevent later resources in the batch from being processed.
 
-\clearpage
+NFR6 limits the risks created by external input. API tokens are read from environment variables and must not be written to logs or database fields. Text returned by APIs is escaped before database insertion. Downloaded archives are extracted only inside the intended resource directory. Notebook execution uses separate Python environments to avoid dependency conflicts. This isolation improves operational safety, but it is not a complete security sandbox; a public service would require stronger filesystem and network restrictions.
+
+NFR7 keeps the design understandable. Platform connectors handle validation, metadata access, identifier normalization, and acquisition. After a local resource directory exists, notebook discovery, environment reconstruction, execution, comparison, classification, and knowledge-graph export follow shared code paths. This makes the thesis easier to evaluate because platform differences and platform-independent processing are described separately.
+
 \section{Input and Output Contracts}
 
-An input or output contract defines the exact information passed between parts of the system. The pipeline has two input modes, but both must produce the same internal information: URL, normalized identifier, platform, notebook paths, setup paths, and requirement paths. The three path values may be empty.
+An input or output contract defines the exact information passed between parts of the system. In this pipeline, the contract is simple: the beginning of the pipeline may receive a resource in two different ways, but both ways must create the same six internal fields before notebook processing starts.
 
-In single-resource mode, the user enters a GitHub, Codeberg, or Zenodo URL. Several optional paths are separated with semicolons. A complete GitHub \texttt{/blob/} link or Codeberg \texttt{/src/} link is converted into a path inside the repository. Zenodo notebook paths are normally found after the archive is extracted because its folder structure is unknown before download. In batch mode, the pipeline reads the same information from the working database and recreates the full URL from the platform and stored identifier.
+\noindent\textbf{Single-resource mode.} The input is one URL typed by a person. The URL points to a GitHub repository, a Codeberg repository, or a Zenodo record. The output is the same URL split into the six fields shown in Table~\ref{tab:io-contract}.
 
-\begin{table}[ht]
+\noindent\textbf{Batch mode.} The input is one resource row already stored in the working database. No URL is typed by a person. The output is again the same six fields, rebuilt from the row's saved platform, identifier, and path values.
+
+The important point is that the rest of the pipeline does not need to know which mode was used. It receives a URL, normalized identifier, platform, notebook paths, setup paths, and requirement paths. If some paths are unknown, their fields stay empty. This is common for Zenodo, because notebook paths are often only known after the record has been downloaded and extracted.
+
+A GitHub or Codeberg notebook link needs one extra conversion. For example, a GitHub link ending in \texttt{/blob/main/analysis.ipynb} is a browser link, not a repository-relative path. The pipeline removes the display part, such as \texttt{/blob/main/} or \texttt{/src/branch/main/}, and keeps only the notebook path, for example \texttt{analysis.ipynb}. A Zenodo link is different: it identifies a record first, and the notebook paths are discovered later from the downloaded files.
+
+\begin{table}[H]
 \centering
-\caption{Pipeline inputs and persistent outputs.}
+\caption{Six internal fields produced by both input modes.}
 \label{tab:io-contract}
 \small
-\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.2cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{4.1cm}@{}}
 \toprule
-Boundary & Artefact & Contract\tabularnewline
+Field & Meaning & Example or empty case\tabularnewline
 \midrule
-User or batch DB & Resource identifier & Supported URL or platform plus normalized identifier\tabularnewline
-User or batch DB & Path fields & Empty or semicolon-separated repository-relative paths\tabularnewline
-Connector & Local resource & Existing directory containing acquired source files\tabularnewline
-Metadata adapter & Field sequence & Exactly eight normalized values in a fixed order\tabularnewline
-Pipeline & Working database & Resources, metadata, runs, notebooks, executions, metrics, classifications\tabularnewline
-Pipeline & File outputs & Per-resource logs, executed notebooks, and JSON comparisons\tabularnewline
-Semantic build & CSV exports & One header-defined file per mapped relational dataset\tabularnewline
-Semantic build & RDF outputs & Mapping fragments, combined \texttt{.nt} graph, and build summary\tabularnewline
+URL & Original address used to validate and acquire the resource. & GitHub, Codeberg, or Zenodo URL\tabularnewline
+Normalized identifier & Short platform-specific identifier used for database lookup. & \texttt{owner/notebooks} or \texttt{123456}\tabularnewline
+Platform & Source platform detected from the URL or stored database row. & \texttt{github}, \texttt{codeberg}, or \texttt{zenodo}\tabularnewline
+Notebook paths & Repository-relative notebook files selected for execution. & \texttt{analysis.ipynb}; empty means discover all notebooks.\tabularnewline
+Setup paths & Optional setup files or scripts supplied with the resource. & \texttt{setup.py}; empty means no setup path was supplied.\tabularnewline
+Requirement paths & Optional dependency files supplied with the resource. & \texttt{requirements.txt}; empty means infer dependencies from available evidence.\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Identifiers depend on the platform. GitHub and Codeberg use \texttt{owner/repository}, while Zenodo uses its numeric record ID. The platform is also part of the identity because GitHub and Codeberg could both contain the same \texttt{owner/repository} text. Each run keeps the complete input URL, while the shorter normalized identifier is used for database searches.
+These six fields are the handover from input handling to notebook processing. The URL tells the connector what to check and download. The normalized identifier gives the database a short lookup key. The platform prevents confusion between resources with similar names. The three path fields tell the pipeline which notebooks, setup files, or requirement files to use. If a path field is empty, the pipeline discovers the files itself when possible, or continues without that optional input.
 
-The metadata connector returns eight values in a fixed order because Bash functions cannot directly return a structured object. The controller counts the values, and one shared function saves them. Empty fields are allowed. A missing, extra, or wrongly ordered field means that the connector did not follow the contract.
-
-The outputs have two groups. Database rows and notebook comparisons are the main pipeline evidence. CSV and RDF files are generated from that evidence and can be rebuilt. Logs help explain problems, but the database must still contain structured status values. This separation shows which information must be preserved and which files can be generated again.
+After the six fields exist, notebook processing can start. The pipeline then stores its results in two places. The working database is the main evidence: it stores resources, metadata, runs, notebooks, executions, metrics, errors, and classifications. The file system stores supporting artefacts, such as logs, executed notebooks, and JSON comparison files. The knowledge-graph step reads the database, exports selected rows to CSV, and rebuilds the RDF graph from those CSV files and mapping rules. This means the database must be preserved, while the CSV and RDF files can be recreated from it.
 
 \clearpage
 \section{Data and Classification Requirements}
 
 The database must separate a resource from the actions performed on it. The same repository or Zenodo record can be processed several times. One run can execute several notebooks, and one notebook can have several classification attempts. If all results were stored in one repository row, a new run would overwrite the old history.
 
-\begin{table}[ht]
+\begin{table}[H]
 \centering
 \caption{Required relational entities and their purpose.}
 \label{tab:data-entities}
@@ -170,7 +177,7 @@ The rules and AI model should examine the same limited information: filename, no
 
 The evaluation must test both the software and the research questions. A demonstration with one repository shows that the route can work, but it is not enough evidence for a thesis comparison. The study also needs connector tests, database checks, classification evaluation, graph tests, and a documented experiment across all three platforms.
 
-\begin{table}[ht]
+\begin{table}[H]
 \centering
 \caption{Evaluation matrix for the completed system.}
 \label{tab:evaluation-matrix}

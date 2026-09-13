@@ -1,257 +1,296 @@
-\chapter{Notebook Classification}
+\section{Notebook Classification Implementation}
 \label{chap:classification}
 
-The reproducibility route describes whether a notebook can be executed and whether its outputs change. Classification adds a different result: the main purpose of the notebook. The implementation keeps this decision separate from execution, uses two independent methods, and stores enough evidence for later human checking.
+This section explains how notebook classification is implemented inside the pipeline. The purpose of this part is different from notebook execution. Execution checks whether a notebook can run and whether its outputs can be reproduced. Classification describes what kind of notebook is being processed. This distinction is important because notebooks with different purposes may fail for different reasons. A tutorial, a visualization notebook, and a machine-learning notebook may all require different libraries, data files, and execution conditions.
 
-\section{Classification Objective and Taxonomy}
+The classification component is implemented as a separate Python package under \texttt{analysis/notebook\_classification/}. It is called after notebooks have been discovered and registered by the main pipeline. At that point, the notebook files exist locally and their database identities are known. Classification does not need the notebook to execute successfully, so it can run before dependency installation and notebook execution. This allows the system to keep a purpose category even for notebooks that later fail during the reproducibility route.
 
-The classifier assigns one primary category to each notebook. Categories describe what the notebook mainly does, not the research subject and not whether its execution succeeded. A biomedical visualization and an astronomy visualization therefore share the same purpose category. This distinction allows execution results to be grouped by workflow type across disciplines and platforms.
+The implemented classification route has five main steps. First, the notebook is read and converted into a bounded evidence object. Second, a rule-based classifier can assign a category from transparent signals. Third, an AI-based classifier can receive the same bounded evidence and independently assign a category. Neither method is fixed as mandatory: by default both run, but either can be switched off on its own. Disabling both at the same time is rejected before any notebook is read, because at least one method must produce a decision. Fourth, whichever decisions are available are reconciled into an agreement status, review flag, and optional provisional category. Finally, the complete result is stored in the working database so it can be inspected, reviewed, evaluated, and exported to the knowledge graph.
 
-The category names and definitions are declared once in \texttt{categories.py}. The rule method, AI method, command-line validation, database review, and evaluation all import this shared definition. A label that is not in the taxonomy is rejected before it reaches storage.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/chapter5/classification_implementation_flow.png}
+\caption{Notebook classification implementation flow.}
+\label{fig:classification-implementation-flow}
+\end{figure}
+
+\subsection{Classification Objective and Taxonomy}
+
+The classifier assigns one main purpose category to each notebook. The category describes what the notebook mainly does. It does not describe the scientific subject of the notebook, and it does not say whether the notebook executed successfully. For example, a notebook about biology and a notebook about finance can both belong to \texttt{data\_analysis} if their main purpose is to analyse data.
+
+The taxonomy is defined once in \texttt{categories.py}. This shared definition is imported by the rule-based classifier, the AI-based classifier, command-line validation, database review functions, and evaluation scripts. Using one shared taxonomy prevents different parts of the implementation from accepting different labels. If a category is not part of the taxonomy, it is rejected before it is stored.
+
+The implementation uses nine categories: \texttt{data\_preparation}, \texttt{data\_analysis}, \texttt{visualization}, \texttt{machine\_learning}, \texttt{simulation}, \texttt{tutorial}, \texttt{software\_development}, \texttt{mixed\_purpose}, and \texttt{uncertain}. The first seven categories describe common notebook purposes. The last two categories are used when the evidence does not support a clear single purpose. \texttt{mixed\_purpose} is used when several purposes are equally central. \texttt{uncertain} is used when the notebook contains too little useful evidence for a reliable decision.
 
 \begin{table}[ht]
 \centering
-\caption{Notebook-purpose taxonomy used by both automated methods.}
+\caption{Notebook-purpose taxonomy.}
 \label{tab:classification-taxonomy}
 \small
-\begin{tabularx}{\textwidth}{@{}p{3.5cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}p{3.8cm}p{3.7cm}X@{}}
 \toprule
-Category & Operational meaning\tabularnewline
+Category & Operational meaning & Example evidence\tabularnewline
 \midrule
-\texttt{data\_preparation} & cleans, transforms, combines, or prepares data\tabularnewline
-\texttt{data\_analysis} & explores data, computes statistics, or answers research questions\tabularnewline
-\texttt{visualization} & mainly creates plots, charts, dashboards, or visual reports\tabularnewline
-\texttt{machine\_learning} & trains, evaluates, or applies learned predictive models\tabularnewline
-\texttt{simulation} & models systems or performs simulated or numerical experiments\tabularnewline
-\texttt{tutorial} & teaches a method or demonstrates a tool or dataset\tabularnewline
-\texttt{software\_}\linebreak\texttt{development} & develops, tests, or demonstrates reusable software\tabularnewline
-\texttt{mixed\_purpose} & has two or more equally central purposes\tabularnewline
-\texttt{uncertain} & contains too little evidence for a reliable decision\tabularnewline
+\texttt{data\_preparation} & cleans, transforms, combines, or prepares data & \texttt{pandas} imports, \texttt{fillna(}\tabularnewline
+\texttt{data\_analysis} & explores data, computes statistics, or answers research questions & \texttt{statsmodels}, \texttt{corr(}\tabularnewline
+\texttt{visualization} & mainly creates plots, charts, dashboards, or visual reports & \texttt{matplotlib}, \texttt{plt.}, image outputs\tabularnewline
+\texttt{machine\_learning} & trains, evaluates, or applies learned predictive models & \texttt{sklearn}, \texttt{train\_test\_split}, \texttt{.predict(}\tabularnewline
+\texttt{simulation} & models systems or performs simulated or numerical experiments & \texttt{simpy}, simulation phrases\tabularnewline
+\texttt{tutorial} & teaches a method or demonstrates a tool or dataset & teaching phrases, step-by-step headings\tabularnewline
+\texttt{software\_development} & develops, tests, or demonstrates reusable software & \texttt{pytest}, packaging signals\tabularnewline
+\texttt{mixed\_purpose} & has two or more equally central purposes & two categories with comparably strong scores\tabularnewline
+\texttt{uncertain} & contains too little evidence for a reliable decision & no category reaches a sufficient score\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The first seven labels are core categories. \texttt{mixed\_purpose} is used only when strong evidence is divided between purposes, and \texttt{uncertain} is used when evidence is weak. These two labels prevent the system from forcing every notebook into an apparently precise class. The human-review layer can later replace an uncertain or mixed automated result with a final category while keeping the original answer.
+This taxonomy makes classification usable for later evaluation. Instead of comparing reproducibility only by platform, the system can also ask whether certain notebook purposes are more difficult to reproduce. For example, machine-learning notebooks may depend on larger libraries or external datasets, while tutorial notebooks may be simpler and more self-contained. The category is therefore an additional context variable for interpreting execution and comparison results.
 
-\clearpage
-\section{Feature Extraction and Input Representation}
+\subsection{Notebook Evidence Collection}
 
-\texttt{collect\_notebook} reads the file with \texttt{nbformat}; it never executes notebook code \cite{nbformat}. The collector separates Markdown, code, and raw cells and records the number of each. It also copies notebook metadata, extracts top-level imports, and converts outputs into short summaries. Image bytes, long text outputs, and traceback contents are not included in the classifier input.
+Classification begins with evidence collection. The function \texttt{collect\_notebook} reads the notebook file with \texttt{nbformat} \cite{nbformat}. It does not execute notebook code. This is important because classification should not depend on a successful runtime environment. The classifier only uses information already stored inside the notebook file.
 
-Python imports are parsed with the standard-library \texttt{ast} module. For \texttt{import pandas as pd}, the collector keeps \texttt{pandas}; for \texttt{from sklearn.model\_selection import train\_test\_split}, it keeps \texttt{sklearn}. Lines beginning with IPython magics, shell commands, or help syntax are removed before parsing. A cell beginning with a cell magic is skipped because its contents may use another language. If the remaining text is not valid Python, the collector returns no imports for that cell instead of failing the notebook.
+The collector separates the notebook into Markdown cells, code cells, raw cells, metadata, imports, outputs, and structural counts. Markdown cells provide information about the stated purpose of the notebook, section headings, explanations, and tutorial-style language. Code cells provide information about operations, libraries, model training, plotting, testing, data loading, and other computational behaviour. Notebook metadata provides kernel and language hints. Output summaries provide evidence about what the notebook produced, such as text output, plots, tables, or errors.
 
-Outputs are represented by type. A display or execution result keeps only its MIME types, a stream keeps the stream name, and an error keeps its error name. An output such as a PNG plot therefore contributes \texttt{image/png} without placing the encoded image into the rule engine or AI prompt.
+Python imports are extracted using the standard-library \texttt{ast} module. For example, \texttt{import pandas as pd} is reduced to \texttt{pandas}, and \texttt{from sklearn.model\_selection import train\_test\_split} is reduced to \texttt{sklearn}. This keeps the feature representation compact and focuses on top-level package signals. Before parsing, the collector removes syntax that is common in notebooks but not valid as normal Python, such as IPython magics, shell commands, and help syntax. If a cell cannot be parsed as Python, the collector skips import extraction for that cell instead of failing the whole notebook.
+
+Stored outputs are represented only by type. A display or execution result keeps its MIME types, a stream keeps the stream name, and an error keeps its error name. For example, a PNG plot contributes the signal \texttt{image/png}, but the actual encoded image bytes are not sent to the classifiers. Long text outputs, large binary objects, and detailed traceback contents are also excluded. This keeps the classifier input small and avoids sending unnecessary or sensitive content to the AI prompt.
 
 \begin{table}[ht]
 \centering
-\caption{Collected notebook evidence and its use.}
+\caption{Collected notebook evidence and its role.}
 \label{tab:classification-features}
 \small
-\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{4.1cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.6cm}X@{}}
 \toprule
-Evidence & Representation & Used for\tabularnewline
+Evidence type & Representation & Used for\tabularnewline
 \midrule
-Metadata & kernel and language dictionaries & context and compatibility\tabularnewline
-Markdown & ordered cell text & stated goal, headings, teaching language\tabularnewline
-Code & ordered source text & operations, API calls, and model use\tabularnewline
-Imports & unique top-level names & package signals\tabularnewline
-Outputs & type and MIME summaries & plots, results, and error signals\tabularnewline
-Cell counts & Markdown, code, and raw totals & compact structural context\tabularnewline
+Metadata & kernel and language dictionaries & establishes context and language compatibility\tabularnewline
+Markdown cells & ordered cell text & reveals the stated goal, headings, and teaching language\tabularnewline
+Code cells & ordered source text & reveals operations, API calls, and model use\tabularnewline
+Imports & unique top-level module names & gives package-level signals for scoring\tabularnewline
+Output summaries & type and MIME-type summaries & gives plot, result, and error signals without embedding data\tabularnewline
+Cell counts & Markdown, code, and raw totals & gives compact structural context\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The collected object has a version number, currently \texttt{1.0.0}. The final result also contains a SHA-256 hash of the notebook file. The hash distinguishes two versions with the same path and makes it possible to determine which notebook content was classified. If the classifier is tested with an in-memory collected object, the same hash is calculated from its sorted JSON representation.
+The collected evidence object has its own version number. The implementation also calculates a SHA-256 hash of the notebook content. This hash records which notebook version was classified. If the same path later contains changed content, the hash can show that the classification belongs to a different notebook version. This is important because the same filename may appear in several runs or may change over time.
 
-\clearpage
-\section{Rule-Based Notebook Classification}
+At the end of this step, the notebook has been converted into a bounded and reproducible input representation. The next stages use this representation instead of reading the notebook independently in different ways.
 
-\subsection{Classification Rules}
+\subsection{Rule-Based Classification}
 
-The rule classifier is transparent: every point comes from a named signal. Package imports contribute three points to their related category. Examples include \texttt{pandas} for data preparation, \texttt{statsmodels} for data analysis, \texttt{matplotlib} for visualization, \texttt{sklearn} for machine learning, \texttt{simpy} for simulation, and \texttt{pytest} for software development.
+The first automated method is the rule-based classifier. Its purpose is to provide a transparent and repeatable baseline. Every score comes from an observable signal such as an import, phrase, code pattern, or output type. This means a reviewer can inspect why a notebook received a certain rule-based category.
 
-Regular expressions search the combined Markdown and code. They cover both descriptive phrases and concrete operations. For example, ``feature engineering'' and \texttt{fillna(} support data preparation; ``hypothesis test'' and \texttt{corr(} support analysis; ``dashboard'' and \texttt{plt.} support visualization; and \texttt{train\_test\_split} or \texttt{.predict(} support machine learning. Tutorial and software-development patterns use similarly direct phrases and calls.
+The rule classifier uses package imports as strong category signals. For example, \texttt{pandas} supports data preparation, \texttt{statsmodels} supports data analysis, \texttt{matplotlib} supports visualization, \texttt{sklearn} supports machine learning, \texttt{simpy} supports simulation, and \texttt{pytest} supports software development. Each recognized import contributes points to the category associated with it.
 
-Each matched pattern adds 1.5 points per occurrence, but at most three occurrences are counted. The cap prevents one repeated word from dominating the notebook. The implementation still records the uncapped match count, the number of counted matches, the cells containing the signal, total searched cells, cell coverage, and awarded points. A reviewer can therefore see whether a signal appeared across the notebook or was repeated many times in one cell.
+The rule classifier also searches Markdown and code text with regular expressions. These patterns cover both natural-language descriptions and concrete code operations. For example, phrases such as ``feature engineering'' and calls such as \texttt{fillna(} support data preparation. Phrases such as ``hypothesis test'' and calls such as \texttt{corr(} support data analysis. Words such as ``dashboard'' and calls such as \texttt{plt.} support visualization. Functions such as \texttt{train\_test\_split} or \texttt{.predict(} support machine learning.
 
-Image outputs provide an additional visualization signal. Up to three outputs containing an \texttt{image/} MIME type add one point each. This feature complements plotting imports: a notebook that stores figures without using a recognized plotting package can still receive visualization evidence.
+Each matched text pattern contributes a defined score. Repeated matches are capped, so one repeated word cannot dominate the result. The implementation still records both the uncapped number of matches and the counted number of matches. This allows a reviewer to see whether a signal appeared across the notebook or was repeated many times in one place.
 
-\begin{lstlisting}[language=Python,caption={Simplified weighted signal update.}]
-for pattern in category_patterns:
-    matches = find_all(pattern, notebook_text)
-    counted = min(len(matches), 3)
-    scores[category] += counted * 1.5
-
-if image_outputs:
-    scores["visualization"] += min(image_outputs, 3)
-\end{lstlisting}
-
-The rule set is versioned as \texttt{1.1.0}. Every stored rule result contains this version, the score per category, the evidence strings, and the detailed pattern statistics. Changing a weight or expression therefore creates a traceable method version instead of silently changing the meaning of earlier results.
-
-\clearpage
-\subsection{Rule Priorities and Conflict Resolution}
-
-After all signals are counted, categories are sorted by decreasing score and then alphabetically to make ties deterministic. The two leading values control the result. If the highest score is below two points, the notebook becomes \texttt{uncertain} with confidence zero. This rule prevents a single weak phrase from creating a strong label.
-
-When evidence is sufficient, the leading core category becomes primary. Other categories are retained as secondary when their score is at least two and at least 65\% of the leading score. These secondary labels do not replace the main decision; they show additional substantial purposes.
-
-The confidence value uses both dominance and signal strength. Let $s_1$ be the highest category score and let $S$ be the sum of all category scores. For an ordinary primary category, the implementation calculates
-\[
-  c=\frac{s_1}{S}\min\left(1,\frac{s_1}{6}\right).
-\]
-The first part measures how much of the evidence supports the winner. The second part reduces confidence when the absolute evidence is small. The result is rounded to three decimal places.
-
-Mixed purpose has a stricter test. The second score must be at least three points and at least 90\% of the first. Both leading categories then become secondary explanations below the primary label \texttt{mixed\_purpose}. Its confidence uses their combined score and is capped at 0.95. This avoids describing a close competition as a clear single purpose.
+Image outputs provide an additional visualization signal. If the stored outputs contain image MIME types, the rules add visualization evidence. This matters because some notebooks store plots even when the plotting library is not clearly detected from imports.
 
 \begin{table}[ht]
 \centering
-\caption{Rule decision cases in order of application.}
-\label{tab:rule-decisions}
+\caption{Rule-based classification signals.}
+\label{tab:rule-signals}
 \small
-\begin{tabularx}{\textwidth}{@{}p{3.0cm}p{5.2cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.0cm}p{2.6cm}X@{}}
+\toprule
+Signal source & Example signal & Category supported & Reason\tabularnewline
+\midrule
+Imports & \texttt{pandas}, \texttt{sklearn}, \texttt{simpy}, \texttt{pytest} & data preparation, machine learning, simulation, software development & a recognized package is strong, low-ambiguity evidence\tabularnewline
+Markdown phrases & ``feature engineering'', ``hypothesis test'', ``dashboard'' & data preparation, data analysis, visualization & captures the notebook's own stated intent\tabularnewline
+Code patterns & \texttt{fillna(}, \texttt{corr(}, \texttt{plt.}, \texttt{train\_test\_split} & matching category for each pattern & captures concrete operations, not only stated intent\tabularnewline
+Image outputs & stored \texttt{image/*} MIME type & visualization & catches plots even when the plotting import is not detected\tabularnewline
+Error/output summaries & error name, stream type & context for later reconciliation and review & shows whether a notebook produced results at all\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+After all signals are counted, the rule classifier compares the category scores. If the highest score is too low, the notebook is classified as \texttt{uncertain}. This prevents one weak signal from creating a strong category. If one category clearly leads, it becomes the primary category. Other categories may be kept as secondary categories when they also have substantial evidence.
+
+The confidence score is calculated from two ideas: dominance and signal strength. Dominance measures how much of the total evidence supports the winning category. Signal strength reduces the confidence when the absolute amount of evidence is small. This means a category can win but still receive only moderate confidence if the notebook contains little classification evidence overall.
+
+\texttt{mixed\_purpose} is handled more conservatively than ordinary secondary categories. It is used only when the two strongest purposes are both strong and very close to each other. This avoids forcing a notebook into one category when the implementation has evidence that two purposes are equally central.
+
+\begin{table}[ht]
+\centering
+\caption{Rule decision cases.}
+\label{tab:rule-decision-cases}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{5.4cm}X@{}}
 \toprule
 Case & Condition & Result\tabularnewline
 \midrule
-Insufficient evidence & top score below 2 & \texttt{uncertain}\tabularnewline
-Mixed purpose & second score at least 3 and at least 90\% of top & two leading categories retained\tabularnewline
-Clear leader & sufficient evidence without mixed condition & top core category\tabularnewline
-Secondary purpose & score at least 2 and 65\% of top & recorded as secondary\tabularnewline
+Insufficient evidence & top score below the minimum threshold & \texttt{uncertain}\tabularnewline
+Clear leader & one category dominates without a close competitor & that category becomes primary\tabularnewline
+Secondary purpose & a category has substantial but non-dominant evidence & recorded as a secondary category\tabularnewline
+Mixed purpose & the two strongest categories are both strong and close & \texttt{mixed\_purpose}, both retained as secondary explanations\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
 
-This order makes the decision reproducible. Given the same collected notebook and rule version, the same scores, category, and confidence are produced without network access or random sampling.
+The rule method returns a structured \texttt{ClassifierResult}, not only a label. The result contains the method name, primary category, secondary categories, confidence, reason, evidence strings, scores for all categories, detailed signal statistics, and rule version. The rule set is versioned, so if weights or patterns change later, older classification results remain interpretable.
 
-\clearpage
-\subsection{Rule-Based Output}
+For example, a notebook that imports \texttt{matplotlib}, calls \texttt{plt.plot}, contains a Markdown heading about visualization, and stores PNG outputs will normally receive strong visualization evidence. If it also imports \texttt{numpy}, some data-analysis evidence may also appear, but the complete score dictionary shows how much influence each category had. This makes the rule result auditable rather than opaque.
 
-The rule method returns a \texttt{ClassifierResult} data object rather than only a label. Its fields include method name, primary category, secondary categories, confidence, a short reason, evidence, all category scores, detailed signal statistics, and rule version. The same result structure is used by the AI method where fields are applicable.
+\subsection{AI-Based Classification}
 
-For a notebook containing \texttt{numpy}, \texttt{matplotlib}, a Markdown heading ``Visualization example'', one \texttt{plt.plot} call, and a PNG output, the rules select visualization. The stored evidence can contain \texttt{import:matplotlib}, the visualization text pattern, the plotting-call pattern, and \texttt{image outputs:1}. \texttt{numpy} may also create data-analysis evidence, which remains visible in the complete score dictionary.
+The second automated method uses a local AI language model. The default configuration uses Ollama with the \texttt{gemma3:4b} model \cite{gemma3}. The model name, base URL, timeout, and other settings can be changed through command-line arguments or environment variables. This keeps the classification contract independent from one fixed provider.
 
-\begin{lstlisting}[language=Python,caption={Abbreviated rule output for a plotting notebook.}]
-{
-  "method": "rule_based",
-  "primary_category": "visualization",
-  "secondary_categories": ["data_analysis"],
-  "confidence": 0.61,
-  "evidence": ["import:matplotlib", "image outputs:1"],
-  "scores": {
-    "visualization": 8.5,
-    "data_analysis": 3.0
-  },
-  "version": "1.1.0"
-}
-\end{lstlisting}
+The AI method is intentionally independent from the rule method. It receives the category definitions and the bounded notebook evidence, but it does not receive the rule score or rule category. If both methods later agree, the agreement therefore represents two different methods reaching the same decision, not the AI model copying the rule-based result.
 
-The exact confidence depends on all matched signals, so the example shows the structure rather than a fixed result for every plotting notebook. Detailed statistics are nested below the category and pattern. They preserve the distinction between a pattern appearing 50 times and receiving points for only three occurrences.
+The prompt begins with the classification task and the nine allowed categories. It then explains the decision rules: choose one main category, use \texttt{mixed\_purpose} only when several purposes are equally central, use \texttt{uncertain} when the evidence is too weak, treat confidence as a self-assessment rather than a calibrated probability, and cite short observable evidence.
 
-This output supports two uses. First, the reconciliation layer can compare a precise rule category and confidence with the AI answer. Second, a person can audit the label without reading every cell. If an import is misleading, the other scores and cell coverage show how much influence it had.
+The prompt also includes an instruction that notebook text and code are untrusted data. This is necessary because Markdown and code cells are copied from external notebooks. A notebook could contain text such as ``ignore previous instructions'' or other misleading content. The implementation treats this text as data for classification, not as instructions that control the system.
 
-The method does not claim that high confidence is a calibrated probability. It is a consistent strength measure derived from the implemented rules. Chapter~8 evaluates whether that internal measure corresponds to correct human labels. Until a human review is available, the database clearly identifies the result as rule-based and keeps the full evidence.
-
-\clearpage
-\section{AI-Based Notebook Classification}
-
-\subsection{Model Selection}
-
-The second method uses an AI language model through an HTTP interface. The default configuration points to Ollama and the \texttt{gemma3:4b} model. Gemma~3 provides a four-billion-parameter option suitable for local desktop or server execution \cite{gemma3}. The model name and base URL can be replaced through command arguments or environment variables, so the classification contract is not tied to one provider.
-
-The AI method is intentionally independent of the rules. It receives the category definitions and notebook evidence but not the rule scores or chosen category. An agreement therefore represents two methods reaching the same answer rather than the model copying the rule result.
-
-\subsection{Prompt Design}
-
-The prompt begins with the task and the nine allowed definitions. It then gives decision rules: choose mixed purpose only when several goals are equally central, choose uncertain when evidence is insufficient, treat confidence as a self-assessment rather than a calibrated probability, and cite short observable evidence. A security instruction says that notebook text and code are untrusted data and must never be followed as instructions.
-
-The required response is described with JSON Schema. It contains one allowed primary category, a list of allowed secondary categories, a number from zero to one, a reason, and an evidence list. The same schema is passed in the Ollama \texttt{format} field. Ollama documents that this field can constrain a response to a supplied JSON schema \cite{ollamastructured}. Temperature zero is used to reduce unnecessary variation.
-
-\begin{figure}[ht]
+\begin{figure}[H]
 \centering
-\fbox{\begin{minipage}{0.91\textwidth}
-\centering
-system role and fixed task\par
-$+$ taxonomy and decision rules\par
-$+$ JSON output schema\par
-$+$ compact notebook evidence treated as untrusted data\par
-$\downarrow$\par
-structured category, confidence, reason, and evidence
-\end{minipage}}
-\caption{The AI request separates trusted instructions from untrusted notebook content.}
-\label{fig:ai-prompt-structure}
+\includegraphics[width=0.95\textwidth]{figures/chapter5/ai_classification_request_structure.png}
+\caption{AI classification request structure.}
+\label{fig:ai-request-structure}
 \end{figure}
 
-The model endpoint returns a message containing JSON. The client parses the message, verifies that the primary label belongs to the taxonomy, removes invalid or duplicate secondary labels, clamps confidence to the interval from zero to one, and records the actual model name returned by the server.
+The model is required to return structured JSON. The schema contains a primary category, secondary categories, confidence value, reason, and evidence list. The category fields are restricted to the nine allowed taxonomy labels. The same schema is passed to Ollama through its \texttt{format} field \cite{ollamastructured}. The client still validates the response independently because a schema-constrained model output is helpful but should not be treated as a guarantee.
 
-\clearpage
-\subsection*{Prompt limits and validation}
+The input sent to the model is bounded. The implementation includes the notebook path, cell counts, kernel and language metadata, unique imports, selected Markdown, selected code, and at most 100 output summaries. Markdown and code are limited by character count. This prevents very large notebooks from producing unbounded prompts and avoids sending embedded binary outputs.
 
-\subsection{Input Context Construction}
+\begin{table}[ht]
+\centering
+\caption{AI input limits.}
+\label{tab:ai-input-limits}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.8cm}p{4.2cm}X@{}}
+\toprule
+Input part & Limit or treatment & Reason\tabularnewline
+\midrule
+Markdown & character-limited excerpt, cells taken in order & keeps the stated intent while bounding prompt size\tabularnewline
+Code & character-limited excerpt, cells taken in order & keeps main operations visible without sending everything\tabularnewline
+Output summaries & at most 100 entries, type/MIME only & preserves result signals without embedding data\tabularnewline
+Imports & deduplicated top-level module names & compact package-level signal\tabularnewline
+Metadata & kernel and language fields only & gives compatibility context cheaply\tabularnewline
+Binary outputs & excluded entirely & avoids sending images or large encoded data to the model\tabularnewline
+Traceback content & excluded entirely & avoids unnecessary or potentially sensitive detail\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\texttt{build\_llm\_input} turns the collected notebook into a bounded document. It includes the path, cell counts, kernel and language metadata, unique imports, selected Markdown, selected code, and at most 100 output summaries. Markdown is limited to 6,000 characters and code to 8,000 characters. Cells are considered in their original order until the limit is reached.
+A valid AI response becomes a \texttt{ClassifierResult} with method \texttt{local\_llm}. The result stores the primary category, secondary categories, confidence, reason, evidence, model name, prompt version, and raw response. The prompt version is recorded so that future changes to the prompt can be distinguished from older classification attempts.
 
-These limits keep requests predictable and avoid sending embedded binary outputs. They also reduce the influence of very long generated cells. The selected input still contains the notebook's stated purpose, main operations, packages, and output forms. Because the collector does not execute code, classification can run for a notebook whose reproducibility attempt failed.
+Several AI-related problems are handled safely. Network errors, non-success HTTP responses, missing message fields, invalid JSON, unknown category labels, and invalid confidence values are converted into a classifier error. The pipeline does not lose the notebook because of this. Instead, the hybrid controller records that the model was unavailable, keeps the rule-based result when one was requested, and marks the notebook for human review.
 
-Notebook text is serialized as JSON below the prompt instructions. A Markdown cell containing ``ignore the categories'' remains data, not a new system command. The instruction to treat content as untrusted is repeated close to the notebook input. This does not remove every model risk, but it provides a clear boundary and prevents the pipeline from intentionally treating notebook prose as control text.
+This design makes the AI method useful but controlled. It can interpret broader notebook context than simple rules, but it cannot introduce arbitrary labels or replace the structured classification contract.
 
-\subsection{Structured AI Output}
+\subsection{Hybrid Reconciliation Strategy}
 
-The client sends a non-streaming chat request with the schema in both the prompt and \texttt{format}. A valid answer becomes a \texttt{ClassifierResult} with method \texttt{local\_llm}, primary and secondary categories, confidence, reason, evidence, model name, prompt version, and raw response. The prompt version is \texttt{1.0.0}, so results remain interpretable when instructions change.
+The hybrid stage combines the rule-based result and the AI-based result. It does not simply choose one method as always correct. Instead, it compares the two outputs and records how they relate to each other.
 
-Network errors, non-success HTTP responses, missing message fields, invalid JSON, unknown labels, and invalid confidence values are converted into \texttt{LocalLLMError}. The raw exception does not end classification. The hybrid controller records that the model was unavailable and sends the notebook to human review.
+The main function collects the notebook once, runs whichever methods are enabled, and passes both results to the reconciliation function. Rules and the AI model are each independently switchable: by default both run, a rule-only mode skips the AI model, and an AI-only mode skips the rules. Disabling both is rejected before any notebook is read, because at least one method must produce a decision. The default confidence threshold is 0.55. The reconciliation output contains an agreement status, a Boolean review flag, an optional warning, and an optional provisional category.
 
-The structured response solves a practical storage problem. Free prose would require a second parser and could invent category names. Schema validation ensures that every successful AI result fits the same database fields as the rule result. The reason and evidence remain readable, while the primary label and confidence are directly comparable.
+If the rule method and AI method confidently choose the same primary category, the result is marked as \texttt{AGREED}, and the shared category becomes the provisional classification. If they choose the same category but one confidence value is below the threshold, the result is marked as \texttt{AGREED\_LOW\_CONFIDENCE}. The shared category is still visible, but the row is sent to review.
 
-\clearpage
-\section{Hybrid Classification Strategy}
+If one method chooses a category as primary and the other includes it as secondary, the result is marked as \texttt{PARTIAL\_AGREEMENT}. This means both methods found related evidence, but they did not agree strongly enough on one main purpose. If both methods choose different confident primary categories, the result is marked as \texttt{CLASSIFIER\_DISAGREEMENT}.
 
-\texttt{classify\_notebook} collects the notebook once, runs the rules, requests the AI answer, and passes both to \texttt{\_reconcile}. The default confidence threshold is 0.55. The reconciliation function returns an agreement status, a Boolean review flag, a warning, and an optional provisional category.
+Low-confidence cases are also separated. The implementation can record whether only the rule result was weak, only the AI result was weak, or both were weak. If both methods return uncertain, the result becomes \texttt{BOTH\_UNCERTAIN}. This is treated differently from ordinary agreement because it means both methods lacked enough evidence, not that they confidently agreed on a meaningful purpose.
+
+If the AI method is disabled, the result is marked as \texttt{LLM\_NOT\_REQUESTED}. If the AI request fails or returns invalid output, the result is marked as \texttt{LLM\_UNAVAILABLE}. In both cases, the rule label can still be shown, but the row requires review because the second method did not provide a valid independent decision. The reverse case is handled symmetrically: if the rule-based classifier was disabled, the result is marked as \texttt{RULE\_NOT\_REQUESTED} and the AI label is shown instead, again with mandatory review. If neither method produced a usable result, for example because the rule classifier was disabled and the AI request also failed, the notebook still receives a stored row with no provisional category, so the missing evidence remains visible rather than silently dropped.
 
 \begin{table}[ht]
 \centering
 \caption{Hybrid reconciliation outcomes.}
 \label{tab:hybrid-outcomes}
 \footnotesize
-\begin{tabularx}{\textwidth}{@{}p{3.6cm}p{5.2cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}p{2.9cm}p{4.3cm}p{2.5cm}X@{}}
 \toprule
-Status & Condition & Provisional decision\tabularnewline
+Status & Condition & Provisional category & Human review required\tabularnewline
 \midrule
-\texttt{AGREED} & same label and both confidences meet threshold & shared label, no review\tabularnewline
-\texttt{AGREED\_LOW\_CONFIDENCE} & same label but one confidence is low & shared label, review\tabularnewline
-\texttt{PARTIAL\_AGREEMENT} & one primary occurs as the other's secondary & none, review\tabularnewline
-\texttt{CLASSIFIER\_}\linebreak\texttt{DISAGREEMENT} & confident primary labels differ & none, review\tabularnewline
-\texttt{RULE/LLM\_LOW\_}\linebreak\texttt{CONFIDENCE} & one or both methods are weak & none, review\tabularnewline
-\texttt{BOTH\_UNCERTAIN} & both primary labels are uncertain & none, review\tabularnewline
-\texttt{LLM\_UNAVAILABLE} & request or validation failed & rule label shown, review\tabularnewline
-\texttt{LLM\_NOT\_REQUESTED} & rule-only command was selected & rule label shown, review\tabularnewline
+\texttt{AGREED} & same label, both confidences meet the threshold & shared label & No\tabularnewline
+\texttt{AGREED\_LOW\_}\linebreak\texttt{CONFIDENCE} & same label but one confidence is low & shared label & Yes\tabularnewline
+\texttt{PARTIAL\_}\linebreak\texttt{AGREEMENT} & one primary occurs as the other's secondary & none & Yes\tabularnewline
+\texttt{CLASSIFIER\_}\linebreak\texttt{DISAGREEMENT} & confident primary labels differ & none & Yes\tabularnewline
+\texttt{RULE\_LOW\_}\linebreak\texttt{CONFIDENCE} & labels differ, only the rule confidence is low & none & Yes\tabularnewline
+\texttt{LLM\_LOW\_}\linebreak\texttt{CONFIDENCE} & labels differ, only the AI confidence is low & none & Yes\tabularnewline
+\texttt{BOTH\_LOW\_}\linebreak\texttt{CONFIDENCE} & labels differ, both confidences are low & none & Yes\tabularnewline
+\texttt{BOTH\_UNCERTAIN} & both primary labels are uncertain & none & Yes\tabularnewline
+\texttt{LLM\_UNAVAILABLE} & request or validation failed & rule label shown & Yes\tabularnewline
+\texttt{LLM\_NOT\_}\linebreak\texttt{REQUESTED} & rule-only command was selected & rule label shown & Yes\tabularnewline
+\texttt{RULE\_NOT\_}\linebreak\texttt{REQUESTED} & AI-only command was selected, so rules did not run & AI label shown & Yes\tabularnewline
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Only confident exact agreement is accepted without review. Agreement is useful but is not treated as proof: the review-queue command can include all rows and draw a blind random sample, including agreed items. This supports evaluation against independent human decisions, following the broader human-in-the-loop principle of keeping people responsible for uncertain automated decisions \cite{mosqueira2023hitl}.
+Only confident exact agreement is accepted without immediate review. All other cases preserve uncertainty. This is important because the system should not hide disagreement behind one final category. The classification result remains useful precisely because it records whether the automated methods agreed, disagreed, or needed human checking.
 
-\section{Classification Integration into the Pipeline}
+\subsection{Database Storage and Human Review}
 
-The classification command accepts notebook files or directories. Directories are searched recursively, paths are resolved, and duplicates are removed while order is preserved. Each notebook produces a complete JSON result. With \texttt{--db-file}, the same result is inserted into \texttt{notebook\_classifications}; with \texttt{--output}, all results are also written as a readable JSON document.
+After reconciliation, the result is stored in the working database. The classification table is connected to the registered notebook identity. This connection is made through the notebook ID when the implementation can resolve the local path to exactly one notebook row. If the path is ambiguous, the system avoids creating an incorrect database relation.
 
-Integration occurs through the working database and stable notebook identity. \texttt{resolve\_notebook\_id} compares the stored relative name, POSIX form, and base filename. It links the classification only when exactly one notebook row matches, avoiding a false relation when two repositories contain the same filename.
+The table stores both automated methods separately, and either one may be empty when that method was not requested. It keeps the notebook path and hash, the rule category and confidence, the AI category and confidence, the model name, prompt version, agreement status, review flag, warning, provisional category, final category, reviewer information, timestamps, and the full JSON result. This means the database does not only contain the final category. It contains the evidence needed to understand how the category was produced.
 
-The command also makes method changes explicit. \texttt{--rule-only} disables the AI request but still creates a review warning. \texttt{--model}, \texttt{--ollama-url}, \texttt{--timeout}, and \texttt{--confidence-threshold} record the experiment configuration at invocation time. A directory command and a single-file command use the same classification function, so their stored result format is identical.
+\begin{table}[ht]
+\centering
+\caption{Main fields stored in \texttt{notebook\_classifications}.}
+\label{tab:classification-fields}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.9cm}p{4.4cm}X@{}}
+\toprule
+Field group & Example fields & Purpose\tabularnewline
+\midrule
+Notebook identity & path, SHA-256 hash & connects the row to one notebook version\tabularnewline
+Rule result & rule category, rule confidence, rule version & preserves the transparent baseline decision\tabularnewline
+AI result & AI category, AI confidence, model, prompt version & preserves the independent model decision\tabularnewline
+Reconciliation result & agreement status, review flag, warning, provisional category & explains how the two decisions were combined\tabularnewline
+Human review fields & final category, reviewer name, note & stores a human decision separately from automation\tabularnewline
+Timestamps & created time, review time & supports ordering and later audit\tabularnewline
+Full JSON result & complete structured result object & preserves detail not worth splitting into columns\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\clearpage
-The classification table preserves both automated methods. It stores the notebook hash, rule category and confidence, AI category and confidence, model, prompt version, agreement status, review flag, warning, provisional and final categories, reviewer information, timestamps, and the complete result JSON. A new classification attempt creates a new row, so a later model or prompt does not overwrite an earlier decision.
+A new classification attempt creates a new row. This is important because the same notebook may be classified again after the rule version, prompt version, model, or confidence threshold changes. The older decision remains available instead of being overwritten. This matches the general database design of the pipeline, where repeated activities create new evidence rows.
 
-Human review can be performed for one row or through a CSV queue. The blind queue hides both automated predictions and can select a reproducible random sample using a fixed seed. After reviewers fill the category and their name, \texttt{apply-reviews} validates each label and updates the selected row. The status becomes \texttt{HUMAN\_REVIEWED}, the review flag becomes false, and the automated answers remain unchanged inside their columns and result JSON.
+Human review can be performed for one classification row or through a CSV review queue. The blind review queue hides the automated predictions so the reviewer can assign labels independently. It can also use a fixed random seed to create a reproducible sample. This makes the review process suitable for later evaluation rather than only manual correction.
 
-\section{Failure Handling and Classification Examples}
+When reviewed labels are applied, the implementation validates them against the same taxonomy. A valid review updates the selected classification row with the final category, reviewer name, note, and review time. The automated rule and AI answers remain unchanged. This separation prevents human labels from being confused with automated predictions.
 
-The completed route handles three kinds of classifier failure. Collection failures, such as an unreadable notebook, end that file with a command error. Model failures become \texttt{LLM\_UNAVAILABLE} and retain the rule result for review. Decision uncertainty becomes a normal stored status rather than an exception. These cases can be counted separately during evaluation.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/chapter5/human_review_flow.png}
+\caption{Human review flow.}
+\label{fig:human-review-flow}
+\end{figure}
 
-Three short examples illustrate the output:
+The result is therefore reviewable at several levels. A reader can inspect the rule evidence, the AI evidence, the agreement status, the provisional category, and the final human category if one exists.
 
-\begin{itemize}[leftmargin=1.6em]
-  \item A plotting notebook imports \texttt{matplotlib}, calls \texttt{plt.plot}, and contains PNG outputs. Rules and AI select visualization above the threshold, producing \texttt{AGREED} and a provisional visualization category.
-  \item A notebook is written as a step-by-step lesson but trains a model. The rules select machine learning and the AI selects tutorial with machine learning secondary. The result is \texttt{PARTIAL\_AGREEMENT} and has no provisional category until review.
-  \item A short notebook contains only arithmetic and no explanation. Both methods select uncertain, producing \texttt{BOTH\_UNCERTAIN} and a human-review warning.
-\end{itemize}
+\subsection{Command-Line Integration and Failure Handling}
 
-After review, \texttt{evaluate} compares rule, AI, and hybrid provisional labels with final human categories. It reports coverage, accuracy, macro precision, macro recall, macro F1, and per-category support, plus the rule--AI disagreement rate. The implementation has automated tests for collection, weighting, structured model responses, reconciliation, persistence, human review, and these evaluation calculations. Thus, the classification result is not an isolated label: it is a versioned, reviewable activity connected to the notebook and ready for relational and graph-based analysis.
+The classification component can be called from the pipeline or directly from the command line. It accepts notebook files or directories. When a directory is supplied, notebooks are found recursively, resolved to absolute paths, and deduplicated while preserving order. Each notebook produces a complete JSON result. With a database argument, the same result is inserted into \texttt{notebook\_classifications}. With an output argument, the results are also written to a readable JSON file.
+
+The command-line options make the experiment configuration explicit. The user can run classification in rule-only mode, in AI-only mode, or leave both enabled for the hybrid default; select the AI model; set the Ollama URL; choose a timeout; and change the confidence threshold. Selecting rule-only and AI-only together is rejected immediately, before any notebook is read, because the implementation always requires at least one classification method to run. These settings affect how the classification was produced, so they are part of the experiment context.
+
+The implementation handles three main failure types. First, collection failures occur when a notebook cannot be read or parsed as a notebook file. These failures affect that file. Second, AI failures occur when the model cannot be reached or returns invalid output. These become \texttt{LLM\_UNAVAILABLE}, while the rule result is retained for review when rules were requested. Third, uncertainty is treated as a normal classification state rather than an exception. A notebook with too little evidence can be stored as uncertain and counted during evaluation.
+
+\begin{table}[ht]
+\centering
+\caption{Classification failure handling.}
+\label{tab:classification-failure-handling}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.4cm}p{3.0cm}X@{}}
+\toprule
+Failure type & Example cause & Stored outcome & Pipeline effect\tabularnewline
+\midrule
+Collection failure & notebook file cannot be read or parsed & command error for that file & other notebooks are unaffected\tabularnewline
+AI unavailable & network error, non-success HTTP response & \texttt{LLM\_UNAVAILABLE}, rule result retained & row is marked for human review\tabularnewline
+Invalid AI output & malformed JSON, unknown label, invalid confidence & converted into a classifier error & treated the same as AI unavailable\tabularnewline
+Low confidence & one or both methods score below the threshold & \texttt{RULE\_LOW\_CONFIDENCE}, \texttt{LLM\_LOW\_CONFIDENCE}, or \texttt{BOTH\_LOW\_CONFIDENCE} & row is marked for human review\tabularnewline
+Disagreement & confident primary labels differ & \texttt{CLASSIFIER\_DISAGREEMENT} & row is marked for human review\tabularnewline
+Uncertainty & too little evidence for either method & \texttt{BOTH\_UNCERTAIN}, stored as a normal state & counted during evaluation, not treated as an exception\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This behaviour is important for batch execution. A single difficult notebook should not stop the classification of all other notebooks. The implementation stores the problem, keeps the available evidence, and allows later stages or later resources to continue when possible.
+
+This completes the notebook-classification implementation. The component can classify notebooks through the main pipeline or through the command line, store structured results in the working database, and preserve uncertainty, disagreement, and model failures as reviewable evidence. The evaluation of these classification results is discussed in Chapter 6.
