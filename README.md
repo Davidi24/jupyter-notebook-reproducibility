@@ -53,13 +53,29 @@ The Knowledge Graph is built manually after execution.
 
 Run all commands from the repository root.
 
-### Install dependencies
+### Install dependencies on Linux or WSL
 
-    pip install -r requirements.txt
+This project is intended to run in a Linux environment. On Windows, use WSL.
+
+Install the system and Python dependencies with:
+
+    bash setup.sh
+
+After setup, start a new terminal or run:
+
+    source ~/.bashrc
 
 ### Start the pipeline
 
     bash run.sh
+
+The setup script installs the Linux tools required by `run.sh`, including
+`sqlite3`, `jq`, `unzip`, `pyenv`, Jupyter, and the Python packages from
+`requirements.txt`.
+
+If Python dependencies need to be reinstalled later, run:
+
+    python3 -m pip install --user -r requirements.txt
 
 You will be asked to choose:
 
