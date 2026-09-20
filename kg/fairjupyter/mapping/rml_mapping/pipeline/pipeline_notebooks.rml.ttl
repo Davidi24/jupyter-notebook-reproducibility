@@ -1,0 +1,107 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix : <http://mapping.example.com/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix nf: <https://w3id.org/notebookfair#> .
+
+:map_pipeline_notebooks_000 rml:logicalSource :source_000 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_notebooks" ;
+	rr:subjectMap :s_000 ;
+	rr:predicateObjectMap :pom_000, :pom_001, :pom_002, :pom_003, :pom_004 .
+
+:source_000 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/notebooks.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_000 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/notebook/{id}" .
+
+:pom_000 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_000 ;
+	rr:objectMap :om_000 .
+
+:pm_000 rdf:type rr:PredicateMap ;
+	rr:constant rdf:type .
+
+:om_000 rdf:type rr:ObjectMap ;
+	rr:constant nf:NotebookResource ;
+	rr:termType rr:IRI .
+
+:pom_001 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_001 ;
+	rr:objectMap :om_001 .
+
+:pm_001 rdf:type rr:PredicateMap ;
+	rr:constant rdfs:label .
+
+:om_001 rdf:type rr:ObjectMap ;
+	rml:reference "name" ;
+	rr:termType rr:Literal .
+
+:pom_002 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_002 ;
+	rr:objectMap :om_002 .
+
+:pm_002 rdf:type rr:PredicateMap ;
+	rr:constant dcterms:identifier .
+
+:om_002 rdf:type rr:ObjectMap ;
+	rml:reference "name" ;
+	rr:termType rr:Literal .
+
+:pom_003 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_003 ;
+	rr:objectMap :om_003 .
+
+:pm_003 rdf:type rr:PredicateMap ;
+	rr:constant nf:notebookLanguage .
+
+:om_003 rdf:type rr:ObjectMap ;
+	rml:reference "language" ;
+	rr:termType rr:Literal .
+
+:pom_004 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_004 ;
+	rr:objectMap :om_004 .
+
+:pm_004 rdf:type rr:PredicateMap ;
+	rr:constant nf:isNotebookOf .
+
+:om_004 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/repository/{repository_id}" ;
+	rr:termType rr:IRI .
+
+:map_pipeline_repository_contains_notebook_000 rml:logicalSource :source_001 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_repository_contains_notebook" ;
+	rr:subjectMap :s_001 ;
+	rr:predicateObjectMap :pom_005 .
+
+:source_001 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/notebooks.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_001 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/repository/{repository_id}" .
+
+:pom_005 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_005 ;
+	rr:objectMap :om_005 .
+
+:pm_005 rdf:type rr:PredicateMap ;
+	rr:constant nf:containsNotebook .
+
+:om_005 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/notebook/{id}" ;
+	rr:termType rr:IRI .
+

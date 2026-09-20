@@ -1,0 +1,99 @@
+\chapter{Introduction}
+\label{chap:introduction}
+
+\section{Motivation}
+\label{sec:motivation}
+
+Computational results are reproducible when an independent party can take the same data, code, and computational steps and obtain consistent results~\cite{nasem2019}. Reproducibility has become a practical concern in computational research because an increasing share of published findings depends on software that must still run correctly years after publication. Jupyter notebooks~\cite{kluyver2016} are a central artefact in this setting. They interleave executable code, narrative explanation, and stored outputs in a single document~\cite{nbformat}, which makes them attractive for communicating an analysis. The same property also creates a false impression of self-containment: a notebook shows its code and its results, but it does not necessarily record the library versions, the Python interpreter, the input data, or the cell order that produced those results.
+
+Empirical studies confirm that this gap is large rather than marginal. Pimentel et al.~\cite{pimentel2019} analysed more than 1.1 million notebooks collected from GitHub and re-executed a substantial subset under controlled conditions; only a minority finished without errors, and fewer still reproduced their stored outputs. Samuel and Mietchen~\cite{samuel2024computational} repeated this kind of analysis for notebooks associated with biomedical publications and reported a similar pattern, with missing dependencies and unavailable data dominating the failure causes. Related work reinforces the picture from other angles: notebooks frequently contain duplicated and re-ordered code~\cite{koenzen2020duplication}, large-scale corpus studies find pervasive quality problems~\cite{psallidas2022datascience}, and automated environment restoration remains an unsolved problem in the general case~\cite{wang2020restoring}. Reproducibility of published notebooks is therefore an open, measurable research problem rather than a solved engineering detail.
+
+\subsection*{Where Notebooks Are Published}
+
+Researchers do not publish computational results in one place. Code is typically shared through a Git forge, while data, software snapshots, and supplementary materials are increasingly deposited in an archival research repository that issues a persistent identifier. The resulting landscape is heterogeneous, and its components differ substantially in size, governance, access mechanism, and metadata model.
+
+GitHub is by a large margin the dominant Git forge. Its 2024 Octoverse report states more than 518 million total projects and more than 1.5 million repositories that use Jupyter notebooks, a figure that grew by roughly 92\% in a single year~\cite{octoverse2024}. Codeberg is a much smaller, non-profit alternative operated by Codeberg e.V. in Berlin and built on the Forgejo forge software~\cite{codebergdocs,forgejoapi}; public figures report on the order of 300{,}000 repositories and 200{,}000 registered accounts~\cite{codebergstats}, roughly three orders of magnitude smaller than GitHub. GitLab occupies an intermediate position and exposes yet another API model~\cite{gitlabdocs}. On the archival side, Zenodo, operated by CERN, held approximately 7.3 million records at the time of writing~\cite{zenodostats}, each carrying a DOI, descriptive metadata, and downloadable files~\cite{zenodoapi}; Figshare~\cite{figshare} serves a comparable role for other communities. Table~\ref{tab:platform-landscape} summarises this landscape.
+
+\begin{table}[ht]
+\centering
+\caption{Publication venues for computational notebooks. Figures are approximate and reflect the sources cited at the time of writing.}
+\label{tab:platform-landscape}
+\small
+\begin{tabularx}{\textwidth}{@{}p{1.9cm}p{2.5cm}p{2.9cm}X@{}}
+\toprule
+Platform & Kind & Approximate scale & Primary access mechanism\tabularnewline
+\midrule
+GitHub & Git forge & $>$518M projects; $>$1.5M notebook repositories~\cite{octoverse2024} & Git clone plus GitHub REST API~\cite{githubapi}\tabularnewline
+GitLab & Git forge & Large; self-hosted instances widespread & Git clone plus GitLab REST API~\cite{gitlabdocs}\tabularnewline
+Codeberg & Git forge (non-profit) & $\approx$300K repositories; $\approx$200K accounts~\cite{codebergstats} & Git clone plus Forgejo REST API~\cite{forgejoapi}\tabularnewline
+Zenodo & Archival repository & $\approx$7.3M records~\cite{zenodostats} & Records API; files downloaded as archives~\cite{zenodoapi}\tabularnewline
+Figshare & Archival repository & Millions of research outputs~\cite{figshare} & REST API; files downloaded as archives\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Why Non-GitHub Venues Matter for Reproducibility Research}
+
+The evidence base described above is drawn almost entirely from GitHub. Pimentel et al.~\cite{pimentel2019}, Samuel and Mietchen~\cite{samuel2024computational}, and the FAIR Jupyter knowledge graph~\cite{samuel2024fairjupyter} that publishes the latter study's results all sample GitHub repositories. This is a defensible choice given GitHub's scale, but it leaves an unexamined question: what is currently known about notebook reproducibility is what is true of one platform, one community of practice, and one metadata model.
+
+There are three concrete reasons why this limitation matters. First, publishing practice is not uniform across venues. An archival Zenodo deposit is created at a specific moment, keeps its deposited files under a persistent identifier, and is usually made to accompany a publication; a Git repository is a living working copy whose state changes after publication. These are different kinds of artefact, and there is no a priori reason for their reproducibility properties to coincide. Second, metadata quality is platform-dependent by construction. Zenodo requires a title, creators, and a publication date before a DOI is minted, whereas a Git forge requires almost nothing beyond a repository name. If metadata completeness correlates with reproducibility, that correlation cannot be detected from a single-platform sample. Third, the incentive structures differ: a non-profit forge such as Codeberg attracts projects with different motivations than a commercial one, and a repository deposited to satisfy a journal's data-availability policy is produced under different constraints than a personal working repository.
+
+Answering whether these differences matter requires infrastructure that does not currently exist. It requires a workflow that can acquire, describe, execute, and compare notebooks from heterogeneous venues on identical terms, while keeping the origin of every result visible. Building that workflow is not merely a matter of accepting additional hostnames.
+
+\section{Problem Statement}
+\label{sec:problem-statement}
+
+The reproducibility pipeline of Samuel and Mietchen~\cite{samuel2024computational} provides a working route from a repository to structured execution evidence: it acquires the repository, infers dependencies, reconstructs a Python environment, executes the notebooks, compares the new outputs against the stored outputs, and records the outcome in a relational database. The pipeline~\cite{samuel2024computational} assumes throughout that every input is a GitHub repository. That assumption is embedded in its URL handling, its validation step, its acquisition step, and its database lookup. Extending the analysis beyond GitHub raises four distinct problems.
+
+\paragraph{Heterogeneous acquisition.} A Git forge and an archival repository expose fundamentally different objects. Codeberg is superficially similar to GitHub --- both serve Git repositories --- but it runs Forgejo, so its API base, JSON field names, and web notebook links (\texttt{/src/} rather than \texttt{/blob/}) differ~\cite{forgejoapi}. Zenodo is different in kind: a record is not a Git remote at all, so it must be validated through the Records API, and its files must be downloaded and extracted before any notebook exists locally~\cite{zenodoapi}. Substituting a different clone URL does not address either case.
+
+\paragraph{Metadata heterogeneity.} Each platform describes a resource with its own vocabulary. GitHub reports a single owner login, Zenodo reports a list of creators; a licence may be an SPDX identifier, a nested object, or absent entirely; a DOI exists on Zenodo and normally does not on a Git forge. Without a shared representation, equivalent fields cannot be compared across platforms. With a careless shared representation, the distinction between a genuinely missing value and a value that the pipeline invented is lost --- and it is precisely the missing values that carry the interesting signal about metadata quality.
+
+\paragraph{Provenance across a heterogeneous corpus.} Provenance is the record of the entities, activities, and agents involved in producing a result~\cite{prov2013}. Once results originate from several platforms, provenance stops being optional bookkeeping: an execution outcome is interpretable only in combination with the platform it came from, the resource it belongs to, the processing run that produced it, and the notebook it describes. The relational schema and the downstream knowledge graph must therefore carry this chain explicitly.
+
+\paragraph{Confounding by notebook purpose.} Execution success is not a property of the platform alone. A tutorial notebook, a data-cleaning notebook, and a machine-learning experiment have different dependency footprints, different runtimes, and different failure modes. If one platform happens to host proportionally more tutorials, a naive comparison of success rates would report a platform effect where a composition effect exists. Controlling for this requires that notebook purpose be characterised systematically, and the existing pipeline does not characterise it at all.
+
+\section{Research Goal and Research Questions}
+\label{sec:research-questions}
+
+The goal of this thesis is to investigate whether and how computational-notebook reproducibility can be studied across heterogeneous research platforms, and to determine what such a cross-platform view reveals that a single-platform view cannot. This goal is decomposed into four research questions.
+
+\begin{description}[leftmargin=1.3cm,labelwidth=1.05cm,style=nextline]
+  \item[\textbf{RQ1}] To what extent can a platform-independent reproducibility workflow support the analysis of computational notebooks across heterogeneous research platforms?
+  \item[\textbf{RQ2}] How does metadata heterogeneity across research platforms affect the integration and representation of computational notebooks and their reproducibility-related information?
+  \item[\textbf{RQ3}] To what extent do rule-based and AI-based approaches agree when characterizing computational notebooks into reproducibility-relevant categories, and to what extent do the two approaches complement each other?
+  \item[\textbf{RQ4}] To what extent do computational notebooks differ across platforms with respect to metadata completeness, execution outcomes, failure causes, and reproducibility-relevant categories?
+\end{description}
+
+RQ1 asks whether platform-independent processing generalises: the interesting question is not whether connectors can be written, but at which point in the workflow platform differences genuinely stop mattering and where they persist. RQ2 concerns the representational consequences of heterogeneity --- what is lost, what is preserved, and what becomes measurable when descriptions from incompatible metadata models are integrated. RQ3 treats notebook characterisation as a measurement problem and asks whether two independent automated approaches converge on the same description of a notebook, and whether their respective failures are independent enough to be worth combining. RQ4 uses the resulting instrument to ask the empirical question that motivated the work, without presupposing that any platform is more reproducible than another. Section~\ref{sec:eval-strategy} maps each research question to the evidence that addresses it, and Section~\ref{sec:rq-answers} states the answers reached.
+
+\section{Contributions}
+\label{sec:contributions}
+
+This thesis contributes a platform-independent instrument for studying computational-notebook reproducibility, together with an empirical comparison of reproducibility evidence across a commercial Git forge, a non-profit Git forge, and an archival research repository. In detail:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{A platform-independent reproducibility workflow.} A connector abstraction isolates platform-specific validation, description, and acquisition behind a common contract, after which notebook discovery, dependency inference, environment reconstruction, execution, and output comparison proceed identically regardless of origin. The abstraction is demonstrated for a commercial forge, a Forgejo-based forge, and an archival repository, and is designed so that a further venue requires a connector rather than a second pipeline.
+  \item \textbf{A normalized cross-platform metadata model.} Eight descriptive fields are reconciled across three incompatible API vocabularies with an explicit non-fabrication rule: a value the source does not provide is stored as absent, never inferred. This turns metadata incompleteness from an artefact of processing into a measurable property of the platform, and makes the comparison in RQ4 possible.
+  \item \textbf{An evidence-preserving relational design.} Stable entities are separated from processing activities, so that repeated attempts accumulate as history rather than overwriting it, the inherited baseline database is never modified, and every execution outcome remains traceable to its platform, resource, run, and notebook.
+  \item \textbf{A hybrid, auditable notebook characterisation method.} A transparent weighted-rule classifier and a locally hosted AI model independently label the same bounded notebook evidence. Both decisions, their confidences, their agreement state, and the resulting review requirement are retained, so that the reliability of the characterisation can itself be evaluated rather than assumed.
+  \item \textbf{A semantic publication layer extending FAIR Jupyter.} The FAIR Jupyter ontology~\cite{samuel2024fairjupyter} is extended with hosting platforms, archived research records, pipeline runs, normalized metadata, and classification activities, and the graph is materialised reproducibly from the database through versioned YARRRML/RML mappings~\cite{heyvaert2018yarrrml,rmlspec} and Morph-KGC~\cite{arenas2024morph}. The result is queryable with SPARQL~\cite{sparql2013} and rebuildable on demand.
+  \item \textbf{An empirical cross-platform evaluation.} A stratified corpus spanning all three platforms is processed end to end, and metadata completeness, run outcomes, execution outcomes, failure causes, and cell-level output agreement are reported per platform, with counts alongside every percentage.
+\end{itemize}
+
+Together these contributions provide a system that supports reproducibility analysis over heterogeneous research infrastructure, and an evidence base that quantifies how far reproducibility findings established on one platform transfer to others. Chapter~\ref{chap:design} develops the design in detail, and Chapter~\ref{chap:evaluation} reports what the instrument measured.
+
+\section{Thesis Structure}
+\label{sec:thesis-structure}
+
+The remainder of the thesis is organized as follows.
+
+\begin{description}[leftmargin=2.25cm,labelwidth=1.95cm,style=multiline]
+  \item[\textbf{Chapter 2}] describes the terminology used throughout the thesis --- computational reproducibility, notebook structure, metadata normalization, provenance, environment reconstruction, and knowledge graphs --- and discusses the state of the art in notebook reproducibility analysis, concluding with the research gap that this work addresses.
+  \item[\textbf{Chapter 3}] analyses the baseline system and derives the functional, non-functional, data, and evaluation requirements that a cross-platform reproducibility workflow must satisfy, each stated so that it can be verified.
+  \item[\textbf{Chapter 4}] develops the system design: the layered architecture, the control flow through a single resource, the connector abstraction, the normalized metadata model, the relational schema, the classification architecture, and the provenance and knowledge-graph model.
+  \item[\textbf{Chapter 5}] describes the implementation, following the execution flow through the cross-platform pipeline, the hybrid notebook classifier, and the knowledge-graph extension, and explaining the decisions taken at each stage.
+  \item[\textbf{Chapter 6}] evaluates the system: the technical validation of the connectors, metadata layer, and knowledge graph, followed by the cross-platform experiment and the assessment of the classifier, and closing with the answers to the four research questions.
+  \item[\textbf{Chapter 7}] discusses the limitations of the study and the work that remains, distinguishing threats to the validity of the present results from extensions that would broaden their scope.
+  \item[\textbf{Chapter 8}] concludes by summarising what was built, what was measured, and what the results imply for reproducibility research beyond a single platform.
+\end{description}

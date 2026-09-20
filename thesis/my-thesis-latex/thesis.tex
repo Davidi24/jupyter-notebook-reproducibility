@@ -1,100 +1,173 @@
-\documentclass[a4paper, 12pt, oneside, BCOR1cm,toc=chapterentrywithdots]{scrbook}
+\documentclass[a4paper,11pt,oneside,BCOR=1cm,DIV=12,toc=chapterentrywithdots,numbers=noenddot]{scrbook}
 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{makeidx}
-\usepackage[colorlinks=false]{hyperref}
-\usepackage{tocbibind}
-\usepackage{blindtext}
-\usepackage{subfigure}
-\usepackage{acronym}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[expansion=false]{microtype}
+\usepackage{listings}
+\usepackage[nohyperlinks]{acronym}
+\usepackage{scrlayer-scrpage}
+\usepackage{hyperref}
+\usepackage{xstring}
+\setlength{\emergencystretch}{2em}
 
-\hypersetup{%
-bookmarksnumbered=true, hyperindex=true,
-bookmarksopen=true, bookmarksopenlevel=1,
-pdfborder=0 0 0
+\definecolor{tucgreen}{RGB}{0,120,90}
+\definecolor{codegray}{RGB}{245,247,249}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=tucgreen,
+  citecolor=tucgreen,
+  urlcolor=tucgreen,
+  bookmarksnumbered=true,
+  bookmarksopen=true,
+  pdfauthor={David Keci},
+  pdftitle={Cross-Platform Reproducibility Analysis of Jupyter Notebooks across GitHub, Codeberg, and Zenodo}
 }
 
-\renewcommand*{\tableofcontents}{%
-    \begingroup
-    \tocsection
-    \tocfile{\contentsname}{toc}
-    \endgroup
+\clearpairofpagestyles
+\ihead{Cross-Platform Notebook Reproducibility}
+\ohead{Master Thesis}
+\cfoot[\pagemark]{\pagemark}
+\setkomafont{pageheadfoot}{\small}
+
+% Chapter headings are set large and in the TUC accent colour so that the start of
+% a chapter is immediately visible when leafing through the document.
+\setkomafont{chapter}{\color{tucgreen}\fontsize{26}{30}\selectfont\bfseries}
+\setkomafont{chapterprefix}{\color{tucgreen}\fontsize{15}{18}\selectfont\bfseries}
+\setkomafont{section}{\color{tucgreen}\Large\bfseries}
+\setkomafont{subsection}{\color{tucgreen}\large\bfseries}
+\setkomafont{subsubsection}{\color{tucgreen}\normalsize\bfseries}
+\RedeclareSectionCommand[beforeskip=-1.5\baselineskip,afterskip=1.6\baselineskip]{chapter}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codegray},
+  frame=single,
+  rulecolor=\color{black!15},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=1em,
+  belowskip=1em
 }
-\renewcommand*{\listoffigures}{%
-    \begingroup
-    \tocsection
-    \tocfile{\listfigurename}{lof}
-    \endgroup
-}
-\renewcommand{\listoftables}{
-    \begingroup
-    \tocsection
-    \tocfile{\listtablename}{lot}
-    \endgroup
-}
+
+% Long database identifiers set in \texttt{} do not hyphenate and overflow narrow
+% table columns. \ub is an underscore that permits a line break after it, so
+% identifiers such as notebook_reproducibility_metrics wrap instead of running
+% past the column edge.
+\newcommand{\ub}{\_\allowbreak}
+
+\newcommand{\systemname}{Notebook FAIR Cross-Platform Pipeline}
+% Placeholder: replace with the actual date on submission.
+\newcommand{\submissiondate}{XX Month 2026}
 
 \begin{document}
+\hypersetup{pageanchor=false}
 
-%--------titlepage
 \begin{titlepage}
-{
-    \begin{center}
-        \raisebox{-1ex}{\includegraphics[scale=1.5]{../template/TU_Chemnitz_positiv_gruen.pdf}}\\
-    \end{center}
-    \vspace{0.5cm}
-}
-\begin{center}
-\LARGE{\textbf{Title of Master Thesis}}\\
-\vspace{1cm}
-\Large{\textbf{Master Thesis}}\\
-\vspace{1cm}
-Submitted in Fulfilment of the\\
-Requirements for the Academic Degree\\
-M.Sc.\\
-\vspace{0.5cm}
-Dept. of Computer Science\\
-Chair of Distributed and Self-organizing Systems
-\end{center}
-\vspace{3cm}
-Submitted by: David Keci\\
-Student ID: \\
-Date: \\
-\vspace{0.3cm}\\
-Supervisor: Prof. Dr. Sheeba Samuel
-
+  \begin{center}
+    \raisebox{-1ex}{\includegraphics[scale=1.5]{../template/TU_Chemnitz_positiv_gruen.pdf}}\\[1.2cm]
+    {\Large\bfseries Cross-Platform Reproducibility Analysis of Jupyter\\ Notebooks across GitHub, Codeberg, and Zenodo\\[1.3cm]}
+    {\Large\bfseries Master Thesis}\\[0.8cm]
+    Submitted in Fulfilment of the Requirements for the Academic Degree\\
+    Master of Science\\[0.5cm]
+    Department of Computer Science\\
+    Chair of Distributed and Self-organizing Systems
+  \end{center}
+  \vfill
+  \begin{tabular}{@{}ll@{}}
+    Submitted by: & David Keci\\
+    Programme: & M.Sc. Web Engineering\\
+    Examiner: & Prof. Dr. Martin Gaedke\\
+    Supervisor: & Dr. Sheeba Samuel\\
+    University: & Chemnitz University of Technology\\
+    Submission date: & \submissiondate
+  \end{tabular}
 \end{titlepage}
 
-\addchap*{Abstract}
-% Write your abstract here
-\blindtext
+\hypersetup{pageanchor=true}
+\frontmatter
 
+\addchap{Abstract}
+Jupyter notebooks combine executable code, narrative text, and generated results, but their apparent self-containment does not guarantee computational reproducibility. The large-scale studies that established this finding, and the FAIR Jupyter knowledge graph that publishes their results, draw their evidence almost entirely from GitHub. What is presently known about notebook reproducibility is therefore what is true of one platform, one community of practice, and one metadata model. This thesis develops a platform-independent reproducibility workflow that processes GitHub, Codeberg, and Zenodo resources on identical terms, and uses it to ask whether findings established on a single platform transfer to others.
+
+The implementation introduces platform detection, platform-specific validation and acquisition, normalized metadata extraction under a strict non-fabrication rule, mixed-platform batch processing, and a copy-on-first-run database architecture that leaves the inherited baseline data unmodified. GitHub and Codeberg resources are validated and acquired with Git, whereas Zenodo records are validated through the Records API and downloaded as archives. Eight descriptive metadata fields are reconciled across the three API vocabularies. After acquisition, shared platform-independent stages discover notebooks, infer requirements, create isolated Python environments, execute the notebooks, compare their outputs cell by cell, and record provenance and error information. A hybrid classifier characterises notebook purpose by combining a transparent weighted-rule method with a locally hosted language model, retaining both decisions, their confidences, and their agreement state rather than a single label.
+
+The resulting database is exported into seven CSV datasets and materialised as RDF through YARRRML-derived RML mappings and Morph-KGC. An ontology extension represents hosting platforms, Git repositories, archived research records, notebooks, repository runs, notebook executions, reproducibility results, and notebook-classification activities. The evaluation corpus comprises 318 resources across the three platforms, yielding 2{,}291 executed and compared notebooks and 162{,}008 unique triples that pass structural and SPARQL competency validation. Across 38{,}087 compared code cells the mean per-notebook reproducibility score is 0.365 --- GitHub 0.378, Codeberg 0.367, Zenodo 0.348 --- but the ranking depends on whether notebooks or repositories are counted, and only the difference between Codeberg and Zenodo holds under every counting rule. Metadata completeness shows the opposite ordering: Zenodo supplies DOI and licence metadata for most of its records, neither Git forge supplies a DOI, and licence coverage differs sharply between GitHub and Codeberg. Across the whole corpus, missing dependencies are the single largest execution failure cause at 20.9\%, and they remain common on all three platforms at 17.1\% to 25.8\%. Every executed notebook was classified by both methods, which agree on 19.1\% of them; measured against the curated repository category the language model reaches a macro F1 of 0.29 and the rule-based method 0.15, so the two are complementary but neither is reliable on its own.
+
+\vspace{0.6cm}
+\noindent\textbf{Keywords:} computational reproducibility, Jupyter notebooks, metadata normalization, knowledge graphs, GitHub, Codeberg, Zenodo
+
+% \tableofcontents emits its own chapter-level heading, so the heading is set
+% through \contentsname rather than a separate \addchap* (which would leave the
+% heading stranded on a page of its own).
+\renewcommand{\contentsname}{Table of Contents}
+\begingroup
+\small
+\setlength{\parskip}{0.06em}
 \tableofcontents
+\endgroup
+
+\cleardoublepage
+\begingroup
+\small
 \listoffigures
+\endgroup
+
+\begingroup
+\small
 \listoftables
+\endgroup
 
-%---------------------------------------------------------
-% Here starts your thesis
-%---------------------------------------------------------
+\cleardoublepage
+\addchap{List of Abbreviations}
+\begin{acronym}[YARRRML]
+\acro{AI}{Artificial Intelligence}
+\acro{API}{Application Programming Interface}
+\acro{CSV}{Comma-Separated Values}
+\acro{DOI}{Digital Object Identifier}
+\acro{FAIR}{Findable, Accessible, Interoperable, Reusable}
+\acro{HTTP}{Hypertext Transfer Protocol}
+\acro{IRI}{Internationalized Resource Identifier}
+\acro{JSON}{JavaScript Object Notation}
+\acro{KG}{Knowledge Graph}
+\acro{LLM}{Large Language Model}
+\acro{OWL}{Web Ontology Language}
+\acro{PROV-O}{PROV Ontology}
+\acro{RDF}{Resource Description Framework}
+\acro{REST}{Representational State Transfer}
+\acro{RML}{RDF Mapping Language}
+\acro{SPARQL}{SPARQL Protocol and RDF Query Language}
+\acro{SQL}{Structured Query Language}
+\acro{URL}{Uniform Resource Locator}
+\acro{UUID}{Universally Unique Identifier}
+\acro{YARRRML}{Yet Another RDF and RML Multi-Line Language}
+\end{acronym}
 
-\chapter{Introduction}
-\input{src/introduction}
+\mainmatter
+\include{src/introduction_working}
+\include{src/background_working}
+\include{src/requirements_working}
+\include{src/design_working}
+\input{src/implementation_working}
+\input{src/classification_working}
+\input{src/knowledge_graph_working}
+\include{src/evaluation}
+\include{src/future_work}
+\include{src/conclusion}
 
-% Add more chapters below:
-% \chapter{Background}
-% \input{src/background}
-
-% \chapter{Methodology}
-% \input{src/methodology}
-
-% \chapter{Results}
-% \input{src/results}
-
-% \chapter{Conclusion}
-% \input{src/conclusion}
-
-%---------------------------------------------------------
-\nocite{*}
-\bibliographystyle{splncs03}
+\backmatter
+\bibliographystyle{unsrt}
 \bibliography{bibliography}
 
 \end{document}

@@ -1,0 +1,142 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix : <http://mapping.example.com/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix nf: <https://w3id.org/notebookfair#> .
+
+:map_pipeline_repository_runs_000 rml:logicalSource :source_000 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_repository_runs" ;
+	rr:subjectMap :s_000 ;
+	rr:predicateObjectMap :pom_000, :pom_001, :pom_002, :pom_003, :pom_004, :pom_005, :pom_006, :pom_007 .
+
+:source_000 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/repository_runs.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_000 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/run/{id}" .
+
+:pom_000 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_000 ;
+	rr:objectMap :om_000 .
+
+:pm_000 rdf:type rr:PredicateMap ;
+	rr:constant rdf:type .
+
+:om_000 rdf:type rr:ObjectMap ;
+	rr:constant nf:RepositoryRun ;
+	rr:termType rr:IRI .
+
+:pom_001 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_001 ;
+	rr:objectMap :om_001 .
+
+:pm_001 rdf:type rr:PredicateMap ;
+	rr:constant nf:runOfRepository .
+
+:om_001 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/repository/{repository_id}" ;
+	rr:termType rr:IRI .
+
+:pom_002 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_002 ;
+	rr:objectMap :om_002 .
+
+:pm_002 rdf:type rr:PredicateMap ;
+	rr:constant nf:runStatus .
+
+:om_002 rdf:type rr:ObjectMap ;
+	rml:reference "run_status" ;
+	rr:termType rr:Literal .
+
+:pom_003 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_003 ;
+	rr:objectMap :om_003 .
+
+:pm_003 rdf:type rr:PredicateMap ;
+	rr:constant nf:errorMessage .
+
+:om_003 rdf:type rr:ObjectMap ;
+	rml:reference "error_message" ;
+	rr:termType rr:Literal .
+
+:pom_004 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_004 ;
+	rr:objectMap :om_004 .
+
+:pm_004 rdf:type rr:PredicateMap ;
+	rr:constant prov:startedAtTime .
+
+:om_004 rdf:type rr:ObjectMap ;
+	rml:reference "started_at" ;
+	rr:termType rr:Literal .
+
+:pom_005 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_005 ;
+	rr:objectMap :om_005 .
+
+:pm_005 rdf:type rr:PredicateMap ;
+	rr:constant prov:endedAtTime .
+
+:om_005 rdf:type rr:ObjectMap ;
+	rml:reference "finished_at" ;
+	rr:termType rr:Literal .
+
+:pom_006 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_006 ;
+	rr:objectMap :om_006 .
+
+:pm_006 rdf:type rr:PredicateMap ;
+	rr:constant nf:durationSeconds .
+
+:om_006 rdf:type rr:ObjectMap ;
+	rml:reference "duration_seconds" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:decimal .
+
+:pom_007 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_007 ;
+	rr:objectMap :om_007 .
+
+:pm_007 rdf:type rr:PredicateMap ;
+	rr:constant prov:generatedAtTime .
+
+:om_007 rdf:type rr:ObjectMap ;
+	rml:reference "created_at" ;
+	rr:termType rr:Literal .
+
+:map_pipeline_repository_has_run_000 rml:logicalSource :source_001 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_repository_has_run" ;
+	rr:subjectMap :s_001 ;
+	rr:predicateObjectMap :pom_008 .
+
+:source_001 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/repository_runs.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_001 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/repository/{repository_id}" .
+
+:pom_008 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_008 ;
+	rr:objectMap :om_008 .
+
+:pm_008 rdf:type rr:PredicateMap ;
+	rr:constant nf:hasRun .
+
+:om_008 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/run/{id}" ;
+	rr:termType rr:IRI .
+

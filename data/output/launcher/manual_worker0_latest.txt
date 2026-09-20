@@ -1,0 +1,1 @@
+351334 worker0 /mnt/c/David/Work/ma-david-keci/output/launcher/manual-worker0-20260907-150204/worker0.out

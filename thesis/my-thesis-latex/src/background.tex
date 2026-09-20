@@ -1,0 +1,74 @@
+\chapter{Background and Related Work}
+\label{chap:background}
+
+\section{Computational Reproducibility}
+
+Reproducibility terminology varies between disciplines, but the practical question in this work is concrete: can an automated system reconstruct a suitable software environment, execute a notebook, and obtain outputs that can be compared with the stored outputs? This question has at least three distinct outcomes. First, environment construction can fail before execution because a Python version or package cannot be installed. Second, the notebook can start but raise an exception. Third, the notebook can execute completely while producing output that differs from the original. Treating these outcomes as one Boolean value would hide useful evidence about the origin of a failure.
+
+Notebooks complicate the problem because their interface permits non-linear interactive execution. A user can run cells out of order, redefine variables, or retain kernel state that is not reconstructible from the final document. Dependencies may be declared in \texttt{requirements.txt}, \texttt{setup.py}, environment files, or nowhere at all. Data can be loaded from relative files, remote URLs, or private services. Consequently, an execution system must combine explicit metadata with evidence obtained from the notebook content.
+
+Pimentel et al. connected notebook quality indicators with reproducibility at large scale and highlighted execution order and software-engineering practices \cite{pimentel2019}. Samuel and Mietchen developed an automated biomedical pipeline that searched publication text for notebooks, located GitHub repositories, reconstructed environments, and compared rerun outputs \cite{samuel2024computational}. Their published corpus provides the database baseline used by the present project. The work also demonstrates why error categories and output comparison must be retained rather than reporting only whether a command terminated successfully.
+
+\section{The Three Source Platforms}
+
+\subsection{GitHub}
+
+GitHub is both a Git hosting service and an API provider. Repository content is acquired through Git, while descriptive information can be requested through the repository REST endpoint \cite{githubapi}. The response includes a repository name, description, owner, topics, licence information, and timestamps. Authentication is optional for public data but a token increases the practical request allowance. A GitHub-specific implementation can easily allow assumptions about host names, \texttt{/blob/} notebook URLs, and API response fields to spread into unrelated processing code. Removing these assumptions is a principal concern of the extension.
+
+\subsection{Codeberg}
+
+Codeberg is a community-run Git forge based on Forgejo. Content acquisition is therefore similar to GitHub: a remote can be checked with Git and cloned into a local directory. Metadata access is different. The repository endpoint follows the Forgejo API, and fields such as the owner and licence can occur in more than one representation \cite{codebergapi}. Codeberg notebook links use a \texttt{/src/} route where GitHub commonly uses \texttt{/blob/}. The similarity at the Git level and the difference at the API level make Codeberg a useful test of connector modularity.
+
+\subsection{Zenodo}
+
+Zenodo publishes research outputs as records with metadata and one or more files. Its REST API supports retrieving an individual record and downloading its files \cite{zenodoapi}. A record may contain a source archive, notebooks, data, documentation, or several unrelated files. It does not necessarily expose a Git remote. Validation must therefore confirm an API response, and acquisition must select a usable file URL. Zenodo also provides publication-oriented fields such as creators, keywords, licences, and persistent identifiers. The DOI is particularly important for linking a computational object to scholarly communication.
+
+\begin{table}[ht]
+\centering
+\caption{Platform differences relevant to the pipeline.}
+\label{tab:platform-differences}
+\begin{tabularx}{\textwidth}{@{}lXXX@{}}
+\toprule
+Aspect & GitHub & Codeberg & Zenodo\\
+\midrule
+Resource type & Git repository & Git repository & Archived research record\\
+Validation & \texttt{git ls-remote} & \texttt{git ls-remote} & Records API\\
+Acquisition & clone or pull & clone or pull & file download and extraction\\
+Metadata API & GitHub REST & Forgejo REST & Zenodo Records\\
+Native DOI & normally absent & normally absent & commonly present\\
+Stored identifier & owner/repository & owner/repository & numeric record ID\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Metadata Normalization}
+
+Metadata normalization transforms semantically similar but structurally different source fields into a common representation. It is not the same as inventing missing values. The adapters in this work use an empty string when a source does not provide a value. This decision preserves comparability without claiming knowledge that the platform did not return.
+
+Eight fields were chosen because they are available or meaningful across the sources: title, description, authors, licence, keywords, DOI, creation date, and update date. GitHub topics and Codeberg topics map to keywords. An owner or creator list maps to authors. A platform-specific licence object maps to one licence string. Zenodo's DOI maps directly, whereas the field remains empty for ordinary Git repositories. The database additionally records the time at which metadata was fetched, allowing later analysis to distinguish source timestamps from pipeline provenance.
+
+Normalization supports execution indirectly. Descriptive metadata does not replace dependency files, but it improves identification, licensing context, cross-platform comparison, and knowledge-graph publication. Environment metadata is handled separately by analysing requirements, setup files, runtime hints, and notebook imports.
+
+\section{Environment Reconstruction and Notebook Execution}
+
+The pipeline uses \texttt{pyenv} to select or install Python versions and create isolated environments. The tool's version-selection mechanism allows multiple Python releases to coexist and supports project-specific selection \cite{pyenv}. Required packages are assembled from repository requirement files and imports detected in notebooks. This best-effort reconstruction cannot guarantee an identical historical environment, but it creates a repeatable automated procedure.
+
+Notebook execution uses Jupyter \texttt{nbconvert}. In addition to converting notebooks into other formats, \texttt{nbconvert} can execute notebooks programmatically and save the resulting document \cite{nbconvert}. The pipeline preserves an original/output pair so that a later comparison can distinguish identical, different, and nondeterministic cell results. Errors are classified from execution logs and stored with duration and cell-level context when available.
+
+\section{FAIR Data and Knowledge Graphs}
+
+The FAIR principles emphasise that digital research objects should be findable, accessible, interoperable, and reusable \cite{wilkinson2016fair}. They do not require that every object be open, but they motivate persistent identification, rich metadata, standard representation, and machine-actionable relationships. RDF represents statements as subject-predicate-object triples and identifies resources with IRIs \cite{rdf2014}. SPARQL provides a query language for matching and combining graph patterns \cite{sparql2013}.
+
+FAIR Jupyter applies these ideas to a computational notebook reproducibility dataset. It converts relational exports into semantic triples and supports granular questions about publications, repositories, notebooks, and results \cite{samuel2024fairjupyter}. The present work preserves that semantic-publication strategy but extends the source and provenance model. It must express three platforms and two resource categories while incorporating operational entities generated by the updated pipeline.
+
+PROV-O provides general classes and properties for entities, activities, and agents \cite{prov2013}. It is therefore suitable for expressing a hosting platform as an agent, a repository or result as an entity, and pipeline runs and notebook executions as activities. Domain-specific classes can specialise these concepts while retaining compatibility with broader provenance tooling.
+
+\section{Declarative Knowledge-Graph Construction}
+
+Declarative mappings separate source-to-RDF transformation rules from procedural code. YARRRML provides a compact, human-readable representation for such rules \cite{heyvaert2018yarrrml}. These rules can be compiled to RML, which is then interpreted by a materialisation engine. Morph-KGC constructs RDF from heterogeneous sources and uses mapping partitions to improve scalability \cite{arenas2024morph,morphdocs}.
+
+This separation is valuable for the thesis for three reasons. First, reviewers can inspect how each CSV column becomes an RDF property without reading the database exporter. Second, the ontology and mapping can evolve independently of notebook execution. Third, per-table graph fragments can be validated and counted before they are combined into the final graph.
+
+\section{Research Gap}
+
+Existing execution research provides a strong GitHub-oriented reproducibility pipeline, while FAIR Jupyter provides semantic publication of its results. The missing element is an integrated cross-platform system that treats Git forges and research archives according to their actual access mechanisms and semantic types. The gap is not merely the lack of two download functions. It includes mixed-platform batching, safe identifier handling, normalized metadata, platform-aware database queries, archived-record modelling, operational provenance, and a repeatable path from the working database to RDF. These requirements motivate the design presented in the following chapters.

@@ -1,0 +1,15 @@
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?notebook ?classification ?ruleCategory ?llmCategory ?status ?needsReview ?category
+WHERE {
+  ?notebook nf:hasClassification ?classification .
+  ?classification a nf:NotebookClassificationActivity ;
+                  nf:ruleCategory ?ruleCategory ;
+                  nf:classificationAgreementStatus ?status ;
+                  nf:needsHumanReview ?needsReview .
+  OPTIONAL { ?classification nf:llmCategory ?llmCategory . }
+  OPTIONAL { ?classification nf:finalCategory ?finalCategory . }
+  OPTIONAL { ?classification nf:provisionalCategory ?provisionalCategory . }
+  BIND(COALESCE(?finalCategory, ?provisionalCategory) AS ?category)
+}
+ORDER BY ?status ?notebook

@@ -8,41 +8,44 @@ gantt
 
     section Foundation
     Repo & project setup           :done,   f1, 2026-04-27, 6d
-    GitLab issues & Gantt          :active,   f2, 2026-05-03, 3d
-    CI/CD LaTeX build              :active,   f3, 2026-05-03, 3d
+    GitLab issues & Gantt          :done,   f2, 2026-05-03, 3d
+    CI/CD LaTeX build              :done,   f3, 2026-05-03, 3d
 
     section Exploration & Design
-    FAIR Jupyter codebase study         :active, r1, 2026-05-06, 7d
-    Platform API analysis (GH/CB/Zen)   :        r2, 2026-05-11, 10d
-    Cross-platform schema design        :        r3, 2026-05-20, 8d
-    Pipeline architecture design        :        r4, 2026-05-25, 6d
+    FAIR Jupyter codebase study         :done, r1, 2026-05-06, 7d
+    Platform API analysis (GH/CB/Zen)   :done, r2, 2026-05-11, 10d
+    Cross-platform schema design        :done, r3, 2026-05-20, 8d
+    Pipeline architecture design        :done, r4, 2026-05-25, 6d
 
     section Connector Development
-    GitHub connector extension          :        c1, 2026-06-01, 10d
-    Codeberg connector                  :        c2, after c1, 12d
-    Zenodo connector                    :        c3, after c2, 12d
+    GitHub connector extension          :done, c1, 2026-06-01, 10d
+    Codeberg connector                  :done, c2, after c1, 12d
+    Zenodo connector                    :done, c3, after c2, 12d
 
     section Data Layer
-    Metadata extraction & normalization :        d1, 2026-06-28, 12d
-    Knowledge graph extension           :        d2, after d1, 12d
-    Notebook type classification        :        d3, after d2, 8d
+    Metadata extraction & normalization :done,   d1, 2026-07-06, 10d
+    Knowledge graph extension           :done,   d2, after d1, 12d
+    Notebook type classification        :done,   d3, after d2, 10d
 
     section Experiments & Analysis
-    Execution pipeline runs             :        x1, after d3, 5d
-    Cross-platform comparison           :        x2, after x1, 5d
-    Reproducibility patterns analysis   :        x3, after x2, 4d
+    Execution pipeline runs             :done,   x1, after d3, 6d
+    Cross-platform comparison           :done,   x2, after x1, 5d
+    Reproducibility patterns analysis   :done,   x3, after x2, 7d
+    First-run validation & README       :done,   x4, 2026-09-14, 1d
 
     section Writing
-    Continuous chapter drafting         :        w1, 2026-06-01, 73d
-    Full draft assembly                 :        w2, after x3, 3d
-    Supervisor feedback round           :        w3, after w2, 10d
-    Final polish & submission           :crit,   w4, after w3, 5d
+    Continuous chapter drafting         :done,   w1, 2026-07-06, 2026-09-03
+    Chapters 1--5 ready for review      :done,   w2, 2026-09-04, 2026-09-14
+    Website dashboard integration       :active, w3, 2026-09-14, 2d
+    Supervisor feedback round           :        w4, 2026-09-16, 3d
+    Final polish & submission           :crit,   w5, 2026-09-19, 2026-09-22
 
     section Milestones
     Vision document approved            :milestone, m1, 2026-04-27, 0d
     Architecture finalized              :milestone, m2, 2026-06-01, 0d
     All three connectors working        :milestone, m3, 2026-07-04, 0d
-    Knowledge graph populated           :milestone, m4, 2026-07-21, 0d
-    Evaluation complete                 :milestone, m5, 2026-08-18, 0d
-    Thesis submitted                    :milestone, m6, 2026-08-31, 0d
+    Knowledge graph populated           :milestone, m4, 2026-07-28, 0d
+    Evaluation complete                 :milestone, m5, 2026-09-07, 0d
+    Chapters 1--5 ready                 :milestone, m6, 2026-09-14, 0d
+    Thesis submitted                    :milestone, m7, 2026-09-22, 0d
 ```

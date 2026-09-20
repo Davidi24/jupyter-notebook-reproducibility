@@ -1,0 +1,201 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix : <http://mapping.example.com/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix nf: <https://w3id.org/notebookfair#> .
+
+:map_pipeline_notebook_executions_000 rml:logicalSource :source_000 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_notebook_executions" ;
+	rr:subjectMap :s_000 ;
+	rr:predicateObjectMap :pom_000, :pom_001, :pom_002, :pom_003, :pom_004, :pom_005, :pom_006, :pom_007, :pom_008, :pom_009, :pom_010, :pom_011, :pom_012 .
+
+:source_000 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/notebook_executions.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_000 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/execution/{id}" .
+
+:pom_000 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_000 ;
+	rr:objectMap :om_000 .
+
+:pm_000 rdf:type rr:PredicateMap ;
+	rr:constant rdf:type .
+
+:om_000 rdf:type rr:ObjectMap ;
+	rr:constant nf:NotebookExecution ;
+	rr:termType rr:IRI .
+
+:pom_001 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_001 ;
+	rr:objectMap :om_001 .
+
+:pm_001 rdf:type rr:PredicateMap ;
+	rr:constant nf:partOfRun .
+
+:om_001 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/run/{repository_run_id}" ;
+	rr:termType rr:IRI .
+
+:pom_002 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_002 ;
+	rr:objectMap :om_002 .
+
+:pm_002 rdf:type rr:PredicateMap ;
+	rr:constant nf:executedNotebook .
+
+:om_002 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/notebook/{notebook_id}" ;
+	rr:termType rr:IRI .
+
+:pom_003 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_003 ;
+	rr:objectMap :om_003 .
+
+:pm_003 rdf:type rr:PredicateMap ;
+	rr:constant nf:executionStatus .
+
+:om_003 rdf:type rr:ObjectMap ;
+	rml:reference "execution_status" ;
+	rr:termType rr:Literal .
+
+:pom_004 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_004 ;
+	rr:objectMap :om_004 .
+
+:pm_004 rdf:type rr:PredicateMap ;
+	rr:constant nf:durationSeconds .
+
+:om_004 rdf:type rr:ObjectMap ;
+	rml:reference "execution_duration" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:decimal .
+
+:pom_005 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_005 ;
+	rr:objectMap :om_005 .
+
+:pm_005 rdf:type rr:PredicateMap ;
+	rr:constant nf:totalCodeCells .
+
+:om_005 rdf:type rr:ObjectMap ;
+	rml:reference "total_code_cells" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:integer .
+
+:pom_006 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_006 ;
+	rr:objectMap :om_006 .
+
+:pm_006 rdf:type rr:PredicateMap ;
+	rr:constant nf:executedCells .
+
+:om_006 rdf:type rr:ObjectMap ;
+	rml:reference "executed_cells" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:integer .
+
+:pom_007 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_007 ;
+	rr:objectMap :om_007 .
+
+:pm_007 rdf:type rr:PredicateMap ;
+	rr:constant nf:errorType .
+
+:om_007 rdf:type rr:ObjectMap ;
+	rml:reference "error_type" ;
+	rr:termType rr:Literal .
+
+:pom_008 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_008 ;
+	rr:objectMap :om_008 .
+
+:pm_008 rdf:type rr:PredicateMap ;
+	rr:constant nf:errorCategory .
+
+:om_008 rdf:type rr:ObjectMap ;
+	rml:reference "error_category" ;
+	rr:termType rr:Literal .
+
+:pom_009 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_009 ;
+	rr:objectMap :om_009 .
+
+:pm_009 rdf:type rr:PredicateMap ;
+	rr:constant nf:errorMessage .
+
+:om_009 rdf:type rr:ObjectMap ;
+	rml:reference "error_message" ;
+	rr:termType rr:Literal .
+
+:pom_010 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_010 ;
+	rr:objectMap :om_010 .
+
+:pm_010 rdf:type rr:PredicateMap ;
+	rr:constant nf:errorCellIndex .
+
+:om_010 rdf:type rr:ObjectMap ;
+	rml:reference "error_cell_index" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:integer .
+
+:pom_011 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_011 ;
+	rr:objectMap :om_011 .
+
+:pm_011 rdf:type rr:PredicateMap ;
+	rr:constant nf:errorCount .
+
+:om_011 rdf:type rr:ObjectMap ;
+	rml:reference "error_count" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:integer .
+
+:pom_012 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_012 ;
+	rr:objectMap :om_012 .
+
+:pm_012 rdf:type rr:PredicateMap ;
+	rr:constant prov:generatedAtTime .
+
+:om_012 rdf:type rr:ObjectMap ;
+	rml:reference "created_at" ;
+	rr:termType rr:Literal .
+
+:map_pipeline_run_has_execution_000 rml:logicalSource :source_001 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_run_has_execution" ;
+	rr:subjectMap :s_001 ;
+	rr:predicateObjectMap :pom_013 .
+
+:source_001 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/notebook_executions.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_001 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/run/{repository_run_id}" .
+
+:pom_013 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_013 ;
+	rr:objectMap :om_013 .
+
+:pm_013 rdf:type rr:PredicateMap ;
+	rr:constant nf:hasExecution .
+
+:om_013 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/execution/{id}" ;
+	rr:termType rr:IRI .
+

@@ -1,0 +1,33 @@
+prefixes:
+  xsd: http://www.w3.org/2001/XMLSchema#
+  prov: http://www.w3.org/ns/prov#
+  nf: https://w3id.org/notebookfair#
+
+mappings:
+  pipeline_notebook_executions:
+    sources:
+      - [pipeline_data/notebook_executions.csv~csv]
+    s: https://w3id.org/notebookfair/execution/$(id)
+    po:
+      - [a, nf:NotebookExecution]
+      - [nf:partOfRun, https://w3id.org/notebookfair/run/$(repository_run_id)~iri]
+      - [nf:executedNotebook, https://w3id.org/notebookfair/notebook/$(notebook_id)~iri]
+      - [nf:executionStatus, $(execution_status)]
+      - [nf:durationSeconds, $(execution_duration), xsd:decimal]
+      - [nf:totalCodeCells, $(total_code_cells), xsd:integer]
+      - [nf:executedCells, $(executed_cells), xsd:integer]
+      - [nf:errorType, $(error_type)]
+      - [nf:errorCategory, $(error_category)]
+      - [nf:errorMessage, $(error_message)]
+      - [nf:errorCellIndex, $(error_cell_index), xsd:integer]
+      - [nf:errorCount, $(error_count), xsd:integer]
+      - [prov:generatedAtTime, $(created_at)]
+
+  pipeline_run_has_execution:
+    sources:
+      - [pipeline_data/notebook_executions.csv~csv]
+    s: https://w3id.org/notebookfair/run/$(repository_run_id)
+    po:
+      - [nf:hasExecution, https://w3id.org/notebookfair/execution/$(id)~iri]
+
+

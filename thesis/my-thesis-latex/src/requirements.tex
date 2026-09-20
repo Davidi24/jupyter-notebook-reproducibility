@@ -1,0 +1,90 @@
+\chapter{Requirements and System Analysis}
+\label{chap:requirements}
+
+\section{Baseline and Scope}
+
+The implementation starts from an updated version of the computational reproducibility pipeline used for the biomedical notebook study. The baseline already contains the platform-independent stages for locating notebooks in a local repository directory, collecting dependencies, selecting Python versions, creating environments, executing notebooks, comparing outputs, and recording failures. The objective is not to replace these stages. The objective is to make the acquisition boundary explicit and to ensure that every supported source reaches the same downstream contract.
+
+The downstream FAIR Jupyter project forms a second baseline. It already supplies an ontology centred on reproducibility, YARRRML and RML mappings for published dataset tables, and a Morph-KGC build route. The extension should remain compatible with that structure. No materialised graph is assumed to be source data; graph fragments and configurations are build outputs that can be regenerated.
+
+The scope includes public GitHub repositories, public Codeberg repositories, and public Zenodo records that contain downloadable notebook material. Private repository authentication, Git submodule authentication, arbitrary archive formats, non-Python execution, and long-term graph hosting are outside the first implementation. Notebook-purpose classification is implemented as a first hybrid version that combines transparent rules with a free local language model. Its final labelled evaluation dataset remains part of the research evaluation.
+
+\section{Functional Requirements}
+
+Table~\ref{tab:functional-requirements} summarises the principal functional requirements.
+
+\begin{table}[ht]
+\centering
+\caption{Functional requirements.}
+\label{tab:functional-requirements}
+\small
+\begin{tabularx}{\textwidth}{@{}p{1cm}X p{2.7cm}@{}}
+\toprule
+ID & Requirement & Status\\
+\midrule
+FR1 & Detect GitHub, Codeberg, Zenodo, or an unsupported source from a repository URL. & Implemented\\
+FR2 & Process one user-supplied resource or a mixed-platform batch from SQLite. & Implemented\\
+FR3 & Validate Git resources through Git and Zenodo resources through the Records API. & Implemented\\
+FR4 & Normalize eight descriptive metadata values and store them without duplicate rows. & Implemented\\
+FR5 & Clone or update Git resources and download/extract Zenodo resources. & Implemented\\
+FR6 & Register supplied notebook paths or discover notebook files automatically. & Implemented\\
+FR7 & Reuse requirement inference, environment creation, execution, comparison, and error analysis. & Implemented\\
+FR8 & Export seven relational datasets and transform them into an ontology-conformant RDF graph. & First version\\
+FR9 & Validate graph structure with SPARQL competency queries. & First version\\
+FR10 & Classify notebooks and compare reproducibility by category. & First version\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The status distinction is deliberate. ``First version'' means that code exists and has produced a graph, but the final ontology review, mapping review, and experimental validation have not yet been signed off. This prevents a technical proof of construction from being confused with a complete research evaluation.
+
+\section{Non-Functional Requirements}
+
+\subsection{Data Safety}
+
+The original database is treated as input evidence and must not be modified. The system uses a copy-on-first-run policy: if a working database is absent, the source is copied to \texttt{data/output/db/db.sqlite}; subsequent schema migration and execution results target only the working copy. If neither file exists, an empty working database can be created. This requirement was selected to make pipeline experiments recoverable and to separate source provenance from derived results.
+
+\subsection{Comparability}
+
+All platforms must produce the same database fields and enter the same execution functions after acquisition. Platform-specific adapters may differ internally, but a normalized metadata array must always use the same field order. Run status names and result metrics must not depend on the platform. These constraints permit later grouping by platform without comparing incompatible measures.
+
+\subsection{Traceability}
+
+Every processing attempt must be represented separately from the persistent repository resource. A failed validation, failed environment, failed execution, and successful reproduction attempt require distinguishable statuses, messages, and durations. Logs must be written per resource. The knowledge graph must connect resources, runs, executions, and results instead of flattening them into repository attributes.
+
+\subsection{Regenerability}
+
+The RDF graph must be derived from versioned ontology and mapping files plus the working database. Temporary configurations, logs, split graphs, and the combined N-Triples file are outputs. A user must be able to delete outputs and reproduce them by rerunning the build command. The build must fail clearly if an expected mapping is missing or invalid.
+
+\subsection{Portability and Operability}
+
+The main pipeline is implemented as Bash modules because the baseline uses shell orchestration. External JSON is transformed with \texttt{jq}, relational state is managed with SQLite, and HTTP access uses \texttt{curl}. The KG builder uses Python because Morph-KGC and RDFLib provide the necessary graph construction and validation libraries. Container-based testing is retained for clean dependency verification, while repository-specific Python environments use \texttt{pyenv}.
+
+\section{Input and Output Contract}
+
+In single-resource mode, the required input is a repository or record URL. Notebook paths, setup paths, and requirement paths are optional semicolon-separated values. A supplied GitHub notebook URL is normalized by removing the host, owner, repository, \texttt{/blob/}, and branch prefix. A Codeberg \texttt{/src/} path is treated equivalently. A Zenodo path can be supplied after extraction, but normally notebooks are discovered automatically because the archive structure is not known before download.
+
+In batch mode, each database row supplies a normalized identifier, platform, notebook paths, setup paths, and requirement paths. The system reconstructs an external URL according to the platform. The normalized repository field uses \texttt{owner/repository} for Git hosts and a bare numeric record ID for Zenodo. Platform-aware lookup prevents two hosts with the same path string from colliding.
+
+The pipeline output consists of database rows, per-resource logs, executed notebooks, JSON comparison results, classification records, and summary messages. The KG output consists of seven CSV files, seven generated graph fragments, one combined N-Triples file, per-mapping logs and configuration, and a JSON build summary.
+
+\section{Data Model Requirements}
+
+The relational design separates stable resources from repeated activities. The core tables are:
+
+\begin{itemize}
+  \item \texttt{repositories}: normalized identifier, platform, notebook/setup/requirement paths, and counts;
+  \item \texttt{repository\_metadata}: one normalized descriptive metadata row per repository;
+  \item \texttt{notebooks}: notebook path and language linked to a repository;
+  \item \texttt{repository\_runs}: one complete attempt to process a resource;
+  \item \texttt{notebook\_executions}: execution status, timing, error information, and cell counts;
+  \item \texttt{notebook\_reproducibility\_metrics}: original/executed comparison values.
+\end{itemize}
+
+Separating \texttt{repository\_metadata} avoids overloading the operational repository row. The foreign key \texttt{repo\_id} is unique, allowing an upsert to refresh metadata without creating duplicates. The platform remains on the repository row because it participates in identity, routing, and batch URL reconstruction.
+
+\section{Evaluation Requirements}
+
+Technical validation requires at least one public resource from each platform, a clean database copy, assertions about normalized metadata, and inspection of stored rows. KG validation requires parseable ontology and mappings, expected CSV row counts, successful per-mapping materialisation, a parseable combined graph, and SPARQL queries for platform and class constraints.
+
+The final research evaluation must go further. It should sample several resources per platform under a documented selection policy, freeze the experiment date and software versions, and compare acquisition success, metadata completeness, environment success, execution success, error categories, and output reproducibility. Since GitHub is strongly represented in the inherited dataset while Codeberg and Zenodo examples are newly selected, conclusions must report sample sizes and avoid interpreting platform differences that are actually sampling differences.

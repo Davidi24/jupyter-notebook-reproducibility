@@ -1,0 +1,15 @@
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?repository ?notebook ?run ?execution ?status ?result ?score
+WHERE {
+  ?repository nf:containsNotebook ?notebook ;
+              nf:hasRun ?run .
+  ?run nf:hasExecution ?execution .
+  ?execution nf:executedNotebook ?notebook ;
+             nf:executionStatus ?status ;
+             nf:hasReproducibilityResult ?result .
+  ?result nf:reproducibilityScore ?score .
+}
+ORDER BY ?repository ?notebook
+LIMIT 50
+

@@ -4,12 +4,9 @@ process_requirements() {
     log "[REQUIREMENT] Processing requirements for repository..."
 
     # Prepare temporary files
-    TEMP_FILE_REQS="temp_file_reqs.txt"
-    TEMP_NB_REQS="temp_nb_reqs.txt"
-    TEMP_COMBINED="temp_combined_reqs.txt"
-    > "$TEMP_FILE_REQS"
-    > "$TEMP_NB_REQS"
-    > "$TEMP_COMBINED"
+    TEMP_FILE_REQS=$(mktemp "${TMPDIR:-/tmp}/reqs_file.XXXXXX")
+    TEMP_NB_REQS=$(mktemp "${TMPDIR:-/tmp}/reqs_nb.XXXXXX")
+    TEMP_COMBINED=$(mktemp "${TMPDIR:-/tmp}/reqs_combined.XXXXXX")
 
     REQUIREMENTS_FILE="$REPO_DIR/requirements.txt"
 
@@ -20,7 +17,7 @@ process_requirements() {
         IFS=';' read -ra REQUIREMENT_ARRAY <<< "$REQUIREMENT_PATHS"
 
         for REQUIREMENT_PATH in "${REQUIREMENT_ARRAY[@]}"; do
-            REQUIREMENT_PATH=$(echo "$REQUIREMENT_PATH" | xargs)
+            REQUIREMENT_PATH=$(trim_whitespace "$REQUIREMENT_PATH")
             FULL_REQUIREMENT_PATH="$REPO_DIR/$REQUIREMENT_PATH"
 
             if [ -f "$FULL_REQUIREMENT_PATH" ]; then
@@ -76,8 +73,20 @@ process_requirements() {
             fi
         }
 
+        package_name_for_import() {
+            case "$1" in
+                bs4) echo "beautifulsoup4" ;;
+                cv2) echo "opencv-python" ;;
+                PIL) echo "Pillow" ;;
+                sklearn) echo "scikit-learn" ;;
+                skimage) echo "scikit-image" ;;
+                yaml) echo "PyYAML" ;;
+                *) echo "$1" ;;
+            esac
+        }
+
         for NOTEBOOK_PATH in "${NOTEBOOK_ARRAY[@]}"; do
-            NOTEBOOK_PATH=$(echo "$NOTEBOOK_PATH" | xargs)
+            NOTEBOOK_PATH=$(trim_whitespace "$NOTEBOOK_PATH")
             NOTEBOOK_NAME="$REPO_DIR/$NOTEBOOK_PATH"
             PYTHON_FILE="$REPO_DIR/${NOTEBOOK_PATH%.ipynb}.py"
 
@@ -108,8 +117,13 @@ process_requirements() {
                 elif is_local_module "$module_name" "$REPO_DIR"; then
                     log "[REQUIREMENT] Skipping local module: $module_name"
                 else
-                    echo "$module_name" >> "$TEMP_NB_REQS"
-                    log "[REQUIREMENT] Added external library from notebook: $module_name"
+                    package_name=$(package_name_for_import "$module_name")
+                    echo "$package_name" >> "$TEMP_NB_REQS"
+                    if [ "$package_name" != "$module_name" ]; then
+                        log "[REQUIREMENT] Added external library from notebook: $module_name -> $package_name"
+                    else
+                        log "[REQUIREMENT] Added external library from notebook: $module_name"
+                    fi
                 fi
             done
 

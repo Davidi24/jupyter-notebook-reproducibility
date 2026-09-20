@@ -1,0 +1,2276 @@
+{
+  "summary": {
+    "repository_id": "7",
+    "notebook": "NumPy Arrays.ipynb",
+    "url": "https://github.com/milan6rt/Python-Packages",
+    "execution_status": "SUCCESS",
+    "notebook_execution_duration": 6.0,
+    "total_code_cells": 35,
+    "executed_cells": 35,
+    "same_cells_count": 2,
+    "different_cells_count": 33,
+    "nondeterministic_cells_count": 7,
+    "same_cells": "2,32",
+    "different_cells": "4,5,6,7,10,11,13,14,15,16,18,19,21,23,24,26,27,29,30,33,34,36,38,39,40,41,42,44,45,46,47,48,50",
+    "nondeterministic_cells": "23,24,26,27,29,30,32",
+    "reproducibility_score": 0.057,
+    "error_type": null,
+    "error_category": null,
+    "error_message": null,
+    "error_cell_index": null,
+    "error_count": 0
+  },
+  "raw_diff": [
+    {
+      "op": "patch",
+      "key": "cells",
+      "diff": [
+        {
+          "op": "patch",
+          "key": 2,
+          "diff": [
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:22.865260Z",
+                    "iopub.status.busy": "2026-09-06T16:08:22.864832Z",
+                    "iopub.status.idle": "2026-09-06T16:08:22.923583Z",
+                    "shell.execute_reply": "2026-09-06T16:08:22.922215Z"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 4,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 2
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:22.925942Z",
+                    "iopub.status.busy": "2026-09-06T16:08:22.925658Z",
+                    "iopub.status.idle": "2026-09-06T16:08:22.937591Z",
+                    "shell.execute_reply": "2026-09-06T16:08:22.934514Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 5,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 3
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:22.978768Z",
+                    "iopub.status.busy": "2026-09-06T16:08:22.978521Z",
+                    "iopub.status.idle": "2026-09-06T16:08:22.984929Z",
+                    "shell.execute_reply": "2026-09-06T16:08:22.984266Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 6,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 4
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:22.987273Z",
+                    "iopub.status.busy": "2026-09-06T16:08:22.987078Z",
+                    "iopub.status.idle": "2026-09-06T16:08:22.992774Z",
+                    "shell.execute_reply": "2026-09-06T16:08:22.992133Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 7,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 5
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:22.995091Z",
+                    "iopub.status.busy": "2026-09-06T16:08:22.994891Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.000903Z",
+                    "shell.execute_reply": "2026-09-06T16:08:22.999809Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 10,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 6
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.003522Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.003274Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.009844Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.009065Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 6
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 11,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 7
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.012632Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.012362Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.018878Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.018369Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 7
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 13,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 8
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.022316Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.021411Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.028262Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.027066Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 7,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 6
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 8
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 14,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 9
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.030980Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.030705Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.037563Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.036406Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 13,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 17,
+                                  "length": 11
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 1,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 13,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 17,
+                                  "length": 11
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 2,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 13,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 17,
+                                  "length": 11
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 3,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 13,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 17,
+                                  "length": 11
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 4,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 13,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 17,
+                                  "length": 11
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 9
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 15,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 10
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.040024Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.039813Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.046773Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.043965Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 7,
+                                  "valuelist": "1.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 6
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 10
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 16,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 11
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.050093Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.049792Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.057679Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.055694Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "1.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 6
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 1,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "1.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 6
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 2,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "1.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 6
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 11
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 18,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 12
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.060801Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.060293Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.067558Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.066306Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 8,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 19,
+                                  "length": 1
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 12
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 19,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 13
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.070345Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.070069Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.077505Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.075530Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 7,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 20,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 36,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 50,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 62,
+                                  "valuelist": "  0.81632653,"
+                                }
+                              ]
+                            },
+                            {
+                              "op": "addrange",
+                              "key": 1,
+                              "valuelist": [
+                                "        1.02040816,  1.2244898 ,  1.42857143,  1.63265306,  1.83673469,\n",
+                                "        2.04081633,  2.24489796,  2.44897959,  2.65306122,  2.85714286,\n"
+                              ]
+                            },
+                            {
+                              "op": "removerange",
+                              "key": 1,
+                              "length": 3
+                            },
+                            {
+                              "op": "patch",
+                              "key": 4,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 7,
+                                  "valuelist": " 3.06122449,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 34,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 50,
+                                  "length": 1
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 5,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 0,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 34,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 50,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 62,
+                                  "valuelist": "  4.89795918,"
+                                }
+                              ]
+                            },
+                            {
+                              "op": "addrange",
+                              "key": 6,
+                              "valuelist": [
+                                "        5.10204082,  5.30612245,  5.51020408,  5.71428571,  5.91836735,\n",
+                                "        6.12244898,  6.32653061,  6.53061224,  6.73469388,  6.93877551,\n"
+                              ]
+                            },
+                            {
+                              "op": "removerange",
+                              "key": 6,
+                              "length": 3
+                            },
+                            {
+                              "op": "patch",
+                              "key": 9,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 7,
+                                  "valuelist": " 7.14285714,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 34,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 50,
+                                  "length": 1
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 10,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 0,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 34,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 50,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "addrange",
+                                  "key": 62,
+                                  "valuelist": "  8.97959184,"
+                                }
+                              ]
+                            },
+                            {
+                              "op": "addrange",
+                              "key": 11,
+                              "valuelist": [
+                                "        9.18367347,  9.3877551 ,  9.59183673,  9.79591837, 10.        ])"
+                              ]
+                            },
+                            {
+                              "op": "removerange",
+                              "key": 11,
+                              "length": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 13
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 21,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 14
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.081257Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.080956Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.087121Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.085966Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 8,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 18,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 1,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 8,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 12,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 18,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 2,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 13,
+                                  "length": 6
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 22,
+                                  "length": 1
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 3,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 8,
+                                  "valuelist": "0.,"
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 13,
+                                  "length": 1
+                                },
+                                {
+                                  "op": "removerange",
+                                  "key": 17,
+                                  "length": 6
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 14
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 23,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 15
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.090135Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.089880Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.103661Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.102370Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([0.20334753, 0.11209166])"
+                      },
+                      "execution_count": 15,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 24,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 16
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.106267Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.105935Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.112191Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.111293Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([[0.11429975, 0.97662315, 0.43574859, 0.0643676 , 0.62797652],\n       [0.956414  , 0.91753978, 0.60597162, 0.05579784, 0.91990368],\n       [0.26015194, 0.75986961, 0.7844707 , 0.64617835, 0.87517685],\n       [0.41170479, 0.94787127, 0.55919878, 0.23410026, 0.04504308],\n       [0.62016095, 0.98125587, 0.73466432, 0.64229025, 0.1123407 ]])"
+                      },
+                      "execution_count": 16,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 26,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 17
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.115732Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.115434Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.120635Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.119942Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([ 0.1445854 , -1.76795255])"
+                      },
+                      "execution_count": 17,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 27,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 18
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.123042Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.122774Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.127174Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.126640Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([[ 0.77442812, -0.41642762,  0.19940955,  1.99700662,  1.31970282],\n       [ 0.36866179, -0.24839832, -2.11384872,  1.1098172 , -0.46404044],\n       [-0.42701649,  0.25373192, -1.72171504, -0.48513674,  1.02832503],\n       [ 0.29124021, -0.78147988,  0.16633549,  0.68772691, -0.6414629 ],\n       [ 0.51537509, -1.93405726,  0.1931202 , -0.13842981, -1.07895039]])"
+                      },
+                      "execution_count": 18,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 29,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 19
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.130181Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.129910Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.134264Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.133647Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "addrange",
+                              "key": 0,
+                              "valuelist": [
+                                "74"
+                              ]
+                            },
+                            {
+                              "op": "removerange",
+                              "key": 0,
+                              "length": 1
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 19
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 30,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 20
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.136554Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.136143Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.140787Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.139913Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([42, 25, 72, 71, 46, 41, 69, 48, 76,  8])"
+                      },
+                      "execution_count": 20,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 32,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 21
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.143799Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.143559Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.147872Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.146231Z"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 33,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 22
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.151527Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.151047Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.155677Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.154779Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 22
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 34,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 23
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.158108Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.157879Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.161850Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.161124Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([23,  0, 32,  7, 14, 20, 35, 10, 38, 17])"
+                      },
+                      "execution_count": 23,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 36,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 24
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.164430Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.163926Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.168621Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.167884Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 24
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 38,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 25
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.171106Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.170877Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.175127Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.174423Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "array([23,  0, 32,  7, 14, 20, 35, 10, 38, 17])"
+                      },
+                      "execution_count": 25,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 39,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 26
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.177421Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.177055Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.181881Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.181038Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "np.int64(38)"
+                      },
+                      "execution_count": 26,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 40,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 27
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.184305Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.184067Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.188092Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.187480Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "np.int64(8)"
+                      },
+                      "execution_count": 27,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 41,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 28
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.190238Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.189833Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.194068Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.193357Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "np.int64(0)"
+                      },
+                      "execution_count": 28,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 42,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 29
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.196522Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.196240Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.200483Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.199811Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    {
+                      "data": {
+                        "text/plain": "np.int64(1)"
+                      },
+                      "execution_count": 29,
+                      "metadata": {},
+                      "output_type": "execute_result"
+                    }
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 44,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 30
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.202870Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.202590Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.206486Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.205797Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 30
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 45,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 31
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.208940Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.208542Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.213315Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.212282Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "patch",
+                      "key": "data",
+                      "diff": [
+                        {
+                          "op": "patch",
+                          "key": "text/plain",
+                          "diff": [
+                            {
+                              "op": "patch",
+                              "key": 0,
+                              "diff": [
+                                {
+                                  "op": "removerange",
+                                  "key": 71,
+                                  "length": 4
+                                }
+                              ]
+                            },
+                            {
+                              "op": "patch",
+                              "key": 1,
+                              "diff": [
+                                {
+                                  "op": "addrange",
+                                  "key": 7,
+                                  "valuelist": " 16,"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 31
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 46,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 32
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.216766Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.216493Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.220634Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.219873Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 32
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 47,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 33
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.223177Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.222583Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.227889Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.226507Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 33
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 48,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 34
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.230561Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.230269Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.234987Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.234448Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 34
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "patch",
+          "key": 50,
+          "diff": [
+            {
+              "op": "replace",
+              "key": "execution_count",
+              "value": 35
+            },
+            {
+              "op": "patch",
+              "key": "metadata",
+              "diff": [
+                {
+                  "op": "add",
+                  "key": "execution",
+                  "value": {
+                    "iopub.execute_input": "2026-09-06T16:08:23.237953Z",
+                    "iopub.status.busy": "2026-09-06T16:08:23.237505Z",
+                    "iopub.status.idle": "2026-09-06T16:08:23.242057Z",
+                    "shell.execute_reply": "2026-09-06T16:08:23.241246Z"
+                  }
+                }
+              ]
+            },
+            {
+              "op": "patch",
+              "key": "outputs",
+              "diff": [
+                {
+                  "op": "patch",
+                  "key": 0,
+                  "diff": [
+                    {
+                      "op": "replace",
+                      "key": "execution_count",
+                      "value": 35
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "op": "patch",
+      "key": "metadata",
+      "diff": [
+        {
+          "op": "patch",
+          "key": "language_info",
+          "diff": [
+            {
+              "op": "patch",
+              "key": "version",
+              "diff": [
+                {
+                  "op": "addrange",
+                  "key": 0,
+                  "valuelist": [
+                    "3.10.12"
+                  ]
+                },
+                {
+                  "op": "removerange",
+                  "key": 0,
+                  "length": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "nb_errors": []
+}

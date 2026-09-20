@@ -1,0 +1,210 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix : <http://mapping.example.com/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix nf: <https://w3id.org/notebookfair#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:map_pipeline_notebook_classifications_000 rml:logicalSource :source_000 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_notebook_classifications" ;
+	rr:subjectMap :s_000 ;
+	rr:predicateObjectMap :pom_000, :pom_001, :pom_002, :pom_003, :pom_004, :pom_005, :pom_006, :pom_007, :pom_008, :pom_009, :pom_010, :pom_011, :pom_012, :pom_013 .
+
+:source_000 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/notebook_classifications.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_000 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/classification/{id}" .
+
+:pom_000 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_000 ;
+	rr:objectMap :om_000 .
+
+:pm_000 rdf:type rr:PredicateMap ;
+	rr:constant rdf:type .
+
+:om_000 rdf:type rr:ObjectMap ;
+	rr:constant nf:NotebookClassificationActivity ;
+	rr:termType rr:IRI .
+
+:pom_001 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_001 ;
+	rr:objectMap :om_001 .
+
+:pm_001 rdf:type rr:PredicateMap ;
+	rr:constant nf:classifiedNotebook .
+
+:om_001 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/notebook/{notebook_id}" ;
+	rr:termType rr:IRI .
+
+:pom_002 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_002 ;
+	rr:objectMap :om_002 .
+
+:pm_002 rdf:type rr:PredicateMap ;
+	rr:constant nf:ruleCategory .
+
+:om_002 rdf:type rr:ObjectMap ;
+	rml:reference "rule_category" ;
+	rr:termType rr:Literal .
+
+:pom_003 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_003 ;
+	rr:objectMap :om_003 .
+
+:pm_003 rdf:type rr:PredicateMap ;
+	rr:constant nf:ruleConfidence .
+
+:om_003 rdf:type rr:ObjectMap ;
+	rml:reference "rule_confidence" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:decimal .
+
+:pom_004 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_004 ;
+	rr:objectMap :om_004 .
+
+:pm_004 rdf:type rr:PredicateMap ;
+	rr:constant nf:llmCategory .
+
+:om_004 rdf:type rr:ObjectMap ;
+	rml:reference "llm_category" ;
+	rr:termType rr:Literal .
+
+:pom_005 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_005 ;
+	rr:objectMap :om_005 .
+
+:pm_005 rdf:type rr:PredicateMap ;
+	rr:constant nf:llmConfidence .
+
+:om_005 rdf:type rr:ObjectMap ;
+	rml:reference "llm_confidence" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:decimal .
+
+:pom_006 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_006 ;
+	rr:objectMap :om_006 .
+
+:pm_006 rdf:type rr:PredicateMap ;
+	rr:constant nf:classifierModel .
+
+:om_006 rdf:type rr:ObjectMap ;
+	rml:reference "llm_model" ;
+	rr:termType rr:Literal .
+
+:pom_007 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_007 ;
+	rr:objectMap :om_007 .
+
+:pm_007 rdf:type rr:PredicateMap ;
+	rr:constant nf:classifierPromptVersion .
+
+:om_007 rdf:type rr:ObjectMap ;
+	rml:reference "llm_prompt_version" ;
+	rr:termType rr:Literal .
+
+:pom_008 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_008 ;
+	rr:objectMap :om_008 .
+
+:pm_008 rdf:type rr:PredicateMap ;
+	rr:constant nf:classificationAgreementStatus .
+
+:om_008 rdf:type rr:ObjectMap ;
+	rml:reference "agreement_status" ;
+	rr:termType rr:Literal .
+
+:pom_009 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_009 ;
+	rr:objectMap :om_009 .
+
+:pm_009 rdf:type rr:PredicateMap ;
+	rr:constant nf:needsHumanReview .
+
+:om_009 rdf:type rr:ObjectMap ;
+	rml:reference "needs_human_review" ;
+	rr:termType rr:Literal ;
+	rr:datatype xsd:boolean .
+
+:pom_010 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_010 ;
+	rr:objectMap :om_010 .
+
+:pm_010 rdf:type rr:PredicateMap ;
+	rr:constant nf:classificationWarning .
+
+:om_010 rdf:type rr:ObjectMap ;
+	rml:reference "warning" ;
+	rr:termType rr:Literal .
+
+:pom_011 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_011 ;
+	rr:objectMap :om_011 .
+
+:pm_011 rdf:type rr:PredicateMap ;
+	rr:constant nf:provisionalCategory .
+
+:om_011 rdf:type rr:ObjectMap ;
+	rml:reference "provisional_category" ;
+	rr:termType rr:Literal .
+
+:pom_012 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_012 ;
+	rr:objectMap :om_012 .
+
+:pm_012 rdf:type rr:PredicateMap ;
+	rr:constant nf:finalCategory .
+
+:om_012 rdf:type rr:ObjectMap ;
+	rml:reference "final_category" ;
+	rr:termType rr:Literal .
+
+:pom_013 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_013 ;
+	rr:objectMap :om_013 .
+
+:pm_013 rdf:type rr:PredicateMap ;
+	rr:constant dcterms:created .
+
+:om_013 rdf:type rr:ObjectMap ;
+	rml:reference "created_at" ;
+	rr:termType rr:Literal .
+
+:map_pipeline_notebook_has_classification_000 rml:logicalSource :source_001 ;
+	rdf:type rr:TriplesMap ;
+	rdfs:label "pipeline_notebook_has_classification" ;
+	rr:subjectMap :s_001 ;
+	rr:predicateObjectMap :pom_014 .
+
+:source_001 rdf:type rml:LogicalSource ;
+	rml:source "pipeline_data/notebook_classifications.csv" ;
+	rml:referenceFormulation ql:CSV .
+
+:s_001 rdf:type rr:SubjectMap ;
+	rr:template "https://w3id.org/notebookfair/notebook/{notebook_id}" .
+
+:pom_014 rdf:type rr:PredicateObjectMap ;
+	rr:predicateMap :pm_014 ;
+	rr:objectMap :om_014 .
+
+:pm_014 rdf:type rr:PredicateMap ;
+	rr:constant nf:hasClassification .
+
+:om_014 rdf:type rr:ObjectMap ;
+	rr:template "https://w3id.org/notebookfair/classification/{id}" ;
+	rr:termType rr:IRI .
+

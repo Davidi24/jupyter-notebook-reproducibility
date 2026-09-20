@@ -1,0 +1,35 @@
+prefixes:
+  rr: http://www.w3.org/ns/r2rml#
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  xsd: http://www.w3.org/2001/XMLSchema#
+  dcterms: http://purl.org/dc/terms/
+  schema: https://schema.org/
+  nf: https://w3id.org/notebookfair#
+
+mappings:
+  pipeline_platforms:
+    sources:
+      - [pipeline_data/repositories.csv~csv]
+    s: https://w3id.org/notebookfair/platform/$(platform)
+    po:
+      - [a, nf:RepositoryPlatform]
+      - [rdfs:label, $(platform)]
+      - [nf:platformName, $(platform)]
+
+  pipeline_repositories:
+    sources:
+      - [pipeline_data/repositories.csv~csv]
+    s: https://w3id.org/notebookfair/repository/$(id)
+    po:
+      - [a, $(resource_type)~iri]
+      - [rdfs:label, $(repository)]
+      - [dcterms:identifier, $(repository)]
+      - [schema:url, $(repository_url)~iri]
+      - [nf:repositoryIdentifier, $(repository)]
+      - [nf:hostedOnPlatform, https://w3id.org/notebookfair/platform/$(platform)~iri]
+      - [nf:notebooksCount, $(notebooks_count), xsd:integer]
+      - [nf:setupsCount, $(setups_count), xsd:integer]
+      - [nf:requirementsCount, $(requirements_count), xsd:integer]
+
+

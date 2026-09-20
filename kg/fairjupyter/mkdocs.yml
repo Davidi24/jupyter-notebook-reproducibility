@@ -1,0 +1,13 @@
+site_name: FAIR Jupyter
+site_url: https://fusion-jena.github.io/fairjupyter
+repo_url: https://github.com/fusion-jena/fairjupyter
+docs_dir: docs/content
+nav:
+  - Home: index.md
+theme:
+  name: material
+  features:
+    - toc.follow
+extra_css:
+  - stylesheets/fairjupyter.css
+

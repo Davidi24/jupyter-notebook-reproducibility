@@ -1,0 +1,10 @@
+PREFIX nf: <https://w3id.org/notebookfair#>
+
+SELECT ?status (COUNT(?run) AS ?runs)
+WHERE {
+  ?run a nf:RepositoryRun ;
+       nf:runStatus ?status .
+}
+GROUP BY ?status
+ORDER BY DESC(?runs)
+

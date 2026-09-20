@@ -10,4 +10,6 @@ libreadline-dev
 libsqlite3-dev
 libffi-dev
 liblzma-dev
+jq
+unzip
  

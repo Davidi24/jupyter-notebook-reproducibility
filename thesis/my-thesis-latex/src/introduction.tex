@@ -1,1 +1,75 @@
-\blindtext
+\chapter{Introduction}
+\label{chap:introduction}
+
+\section{Motivation}
+
+Jupyter notebooks have become a common format for communicating computational research. A notebook places source code, explanatory text, visualisations, and previously generated outputs in one document. This combination lowers the barrier to inspecting an analysis and can make the reasoning behind a result more transparent. However, the presence of code and output in the same file does not by itself make the result reproducible. A notebook can depend on an unspecified Python version, unavailable libraries, external files, hidden execution state, or a particular order of cell execution. When these conditions are not documented, a second researcher may be able to read the notebook but not recreate its results.
+
+Large empirical studies demonstrate that this is not an exceptional problem. Pimentel et al. analysed approximately 1.4 million notebooks and reported recurring quality and reproducibility problems \cite{pimentel2019}. Samuel and Mietchen later studied biomedical notebooks connected to publications and showed that dependency installation, execution exceptions, and output differences all limit successful reproduction \cite{samuel2024computational}. These studies provide both a motivation and a technical baseline for automated reproducibility analysis.
+
+The available evidence is nevertheless strongly influenced by source selection. Existing data collection and execution pipelines commonly assume that notebooks are hosted in GitHub repositories. This assumption simplifies acquisition because a GitHub URL can be validated through Git and cloned into a local directory. It becomes problematic when research software is published elsewhere. Codeberg is also a Git forge, but exposes metadata through a Forgejo-compatible interface rather than the GitHub API. Zenodo is more different: it is a research repository that publishes versioned records and downloadable files, and a record is not necessarily a Git repository. Treating all three platforms as interchangeable would therefore lose provenance and, in the Zenodo case, misrepresent the type of resource being processed.
+
+The downstream representation has a similar limitation. FAIR Jupyter transforms a rich notebook reproducibility dataset into a knowledge graph that supports granular exploration \cite{samuel2024fairjupyter}. Its original repository model is tied to GitHub-oriented data. A cross-platform pipeline requires a semantic model that can express the hosting platform, distinguish Git repositories from archived research records, and connect each resource to pipeline runs, notebook executions, and comparison results.
+
+\section{Problem Statement}
+
+The central problem addressed by this thesis is that a GitHub-specific reproducibility workflow cannot be extended to Codeberg and Zenodo by changing only a repository URL. The platforms differ at four levels:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Validation.} Git repositories can be checked using Git remote operations, while Zenodo records must be checked through an HTTP API.
+  \item \textbf{Acquisition.} GitHub and Codeberg resources can be cloned or pulled. Zenodo content must be selected from a record, downloaded, and potentially extracted.
+  \item \textbf{Metadata.} Equivalent concepts such as author, licence, keywords, and dates occur under different field names and structures. Some fields, especially a DOI, are native to Zenodo but normally absent from Git repositories.
+  \item \textbf{Semantics.} A Zenodo record is an archived research object and must not be asserted to be a Git repository merely because the downstream pipeline processes its files in a repository-like directory.
+\end{enumerate}
+
+In addition, the original pipeline needs to preserve existing notebook-processing behaviour. Collection, environment reconstruction, execution, comparison, and error analysis are valuable and largely independent of the hosting platform after the files are locally available. Rewriting these stages for each platform would duplicate logic and make results harder to compare. The desired extension must therefore isolate platform-specific acquisition while converging into a shared execution route.
+
+\section{Research Goal and Questions}
+
+The goal is to design, implement, and evaluate a cross-platform extension of the computational reproducibility pipeline and its FAIR knowledge-graph layer. The system should support GitHub, Codeberg, and Zenodo with platform-appropriate connectors, normalize descriptive metadata into a common database schema, execute notebooks through the existing environment-reconstruction route, and publish the resulting provenance as linked RDF data.
+
+The work is guided by the following questions:
+
+\begin{description}[style=nextline,leftmargin=1.5cm]
+  \item[RQ1] How can one pipeline acquire and validate notebook resources from GitHub, Codeberg, and Zenodo without duplicating the platform-independent execution stages?
+  \item[RQ2] Which metadata fields can be normalized across the three platforms, and how can missing or structurally different values be handled consistently?
+  \item[RQ3] How can the FAIR Jupyter knowledge graph be extended to represent platform provenance, non-Git archived records, pipeline runs, executions, and reproducibility results?
+  \item[RQ4] Which technical checks and comparative metrics are required to evaluate the correctness and usefulness of the cross-platform extension?
+\end{description}
+
+The final comparative answer to RQ4 depends on a controlled experiment that is still in progress. This draft therefore distinguishes implemented technical validation from planned statistical evaluation.
+
+\section{Contributions}
+
+This thesis makes the following engineering and modelling contributions:
+
+\begin{itemize}
+  \item a platform detector and connector architecture for GitHub, Codeberg, and Zenodo;
+  \item mixed-platform batch processing that rebuilds the correct external URL from a stored platform and identifier;
+  \item a copy-on-first-run database architecture that protects the source database and records all new results in a working copy;
+  \item a normalized metadata schema and API adapters that produce the same eight fields for all supported platforms;
+  \item a validation-first control flow that avoids saving metadata for unreachable resources;
+  \item a Zenodo acquisition route that selects, downloads, and extracts record files instead of invoking Git;
+  \item an ontology extension and seven mapping sets that connect repositories, archives, notebooks, runs, executions, comparison metrics, and classification activities;
+  \item a hybrid notebook-purpose classifier that compares weighted rules with a free local language model and requests human clarification when their results differ;
+  \item automated metadata and knowledge-graph tests plus an interactive demonstration of the database, pipeline, and semantic model.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.9\textwidth}
+\centering
+\textbf{GitHub / Codeberg / Zenodo}\\[0.25cm]
+$\downarrow$ platform-specific validation, metadata, and acquisition\\[0.25cm]
+\textbf{Shared notebook processing}\\
+collection $\rightarrow$ requirements $\rightarrow$ environment $\rightarrow$ execution $\rightarrow$ comparison\\[0.25cm]
+$\downarrow$ normalized database records\\[0.25cm]
+\textbf{CSV $\rightarrow$ YARRRML/RML $\rightarrow$ RDF knowledge graph $\rightarrow$ SPARQL}
+\end{minipage}}
+\caption{High-level scope of the cross-platform extension.}
+\label{fig:scope}
+\end{figure}
+
+\section{Thesis Structure}
+
+Chapter~\ref{chap:background} introduces computational reproducibility, platform characteristics, metadata normalization, and semantic publication. Chapter~\ref{chap:requirements} derives requirements and defines the system boundary. Chapter~\ref{chap:design} presents the architecture and data model. Chapter~\ref{chap:implementation} explains the pipeline implementation, while Chapter~\ref{chap:kg} covers ontology and mapping extensions. Chapter~\ref{chap:evaluation} reports preliminary technical validation and specifies the remaining experiment. Chapter~\ref{chap:discussion} discusses design trade-offs, threats to validity, and limitations. The thesis concludes with implemented results and future work.

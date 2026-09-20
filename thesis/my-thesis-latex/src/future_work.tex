@@ -1,0 +1,125 @@
+\chapter{Discussion, Limitations, and Future Work}
+\label{chap:future-work}
+
+The previous chapter reported what was measured. This chapter explains what those measurements mean, how far they can be trusted, and what would be needed to go further.
+
+It keeps two things apart. A threat to validity is a reason to read a number that has already been reported more carefully. Future work is something that would produce numbers which do not exist yet.
+
+\section{What the Results Mean}
+\label{sec:discussion}
+
+Three results from Chapter~\ref{chap:evaluation} need more explanation than the tables give on their own.
+
+\subsection{Platform Dependence Lives at the Acquisition Boundary}
+
+Only three of the pipeline stages contain platform-specific logic, and those three stages account for almost all of the failures that can be blamed on a platform. Of Zenodo's 25 unsuccessful resources, 21 stopped before notebook execution, and none of the failures after that point were specific to a platform.
+
+This has a practical meaning for anyone continuing the work: the cost of adding a platform is the cost of writing one connector, not of building a second pipeline.
+
+The cost is not zero. Each new platform brings its own failure modes, and they appear at that same boundary. Zenodo's \texttt{NO\ub NOTEBOOKS} outcome has no equivalent on a Git forge, because a record can legitimately contain only a dataset or a PDF. A connector for Figshare or Dryad should be expected to bring something equally specific of its own.
+
+\subsection{Running and Reproducing Are Not the Same Thing}
+
+Codeberg had the best clean-execution rate, at 45.3\%, and GitHub the worst, at 30.8\%. On output reproducibility the order does not follow: counted over notebooks, GitHub scores highest at 0.378 and Codeberg 0.367.
+
+This is the main methodological finding of the study. Reproducibility is often reported as a single yes-or-no verdict: the notebook reproduced, or it did not. A study using that kind of verdict would have concluded that Codeberg performs best. Comparing outputs cell by cell gives a different answer.
+
+Notebook length is a plausible part of the explanation. GitHub notebooks in this corpus have 20.2 code cells on average against Codeberg's 14.0. A longer notebook has more chances to raise an error, which lowers the clean-execution rate, and at the same time offers more cells that can match, which can raise the score. The corpus cannot confirm this, but it is consistent with Tables~\ref{tab:exec-outcomes} and~\ref{tab:repro-scores}.
+
+\subsection{Missing Dependencies Are the Same Problem Everywhere}
+
+Missing dependencies are the largest single failure cause across the corpus, at 20.9\%, and they stay between 17.1\% and 25.8\% on every platform. That is a narrower range than for any other failure category. GitHub is the one place where another cause is slightly more frequent, with code errors at 21.9\% against 19.7\% for dependencies.
+
+The three platforms differ considerably in their communities, their governance, and the rules they apply when something is published, and none of that moves the dependency-failure rate very much. The natural reading is that incomplete dependency information is a property of how notebooks are written rather than of where they are published. That also makes it the failure most likely to respond to advice aimed at authors, such as writing a complete requirements file, rather than to any change in platform policy.
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+\subsection{Does the Study Measure What It Claims to Measure?}
+
+The reproducibility score measures output agreement, not scientific correctness. A notebook scoring 1.0 has reproduced its stored outputs; it has not been shown to be sound, and those outputs may have been wrong in the first place. The reverse is also possible, since a low score may reflect a corrected library or a newer dataset rather than a problem. The measure answers a deliberately narrow question.
+
+Nondeterminism detection is only a heuristic. Cells are flagged when they show signals such as random-number generation, timestamps, or UUIDs. Only 838 of 38{,}087 cells (2.2\%) were flagged, which is almost certainly too few, because a cell that uses a value produced by an unseeded random source several cells earlier shows no signal of its own. Some share of the 25{,}835 cells recorded as different are therefore nondeterministic rather than genuinely not reproducible, which pushes the reported scores down by an amount the data cannot reveal.
+
+Metadata completeness measures what an API returns, not what exists. Codeberg's 0\% licence coverage is the clearest case: repositories in the sample do contain licence files, but the Forgejo endpoint does not return a licence field. For the question asked here the machine-readable description is the right thing to measure, but it is not the same as whether the resource is licensed.
+
+\subsection{Could Something Else Explain the Numbers?}
+
+The interpreter is a plausible modern one, not the author's. When a repository declares no Python version, which is the common case, the pipeline uses Python 3.10. A dependency failure under this fallback may be a conflict between an old pinned package and a newer interpreter rather than a genuinely missing dependency. This inflates the dependency category by an amount the corpus cannot determine, and it is the most serious internal threat to the failure analysis in Table~\ref{tab:error-causes}.
+
+Requirements are inferred when they are not declared. Where no dependency file exists, they are reconstructed from the imports in the notebooks. Import names do not always match package names, and imports carry no version information, so the reconstructed environment is the best available guess rather than a recovery of the original.
+
+No commit hash was recorded. Git resources were cloned at whatever state their default branch was in, and the resolved commit was not stored, so the exact files that were executed can no longer be identified. Zenodo records are not affected, because a published record version keeps the files that were deposited under it.
+
+Notebooks were executed in parallel, so the recorded execution durations come from a machine under load and should not be read as clean timings.
+
+\subsection{How Far Do the Results Generalise?}
+
+The samples were chosen on purpose, not at random. Section~\ref{sec:eval-corpus} explains why: no comparable list of candidates exists across the three platforms. The corpus is not a random sample of any platform, and no result generalises to a platform as a whole.
+
+The corpus is roughly balanced between platforms, at 101, 103, and 114 resources, but the platforms themselves are not. GitHub is larger than Codeberg by about a thousand to one, so the Codeberg sample covers a meaningful share of that platform's notebook repositories while the GitHub sample covers a negligible share of GitHub's.
+
+Only Python notebooks were processed. Notebooks written for R, Julia, or other kernels were outside the scope of this work, and the findings say nothing about them.
+
+The measurements also come from a single point in time. Package availability, remote data sources, and repository contents all change, so a repeat of this study would not produce identical numbers.
+
+\subsection{Are the Conclusions Drawn Correctly?}
+
+No significance testing was performed. The platform differences are reported as observed values together with their counts. Statistical tests applied to a purposively chosen sample would suggest a level of generalisability that the sample does not support, so the differences should be read as describing this corpus only.
+
+Purpose and platform are hard to separate. Reproducibility varies between notebook categories from 0.337 to 0.442, which is about the same range as the variation between platforms. The balanced design in Section~\ref{sec:eval-balanced} addresses this by holding the category fixed and drawing the same number of repositories and notebooks from each group, and its platform ordering is the one that should be trusted. The category breakdown itself is weaker evidence, because it relies on the classifier.
+
+Classifier agreement is not accuracy. The agreement of 19.1\% between the two methods measures how often two automated procedures chose the same label, not whether either is right; both could agree and both be wrong. The precision and recall reported in Chapter~\ref{chap:evaluation} are measured against the curated category of the repository, which is a weaker reference than a label assigned to the individual notebook, so those figures are a lower bound rather than a true accuracy.
+
+\section{Future Work}
+
+\subsection{Completing the Cross-Platform Experiment}
+\label{sec:future-experiment}
+
+Every executed notebook now carries both a rule-based and a model-assigned category, so the breakdown by platform and purpose can be computed directly. What limits it is no longer coverage but the quality of the classifier, which is the subject of the next section.
+
+Beyond that, the corpus would benefit from more resources in the smaller categories. Several categories in the taxonomy contain few notebooks, and collecting more resources specifically for them would strengthen any analysis by purpose.
+
+A repeat measurement after a fixed interval, using the same resource identifiers, would answer a question the present design cannot address: how quickly does reproducibility decay? Zenodo offers a natural control for such a study, because published record versions preserve their deposited files, whereas Git repositories can change over time.
+
+\subsection{Measuring Classification Accuracy}
+\label{sec:future-classification}
+
+Chapter~\ref{chap:evaluation} shows that the two automated methods are complementary but that neither is reliable at notebook level, and that the better of the two reaches a macro F1 of 0.29 against the curated repository category. Establishing what the methods can really do requires labels assigned by a person to individual notebooks.
+
+The infrastructure is ready. The taxonomy is fixed, and human labels are stored in columns separate from the automated predictions so the two cannot be confused. What is missing is the annotation work, and it must follow a protocol if the resulting numbers are to mean anything:
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.3em]
+\item A stratified sample of roughly 300 to 400 notebooks, stratified by platform and by assigned category so that the smaller categories are properly represented instead of being swamped by the two the methods over-produce.
+\item Blind annotation. Annotators must not see the automated labels before they decide, since a suggested label biases the judgement it is meant to test.
+\item At least two annotators on part of the sample, with their agreement reported using Cohen's $\kappa$~\cite{cohen1960kappa}. Without this the reliability of the ground truth itself is unknown.
+\item A written annotation guide that fixes how boundary cases are handled, especially when a notebook counts as \texttt{mixed\ub purpose} rather than as one dominant purpose with secondary ones.
+\item Separate results for the rule-based method, the model, and the combined decision, each with precision, recall, per-category results, macro F1~\cite{sokolova2009fmeasure}, and a confusion matrix. Macro averaging is necessary because the categories are so uneven.
+\end{enumerate}
+
+Table~\ref{tab:rule-llm-confusion} shows where the annotation effort would be most informative. The 738 notebooks that the rules called \texttt{visualization} and the model called \texttt{data\ub analysis}, and the 193 that the rules could not classify while the model called them \texttt{tutorial}, are the two largest areas of disagreement, so annotating those first would give the most information per notebook reviewed.
+
+A larger model is the other obvious experiment. The model used here was chosen so that the whole corpus could be classified repeatedly at no cost, and a stronger one would very likely score better. Running both against the same human-labelled sample would show how much of the weakness belongs to the approach and how much to the model.
+
+\subsection{Reviewing the Ontology and Mappings}
+
+The ontology extension builds correctly and answers its competency questions, but it has not been compared term by term against the upstream FAIR Jupyter model~\cite{samuel2024fairjupyter}. Three tasks remain.
+
+Domains and ranges should be checked against the upstream vocabulary, so that the extension combines with the original graph rather than sitting next to it. Inverse relations are currently defined in one direction only, which is enough for the present queries but restricts navigation. Literal datatypes should be declared explicitly, because numeric scores and timestamps are produced as plain literals, which makes filtering and range queries in SPARQL more awkward than necessary.
+
+The set of competency questions should also be extended. The seven existing questions confirm that the expected structures are present, but they do not try to find errors. Questions designed to detect modelling mistakes, such as whether any execution can be reached from more than one run, or whether any notebook has contradictory classifications, would test the graph rather than simply exercise it.
+
+\subsection{Technical and Robustness Improvements}
+\label{sec:future-technical}
+
+Recording the resolved commit hash is the most valuable technical change, because it closes the repeatability gap described above. Storing the commit for every Git acquisition would make that stage as repeatable as the archival stage already is, at almost no cost.
+
+Recording the environment that was actually installed, for example the output of \texttt{pip freeze}, would separate two cases the present error categories cannot distinguish: a dependency that was never declared, and a declared dependency that resolved to an incompatible version.
+
+Parameterised database statements would help. The implementation escapes text before inserting it, which works, but it places the responsibility on every place that writes to the database. Using parameterised statements throughout would make the guarantee structural instead of procedural.
+
+Stronger execution isolation is worth considering. Notebooks run in a separate virtual environment per resource, which isolates dependencies but not the filesystem or the network. Containers would provide real isolation at the cost of extra time for every resource, and that trade-off should be measured before it is adopted.
+
+The metadata model can be extended when a question needs it. Eight normalized fields are enough for the questions asked here, but a study interested in repository popularity or Zenodo resource types would need either per-platform extension tables or a key-value attribute table. The present schema can accommodate either without disturbing the normalized core.
+
+Finally, more connectors would test the central claim rather than assume it. GitLab~\cite{gitlabdocs}, Figshare~\cite{figshare}, and institutional Dataverse instances are the natural next platforms, and each needs a connector that satisfies the existing contract and nothing more. That is precisely what RQ1 asserts, and a fourth connector would put it to the test.

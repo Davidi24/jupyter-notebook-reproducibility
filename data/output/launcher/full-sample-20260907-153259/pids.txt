@@ -1,0 +1,2 @@
+353561 worker0 /mnt/c/David/Work/ma-david-keci/output/launcher/full-sample-20260907-153259/worker0.out
+353564 worker1 /mnt/c/David/Work/ma-david-keci/output/launcher/full-sample-20260907-153259/worker1.out

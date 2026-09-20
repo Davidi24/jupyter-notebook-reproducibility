@@ -1,2 +1,60 @@
+# Editor / tooling
 .claude/
 .vscode/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Databases (runtime data)
+*.sqlite
+*.sqlite3
+
+# Pipeline runtime output
+output/
+data/output/cloned_repos/
+data/output/comparisons/
+data/output/db/
+data/output/kg/
+data/output/logs/
+data/output/pdf/
+data/output/web-jobs/
+
+# Local scratch and archived verification bundles
+_to_delete/
+tmp/
+Claude outputs/
+
+# Local FAIR Jupyter KG environment
+kg/fairjupyter/.venv/
+
+# Website dependencies, build output, and local platform state
+website/node_modules/
+website/.next/
+website/.vinext/
+website/.wrangler/
+website/dist/
+website/_to_delete/
+website/_to_delete_old_*.tar.gz
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.log
+*.out
+*.toc
+*.synctex.gz
+thesis/template/build/
+
+# Compiled thesis PDFs
+thesis/thesis.pdf
+thesis/template/Template.pdf
+
+# Local presentation and database showcase
+ShowCase/

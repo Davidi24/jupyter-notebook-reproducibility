@@ -1,0 +1,78 @@
+\chapter{Discussion}
+\label{chap:discussion}
+
+\section{Answering the Research Questions}
+
+\subsection{RQ1: A Shared Pipeline with Platform Connectors}
+
+The implementation indicates that cross-platform support is most maintainable when acquisition is isolated from execution. GitHub and Codeberg share Git validation and cloning, while Zenodo requires API validation and archive acquisition. Once a local directory and normalized notebook paths exist, the same notebook, requirement, environment, execution, and comparison functions can be reused. This design avoids three copies of the most complex pipeline stages and keeps output semantics comparable.
+
+The result also shows that platform detection alone is insufficient. Identity, batch URL reconstruction, notebook URL normalization, database lookup, metadata retrieval, validation, and semantic typing must all use the platform. A connector abstraction is therefore a cross-cutting contract even when only a few functions are platform-specific.
+
+\subsection{RQ2: Normalized Metadata}
+
+The eight-field contract provides a workable common denominator for descriptive metadata. Title, description, creator, licence, keywords, and timestamps have meaningful counterparts in all source models. DOI is naturally asymmetric: it is a normal Zenodo property and usually absent from Git repositories. Preserving an empty value is more accurate than generating a synthetic DOI or treating the source URL as one.
+
+Normalization necessarily loses some structure. Multiple creators become one semicolon-separated string, licence objects become one identifier or name, and platform-specific metadata not selected by the schema is omitted. This is acceptable for the first relational layer but should be reconsidered for long-term semantic publication. The graph could represent creators and licences as resources when richer queries become necessary.
+
+\subsection{RQ3: Cross-Platform Provenance}
+
+The ontology extension demonstrates how platform provenance and resource type can coexist. GitHub and Codeberg share \texttt{GitRepositoryResource} but link to different platform individuals. Zenodo links to its own platform and uses \texttt{ArchivedResearchRecord}. Runs and executions are activities, while repositories and results are entities. This aligns operational pipeline evidence with PROV-O and avoids encoding every stage as a literal column.
+
+The mapping layer is as important as the ontology. An OWL file defines possible classes and properties, but does not populate them. The seven mappings create stable IRIs, types, literals, and relationships from the seven CSV exports. Treating the mapping files as reviewable thesis artifacts makes the relational-to-semantic transformation transparent.
+
+\subsection{RQ4: Evaluation}
+
+Technical tests show that the architecture works for selected examples and that the first graph can be built. They do not yet answer whether metadata quality or reproducibility differs between platforms. The final experiment must control sample selection and report stage-specific denominators. For example, an execution success rate should not silently exclude resources that failed acquisition unless the denominator is clearly defined.
+
+\section{Design Trade-offs}
+
+\subsection{Shell Orchestration}
+
+Extending the Bash baseline minimised disruption and enabled direct reuse of mature processing functions. Shell is effective for composing Git, curl, jq, SQLite, pyenv, and Jupyter commands. Its disadvantages become visible in metadata handling and database safety. Newline-delimited arrays are fragile compared with typed objects, and SQL strings require manual escaping. A future refactoring could retain shell as the user-facing entry point while moving connector and persistence logic into a typed Python module.
+
+\subsection{Working Database Copy}
+
+The copy-on-first-run model protects source evidence and was accepted as an operational compromise. It is simple to explain and supports repeated development. Its main weakness is stale state: once an empty or outdated working database exists, the source is not copied again automatically. A future command should explicitly initialise, refresh, or migrate a working database while requiring confirmation before replacing results.
+
+\subsection{Current-State Metadata}
+
+The metadata upsert keeps one current row per repository. This simplifies display and mapping but removes observation history. APIs can change titles, topics, licences, or timestamps. Longitudinal analysis would benefit from a metadata observation table with source and fetch times. The present schema is suitable for the thesis pipeline but should not be interpreted as a complete metadata provenance archive.
+
+\subsection{CSV as a Semantic Boundary}
+
+Exporting CSV introduces an extra step between SQLite and RDF. Direct database mappings could reduce duplication, but CSV matches the upstream FAIR Jupyter workflow, is easy to inspect, and creates a stable materialisation snapshot. Explicit export queries also allow derived external URLs and resource types to be reviewed independently of RML. For this project, auditability is more valuable than removing one build stage.
+
+\section{Threats to Validity}
+
+\subsection{Construct Validity}
+
+Successful execution is not identical to scientific reproducibility. A notebook can execute without errors and still use different data, stochastic behaviour, or changed services. Conversely, a different visual or timestamp output may not invalidate the scientific conclusion. Cell-level output comparison is a useful automated measure but must be interpreted as computational evidence, not a universal judgement about research validity.
+
+Metadata completeness also depends on the chosen schema. Counting a missing DOI against GitHub would unfairly penalise a platform where repositories normally do not have one. Completeness metrics should distinguish universally expected fields from platform-specific fields.
+
+\subsection{Internal Validity}
+
+Network availability, API rate limits, package-index changes, Python build failures, and remote default-branch updates can affect results. The same repository may produce a different outcome on another day without a pipeline code change. Recording commit hashes, file checksums, dates, and environment versions is necessary to reduce this threat.
+
+The current execution environment uses pyenv rather than a fully isolated container per notebook. Although environments separate Python packages, notebooks still share host-level libraries, operating-system tools, and network policy. These factors can influence success and must be held constant during the final experiment.
+
+\subsection{External Validity}
+
+The inherited dataset is dominated by GitHub-hosted biomedical repositories. Newly selected Codeberg and Zenodo resources may come from different communities and project types. Any observed platform difference could therefore be a domain or sampling difference. A balanced sample improves comparison but cannot make all platform populations equivalent. The thesis should describe the sample precisely and avoid generalising beyond it.
+
+\subsection{Semantic Validity}
+
+The first ontology version expresses the intended activity chain, but ontology quality requires more than a successful parser. Domains, ranges, inverse properties, disjointness, and literal datatypes need review. Competency questions should be connected to explicit expected results. External ontology alignment should be checked with domain experts before the model is presented as stable.
+
+\section{Operational and Ethical Considerations}
+
+Executing third-party notebooks can run arbitrary code. A research pipeline should use restricted accounts, resource limits, network controls, and disposable environments. Public deployment would require stronger sandboxing than the development system. The project must also respect API terms, rate limits, software licences, and personal information in repository metadata.
+
+Automated classification introduces additional concerns. Categories may reflect training-data bias, and inferred labels should not be treated as author-provided facts. The graph should distinguish an automated classification activity from a source metadata assertion and record the model version and confidence.
+
+\section{Integration Outlook}
+
+The long-term goal is integration into a Jupyter4NFDI-oriented service. The connector boundary supports adding new platforms without modifying notebook execution. The ontology provides a platform-neutral resource parent and provenance chain suitable for service APIs. Before integration, the implementation needs configuration hardening, safe archive extraction, stronger execution isolation, stable migrations, broader tests, and a documented deployment interface.
+
+The architecture nevertheless provides a useful foundation. It turns platform variation into explicit provenance rather than hiding it, and it connects acquisition decisions with execution evidence. This is important for services that must explain not only whether a notebook failed, but also what resource was processed, where it came from, how it was acquired, which environment was used, and which result was generated.

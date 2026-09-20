@@ -1,0 +1,8 @@
+FULL SAMPLE RUN PROGRESS
+  Progress    : 65 / 65  (100%)
+  Succeeded   : 4
+  Failed      : 49
+  Skipped     : 12
+  Elapsed     : -497086h -43m -17s
+  Updated at  : 
+  Status      : FINISHED

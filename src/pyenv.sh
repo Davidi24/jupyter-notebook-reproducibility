@@ -13,10 +13,17 @@ export PYENV_ROOT
 export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 eval "$(pyenv init -)"
 VENV_BASE_DIR="${VENV_BASE_DIR:-$HOME/.repo_venvs}"
+PIP_CACHE_DIR="${PIP_CACHE_DIR:-$PYENV_ROOT/versions/.notebookfair-pip-cache}"
+export PIP_CACHE_DIR
+NOTEBOOK_TIMEOUT_SECONDS="${NOTEBOOK_TIMEOUT_SECONDS:-1800}"
+export NOTEBOOK_TIMEOUT_SECONDS
 
 # Error state — mirrors DOCKER_ERROR_TYPE / DOCKER_ERROR_MESSAGE in docker.sh
 ENV_ERROR_TYPE=""
 ENV_ERROR_MESSAGE=""
+REPO_VENV_DIR=""
+REPO_PYTHON=""
+REPO_PIP=""
 
 
 # -----------------------------------------------------------------------------
@@ -119,11 +126,26 @@ ensure_pyenv_version() {
         return 0
     fi
 
-    log "[PYENV] Installing Python $resolved (resolved from $requested)..." >&2
-    if ! pyenv install "$resolved" >> "$LOG_FILE" 2>&1; then
-        log "[ERROR] [PYENV] Failed to install Python $resolved" >&2
+    log "[PYENV] Installing Python $resolved (resolved from $requested)... (this can take several minutes the first time)" >&2
+    local install_output
+    if ! install_output=$(pyenv install "$resolved" 2>&1); then
+        printf '%s\n' "$install_output" >> "$LOG_FILE"
+        local reason
+        reason=$(printf '%s\n' "$install_output" | grep -iE 'permission denied|no space left|cannot|error:|failed' | tail -2 | xargs)
+        [ -z "$reason" ] && reason=$(printf '%s\n' "$install_output" | grep -v '^$' | tail -2 | xargs)
+        log "[ERROR] [PYENV] Failed to install Python $resolved — ${reason:-see build log}" >&2
+        # ensure_pyenv_version is invoked via $(...) command substitution,
+        # which forks a subshell. A plain variable assignment made in that
+        # subshell (like the one below) never reaches the caller once the
+        # subshell exits, so we also hand the reason back through a file
+        # path the caller gave us in PYENV_INSTALL_FAILURE_REASON_FILE.
+        if [ -n "${PYENV_INSTALL_FAILURE_REASON_FILE:-}" ]; then
+            printf '%s' "$reason" > "$PYENV_INSTALL_FAILURE_REASON_FILE"
+        fi
+        PYENV_INSTALL_FAILURE_REASON="$reason"
         return 1
     fi
+    printf '%s\n' "$install_output" >> "$LOG_FILE"
 
     log "[PYENV] Python $resolved installed successfully." >&2
     echo "$resolved"
@@ -152,10 +174,20 @@ setup_pyenv_env() {
     requested_version=$(detect_python_version "$repo_dir")
 
     local python_version
+    local reason_file
+    reason_file=$(mktemp "${TMPDIR:-/tmp}/pyenv_install_reason.XXXXXX")
+    PYENV_INSTALL_FAILURE_REASON_FILE="$reason_file"
+    PYENV_INSTALL_FAILURE_REASON=""
     python_version=$(ensure_pyenv_version "$requested_version")
-    if [ $? -ne 0 ] || [ -z "$python_version" ]; then
+    local ensure_status=$?
+    if [ -s "$reason_file" ]; then
+        PYENV_INSTALL_FAILURE_REASON=$(cat "$reason_file")
+    fi
+    rm -f "$reason_file"
+    unset PYENV_INSTALL_FAILURE_REASON_FILE
+    if [ $ensure_status -ne 0 ] || [ -z "$python_version" ]; then
         ENV_ERROR_TYPE="PYTHON_INSTALL_FAIL"
-        ENV_ERROR_MESSAGE="Failed to install Python $requested_version via pyenv"
+        ENV_ERROR_MESSAGE="Could not install Python $requested_version inside the isolated container.${PYENV_INSTALL_FAILURE_REASON:+ Reason: $PYENV_INSTALL_FAILURE_REASON}"
         return 1
     fi
 
@@ -223,7 +255,7 @@ setup_pyenv_env() {
         log "[PYENV] Processing setup.py paths..."
         IFS=';' read -ra SETUP_FILES <<< "$setup_paths"
         for setup_file in "${SETUP_FILES[@]}"; do
-            setup_file=$(echo "$setup_file" | xargs)
+            setup_file=$(trim_whitespace "$setup_file")
             [ -z "$setup_file" ] && continue
             local setup_dir="$repo_dir/$(dirname "$setup_file")"
             if [ -f "$setup_dir/setup.py" ]; then
@@ -272,7 +304,7 @@ run_in_pyenv_env() {
 
     IFS=';' read -ra NOTEBOOKS <<< "$NOTEBOOK_PATHS"
     for NOTEBOOK_PATH in "${NOTEBOOKS[@]}"; do
-        NOTEBOOK_PATH=$(echo "$NOTEBOOK_PATH" | xargs)
+        NOTEBOOK_PATH=$(trim_whitespace "$NOTEBOOK_PATH")
         local full_path="$repo_dir/$NOTEBOOK_PATH"
 
         if [ ! -f "$full_path" ]; then
@@ -295,7 +327,7 @@ run_in_pyenv_env() {
         # file paths inside the notebook resolve correctly
         (
             cd "$notebook_dir"
-            "$REPO_VENV_DIR/bin/jupyter" nbconvert \
+            timeout "$NOTEBOOK_TIMEOUT_SECONDS" "$REPO_VENV_DIR/bin/jupyter" nbconvert \
                 --to notebook \
                 --execute \
                 --allow-errors \
@@ -308,6 +340,12 @@ run_in_pyenv_env() {
         local end_ts
         end_ts=$(date +%s)
         local duration=$(( end_ts - start_ts ))
+
+        if [ "$exit_code" -eq 124 ]; then
+            log "[PYENV] Notebook timed out after ${NOTEBOOK_TIMEOUT_SECONDS}s: $NOTEBOOK_PATH"
+            echo "EXEC_FAIL|$REPO_NAME|$NOTEBOOK_PATH|$duration|NOTEBOOK_TIMEOUT" | tee -a "$EXEC_LOG"
+            continue
+        fi
 
         if [ ! -f "$output_nb" ]; then
             log "[PYENV] Output notebook not created for $NOTEBOOK_PATH (exit $exit_code)"

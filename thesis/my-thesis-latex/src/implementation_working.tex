@@ -1,0 +1,496 @@
+\chapter{Implementation}
+\label{chap:implementation}
+
+Chapter 4 described the system from a design perspective: the main components, their responsibilities, and the way a resource moves through the architecture. This chapter explains how that design is implemented in the repository. The goal is not to document every function or line of code, but to follow the actual execution flow and show which part of the implementation is responsible for each important step, what information it receives, and what it passes to the next stage.
+
+The entry script prepares the runtime, checks that the required tools are available, and transfers control to the main pipeline controller. The controller then determines whether a single resource is being processed or whether several resources are being handled in batch mode. Both modes eventually use the same per-resource processing route, so the behaviour of the system remains consistent during individual demonstrations and larger evaluation runs.
+
+For each resource, the pipeline first handles the operations that depend on the source platform. It identifies whether the input belongs to GitHub, Codeberg, or Zenodo, validates that source, retrieves its metadata, and acquires the files locally. GitHub and Codeberg follow Git-based behaviour, whereas Zenodo uses its Records API and downloadable files. Once a local resource directory exists, the source platform becomes much less important. The shared stages can then discover notebooks, classify their purpose, infer dependencies, reconstruct the Python environment, execute the notebooks, and compare the generated outputs with the stored outputs.
+
+The implementation is divided into specialised modules rather than placing all behaviour inside one controller. Database functions manage resource and run records, connector functions handle platform-specific access, requirement functions prepare dependency information, environment functions create isolated Python environments, and notebook-processing functions manage execution and output comparison. The controller coordinates these modules and decides whether processing should continue or whether a failure should be stored and the current resource should stop. This division keeps platform-specific logic separate from the notebook-processing route.
+
+The second major part of the chapter explains notebook classification. After notebooks have been discovered, their content is converted into a bounded representation containing relevant Markdown, code, imports, metadata, and output information. A rule-based classifier and an AI-based classifier examine this evidence independently. Their results are then reconciled, disagreement or uncertainty is preserved for possible human review, and the complete classification result is stored with the notebook.
+
+The final part explains knowledge-graph publication. The working SQLite database acts as the source of the accumulated pipeline evidence. Selected relational data is exported into seven CSV datasets, transformed through the YARRRML/RML mappings, materialised as RDF, and validated using structural checks and SPARQL competency questions. Sections 5.1, 5.2, and 5.3 describe these parts in the same order in which they contribute to that complete workflow.
+
+\section{Cross-Platform Pipeline Implementation}
+\label{sec:pipeline-implementation}
+
+Figure~\ref{fig:implemented-processing-flow} shows the implemented per-resource processing flow.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/implemented-processing-flow.png}
+\caption{Implemented per-resource processing flow.}
+\label{fig:implemented-processing-flow}
+\end{figure}
+
+This section explains the implementation of the main cross-platform pipeline. The baseline pipeline~\cite{samuel2024computational} already contained the basic notebook-execution route for GitHub repositories. The work in this thesis is the extension around that route: it detects the source platform, handles Codeberg and Zenodo correctly, normalizes metadata, protects the baseline database, records every processing attempt, connects notebook classification to the route, and makes batch execution resumable. The focus is therefore on the parts added or changed to turn a GitHub-oriented workflow into a cross-platform implementation.
+
+The pipeline is implemented mainly as a shell-based controller around several specialised modules. This structure was kept because the reproducibility route of the baseline pipeline~\cite{samuel2024computational} already used shell scripts for environment creation, notebook execution, and output comparison. The new implementation does not replace those useful stages. Instead, it places a clearer platform-aware layer before them and adds the database, metadata, classification, and batch-control logic needed by this thesis.
+
+At a high level, one resource passes through the following implemented route: the entry script checks the runtime, the main controller prepares the working database, the resource is identified and assigned a run record, the source platform is detected, the resource is validated, metadata is fetched and saved, files are acquired locally, notebooks are registered or discovered, notebook purpose is classified, dependencies are inferred, a Python environment is created, notebooks are executed, outputs are compared, and the run is finalized. In batch mode, the same route is repeated for several resources instead of creating a separate algorithm.
+
+\subsection{Entry Point and Runtime Preparation}
+
+The implementation starts with the top-level script \texttt{run.sh}. This script is the public entry point used to start the pipeline from the repository root. Its role is not to process notebooks directly. Its role is to check that the machine can run the pipeline at all.
+
+Before control is passed to the main controller, \texttt{run.sh} verifies that the required command-line tools are available. These include Python, SQLite, \texttt{jq}, \texttt{unzip}, Git, pyenv, Jupyter, and \texttt{nbconvert}. This check is important for the extension because the supported platforms now need different tools: Git for GitHub and Codeberg, \texttt{jq} and API responses for metadata extraction, \texttt{unzip} for Zenodo archives, and SQLite for the new evidence tables. If a required tool is missing, the pipeline stops before changing the working database or writing partial output.
+
+After the checks succeed, \texttt{run.sh} transfers control to \texttt{pipeline/main.sh}. This file is the main controller. It resolves the project root, loads configuration, creates required directories, prepares the database, selects the input mode, and then calls the per-resource processing function. The controller is responsible for the order of the workflow, while specialised files implement the individual operations.
+
+Table~\ref{tab:implementation-files} summarises the main implementation files and responsibilities.
+
+\begin{table}[ht]
+\centering
+\caption{Main implementation files and responsibilities.}
+\label{tab:implementation-files}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.7cm}XX@{}}
+\toprule
+File or folder & Responsibility & Output passed to the next stage\tabularnewline
+\midrule
+\texttt{run.sh} & checks that required tools are available before anything else runs & control handed to \texttt{pipeline/main.sh}, or an early stop if a tool is missing\tabularnewline
+\texttt{pipeline/}\linebreak\texttt{main.sh} & main controller: loads modules, prepares directories and database, selects the input mode & a resolved resource context and a call into the per-resource route\tabularnewline
+\texttt{config/}\linebreak\texttt{config.sh} & defines paths, output directories, and the source and working database locations & exported shell variables and directory/database preparation functions\tabularnewline
+\texttt{src/db.sh} & creates and migrates the SQLite schema, and normalizes and upserts metadata & the operational tables and the current metadata row for each resource\tabularnewline
+\texttt{src/checks.sh} & validates a resource through a Git remote check or the Zenodo Records API & a pass/fail validation result, produced before metadata is stored\tabularnewline
+\texttt{src/repo.sh} & per-resource controller: platform detection, connectors, metadata adapters, run creation, and the batch loop & \texttt{repositories} and \texttt{repository\_runs} rows, and the acquired local directory\tabularnewline
+\texttt{src/}\linebreak\texttt{requirements.sh} & collects declared dependency files and imports observed in notebooks & a resource-level \texttt{requirements.txt}\tabularnewline
+\texttt{src/pyenv.sh} & selects a Python version, creates an isolated environment, executes notebooks, and cleans up & an isolated interpreter and executed \texttt{*\_output.ipynb} notebooks\tabularnewline
+\texttt{src/}\linebreak\texttt{notebooks.sh} & pairs original and executed notebooks and dispatches comparison & \texttt{notebook\_executions} and \texttt{notebook\_reproducibility\_metrics} rows\tabularnewline
+\texttt{analysis/} & notebook diffing, execution summaries, and the hybrid notebook classifier & comparison JSON files and \texttt{notebook\_classifications} rows\tabularnewline
+\texttt{kg/}\linebreak\texttt{fairjupyter/} & exports relational data to CSV and materialises it as RDF & seven CSV datasets and the combined knowledge graph\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This module-based structure keeps the extension understandable. Platform handling is not mixed directly into notebook execution. Database writes are not spread randomly across the repository. Environment creation is kept separate from metadata extraction. The controller therefore acts as the coordinator: it calls the correct module, receives the result, and decides whether the resource can continue or whether the current run must be finalized with a failure status.
+
+\subsection{Working Directories and Working Database}
+
+Before processing a resource, the pipeline prepares the output structure. The implementation creates directories for downloaded or cloned resources, comparison outputs, logs, and the working database. These folders make the generated evidence inspectable after a run has finished.
+
+The inherited baseline database is treated as input evidence and is not modified directly. The pipeline instead creates or reuses a working copy under \texttt{data/output/db/}. All schema changes and new evidence are written to this working copy. This is important because the thesis extends an existing GitHub-oriented dataset. If the source database were modified directly, it would be difficult to distinguish inherited evidence from new cross-platform results.
+
+The working database receives the additional information required by this thesis: platform values, normalized metadata, processing runs, notebook executions, reproducibility metrics, and notebook classifications. The implementation therefore preserves the original baseline while allowing the new pipeline to store its own results.
+
+A central implementation decision is the separation between a stable resource and a processing attempt. A GitHub repository, Codeberg repository, or Zenodo record is stored once as a resource. Each time the pipeline tries to process that resource, a new run is created. This prevents repeated attempts from overwriting earlier results.
+
+Figure~\ref{fig:source-working-db-flow} gives the source database and working database flow.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/source-working-db-flow.png}
+\caption{Source database and working database flow.}
+\label{fig:source-working-db-flow}
+\end{figure}
+
+\subsection{Input Modes and Resource Context}
+
+The pipeline supports two input modes: single-resource mode and batch mode.
+
+In single-resource mode, the user provides one resource URL. The command-line flow can also accept optional notebook paths, setup paths, and requirement paths. These optional values may be empty. Empty notebook paths mean that the pipeline should discover notebooks after acquisition. Empty requirement paths mean that dependency information must be inferred from available files and notebook imports.
+
+In batch mode, the implementation reads already stored resources or an evaluation sample and processes them one at a time. This is one of the practical additions made for the thesis evaluation: batch mode does not use a separate simplified pipeline. It reconstructs the same resource context and calls the same per-resource function used by single-resource mode. This is important because evaluation results should come from the same implementation that is used for individual demonstrations.
+
+Every resource is converted into a common internal context before the main processing route begins. This context contains the original URL, the detected platform, a normalized resource identifier, optional notebook paths, optional setup paths, optional requirement paths, the database resource ID, and the run ID. Later stages use this context instead of reinterpreting the original command-line input.
+
+Table~\ref{tab:resource-context} gives the common resource context used by the pipeline.
+
+\begin{table}[ht]
+\centering
+\caption{Common resource context used by the pipeline.}
+\label{tab:resource-context}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{5.0cm}X@{}}
+\toprule
+Field & Meaning & Example\tabularnewline
+\midrule
+original URL & the exact address used to validate and acquire the resource & \texttt{https://codeberg.org/user/project}\tabularnewline
+platform & detected source platform & \texttt{github}, \texttt{codeberg}, or \texttt{zenodo}\tabularnewline
+normalized identifier & short platform-specific key used for database lookup & \texttt{owner/project} or \texttt{3362625}\tabularnewline
+repository/resource ID & database identifier of the stable resource row & an integer primary key\tabularnewline
+run ID & database identifier of this processing attempt & an integer primary key\tabularnewline
+notebook paths & repository-relative notebook files selected for execution & \texttt{analysis.ipynb}; empty means discover automatically\tabularnewline
+setup paths & optional local packages supplied with the resource & \texttt{setup.py}; empty means none supplied\tabularnewline
+requirement paths & optional dependency files supplied with the resource & \texttt{requirements.txt}; empty means infer from evidence\tabularnewline
+local resource directory & filesystem location of the acquired resource & \texttt{data/output/}\linebreak\texttt{cloned\ub repos/owner\ub project}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The normalized identifier depends on the platform. GitHub and Codeberg use the repository path, such as \texttt{owner/project}. Zenodo uses the numeric record ID. The platform is stored separately from this identifier. This prevents a GitHub repository and a Codeberg repository with the same \texttt{owner/project} text from being treated as the same resource.
+
+After the resource has been resolved, the controller creates a new row in \texttt{repository\_runs}. This row starts with status \texttt{RUNNING}. The returned run ID becomes the connection point for later execution records and metrics. When the route finishes, the same run row is updated with a final status, message, finish time, and duration.
+
+\subsection{Platform Detection and Validation}
+
+After the resource context exists, the extension detects the source platform. The implementation uses the input URL to return one of four values: \texttt{github}, \texttt{codeberg}, \texttt{zenodo}, or \texttt{unknown}. This decision is made once near the beginning of the route and is reused for validation, metadata retrieval, acquisition, database storage, and later batch URL reconstruction.
+
+Platform detection is required because the supported platforms expose their resources differently. GitHub and Codeberg are Git-based platforms. Their resources can be checked and acquired through Git. Zenodo is an archived research-record platform. Its resources must be checked through the Zenodo Records API and downloaded as files or archives. Adding this distinction is a central part of the implementation, because a Zenodo record should not be treated as a Git repository only to fit the old workflow.
+
+Validation is performed before metadata retrieval and before acquisition. This order prevents the pipeline from saving metadata for a resource that has not first been confirmed as reachable. It also prevents unnecessary downloads when the source is invalid.
+
+For GitHub and Codeberg, validation uses \texttt{git ls-remote}. This command checks whether the remote repository exists and exposes Git references without cloning the repository. If the command succeeds, the route continues. If it fails, the run is finalized with an invalid-resource status and the pipeline stops processing that resource.
+
+For Zenodo, validation starts by extracting the numeric record ID from the URL. The implementation accepts both \texttt{record} and \texttt{records} URL forms. It then calls the Zenodo Records API for that ID. If the URL is malformed, the record is missing, or the API request fails, the route is finalized with a Zenodo validation failure.
+
+Table~\ref{tab:platform-detection-validation} lists the platform detection and validation behaviour.
+
+\begin{table}[ht]
+\centering
+\caption{Platform detection and validation behaviour.}
+\label{tab:platform-detection-validation}
+\small
+\begin{tabularx}{\textwidth}{@{}p{1.6cm}p{2.6cm}p{2.9cm}p{2.6cm}X@{}}
+\toprule
+Platform & Detection signal & Validation method & Failure status & Reason for separate handling\tabularnewline
+\midrule
+GitHub & \texttt{github.com} host pattern & \texttt{git ls-remote} & \texttt{INVALID\_}\linebreak\texttt{REPOSITORY\_URL} & shares Git behaviour with Codeberg but uses its own metadata API\tabularnewline
+Codeberg & \texttt{codeberg.org} host pattern & \texttt{git ls-remote} & \texttt{INVALID\_}\linebreak\texttt{REPOSITORY\_URL} & shares Git behaviour with GitHub but uses the Forgejo metadata API\tabularnewline
+Zenodo & Zenodo \texttt{record}/\texttt{records} URL pattern & numeric record ID $+$ Records API request & \texttt{INVALID\_}\linebreak\texttt{ZENODO\_RECORD} & a Zenodo record is not a Git repository and has no remote to query\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Figure~\ref{fig:validation-branch} illustrates the validation branch by platform.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/validation-branch.png}
+\caption{Validation branch by platform.}
+\label{fig:validation-branch}
+\end{figure}
+
+This validation design separates access failures from notebook failures. A missing repository or missing Zenodo record means the source could not be reached. That is different from a notebook that was downloaded successfully but later failed during dependency installation or execution. Storing these failures separately makes the evaluation more useful.
+
+\subsection{Metadata Retrieval and Normalization}
+
+After validation succeeds, the extension fetches metadata for the resource. The metadata controller receives the repository ID, original URL, and platform. It then selects the correct adapter for that platform. This adapter layer is part of the new cross-platform work: later stages receive the same metadata fields even though the platforms return different API structures.
+
+GitHub metadata is retrieved from the GitHub repository API. The adapter extracts values such as repository name, description, owner login, licence, topics, creation date, and update date. GitHub does not normally provide a DOI directly for ordinary repositories, so the DOI field is left empty rather than guessed.
+
+Codeberg metadata is retrieved through the Forgejo API. The response is similar in purpose to GitHub metadata but not identical in structure. The adapter therefore handles different possible owner fields and licence formats before returning the normalized values.
+
+Zenodo metadata is retrieved through the Zenodo Records API. The adapter extracts the record title, description, creators, licence or rights information, keywords, DOI, creation date, and update date. In contrast to GitHub and Codeberg, Zenodo often provides DOI information directly because it is a research-record platform.
+
+All three adapters return the same eight metadata fields: title, description, authors, licence, keywords, DOI, creation date, and update date. The controller checks that exactly eight values were returned before writing to the database. This makes the adapter contract explicit and prevents malformed platform-specific output from corrupting the metadata table.
+
+\begin{table}[ht]
+\centering
+\caption{Normalized metadata fields and platform sources.}
+\label{tab:metadata-fields-sources}
+\small
+\begin{tabularx}{\textwidth}{@{}p{1.8cm}p{2.4cm}p{2.6cm}p{2.4cm}X@{}}
+\toprule
+Common field & GitHub source & Codeberg source & Zenodo source & Missing-value rule\tabularnewline
+\midrule
+title & repository name & repository name & record title & empty string if absent\tabularnewline
+description & \texttt{description} & \texttt{description} & record description & empty string if absent\tabularnewline
+authors & owner login & owner full name, login, or username & joined creator names & empty string if absent\tabularnewline
+licence & SPDX identifier & licence field & record rights/licence & empty string if absent or \texttt{NOASSERTION}\tabularnewline
+keywords & topics & topics & record keywords & empty string if absent\tabularnewline
+DOI & no field & no field & record DOI & empty string, never guessed\tabularnewline
+created & \texttt{created\_at} & \texttt{created\_at} & publication date & source timestamp kept as-is\tabularnewline
+updated & \texttt{updated\_at} & \texttt{updated\_at} & modification date & source timestamp kept as-is\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:metadata-fields-sources} is the complete set of normalized fields: the \texttt{repository\_metadata} table has exactly these eight descriptive columns, plus the foreign key to the resource and a \texttt{fetched\_at} timestamp recording when the pipeline retrieved them. No further descriptive field is normalized.
+
+Platform-specific fields are deliberately \emph{not} carried into this table. The GitHub API returns star and fork counts, an open-issue count, a default-branch name, and a language breakdown; Forgejo returns a partly overlapping but differently named set; Zenodo returns a resource type, an access-rights status, a version string, a list of related identifiers, and a full file manifest. None of these has a counterpart on all three platforms, so none can support the cross-platform comparison that RQ2 and RQ4 require, and storing them in the shared table would produce columns that are structurally empty for two platforms out of three. Two platform-specific identity fields are retained outside this table: the platform and the normalized resource identifier. DOI remains part of the normalized metadata model and is populated when supplied by the source, which occurs primarily for Zenodo records. Everything else is discarded after normalization. A study requiring richer per-platform description would need either a per-platform extension table or a key-value attribute table; both were considered and rejected as unnecessary for the questions asked here, and the choice is noted in Section~\ref{sec:future-technical} as an extension point.
+
+The table keeps one current metadata row per resource. If metadata is fetched again later, that row is refreshed in place. This differs from runs, executions, and classifications, where each new attempt appends a historical row: the metadata row describes what the platform currently says about the resource, whereas the run rows describe what the pipeline did to it.
+
+The implementation does not invent missing metadata. If a platform does not provide a DOI, the DOI field remains empty. If a licence or keyword list is missing, the corresponding value remains empty. This makes missing metadata measurable in later evaluation instead of hiding it behind guessed values.
+
+\subsection{Resource Acquisition}
+
+After validation and metadata storage, the extension obtains the actual files. The goal of acquisition is to create a local resource directory. Once this directory exists, later stages can process notebooks without needing to know whether the source was GitHub, Codeberg, or Zenodo. This is the point where the new platform-specific connector work converges back into the shared notebook-processing route.
+
+GitHub and Codeberg use Git-based acquisition. If the local resource folder does not yet exist, the implementation performs a shallow clone. If the folder already exists, it runs \texttt{git pull} to update it. The logs for these operations are written to the resource log file, while the controller continues to manage the high-level run state.
+
+Codeberg reuses the Git behaviour instead of duplicating the GitHub route. The differences are limited to platform detection, metadata API access, URL reconstruction, and the stored platform value. After acquisition, a Codeberg repository is just a local Git working directory from the perspective of notebook processing.
+
+Zenodo uses a different acquisition mechanism. A Zenodo record is not cloned through Git. The connector reads the file list returned by the Records API. If notebook files are attached directly to the record, they can be downloaded into the local resource directory. If no direct notebook is available, the connector searches for a ZIP archive, downloads it, extracts it, and removes the temporary archive.
+
+Some Zenodo archives contain one outer wrapper folder. The implementation handles this by moving the inner contents upward so that the local directory has the same usable structure as a repository checkout. This step is important because later modules expect to search a resource directory directly for notebooks, requirement files, setup files, and local modules.
+
+Figure~\ref{fig:acquisition-convergence} gives the acquisition routes and local-directory convergence.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/acquisition-convergence.png}
+\caption{Acquisition routes and local-directory convergence.}
+\label{fig:acquisition-convergence}
+\end{figure}
+
+Table~\ref{tab:acquisition-behaviour} gives the acquisition behaviour by platform.
+
+\begin{table}[ht]
+\centering
+\caption{Acquisition behaviour by platform.}
+\label{tab:acquisition-behaviour}
+\small
+\begin{tabularx}{\textwidth}{@{}p{1.6cm}p{2.6cm}p{3.0cm}p{2.8cm}X@{}}
+\toprule
+Platform & Resource type & Acquisition method & Local result & Failure example\tabularnewline
+\midrule
+GitHub & Git repository & shallow clone or \texttt{git pull} & local Git working directory & \texttt{GIT\_CLONE\_FAILED}\tabularnewline
+Codeberg & Git repository & shallow clone or \texttt{git pull} & local Git working directory & \texttt{GIT\_PULL\_FAILED}\tabularnewline
+Zenodo & archived research record & direct file download, or ZIP download and extraction & local record directory with the same layout as a repository checkout & \texttt{ZENODO\_}\linebreak\texttt{DOWNLOAD\_FAILED}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+If acquisition fails, the current run is finalized and the route stops for that resource. The failure is stored as an acquisition problem, not as a notebook execution problem. This distinction is necessary because a resource may be valid at the metadata level but still fail to provide usable downloadable content.
+
+\subsection{Notebook Registration and Discovery}
+
+Notebook processing begins only after the local resource directory exists. The extension improves this boundary because notebook paths are not always known in advance, especially for Zenodo records. At this point, notebooks can enter the pipeline in two ways: through supplied paths or through automatic discovery.
+
+If notebook paths were supplied in single-resource mode, the implementation splits the path list and normalizes each value. GitHub and Codeberg notebook links may appear as web links rather than repository-relative paths. For example, a GitHub URL may contain \texttt{/blob/}, while a Codeberg URL may contain \texttt{/src/}. These browser-specific parts are removed so the stored value becomes a relative path such as \texttt{notebooks/example.ipynb}.
+
+If no notebook paths were supplied, the pipeline searches the local resource directory recursively for \texttt{.ipynb} files. This order is especially important for Zenodo because the notebook paths are often unknown until the record has been downloaded and extracted. Discovery before acquisition would incorrectly make many valid Zenodo records look empty.
+
+Each notebook is stored in the \texttt{notebooks} table using its repository/resource ID and relative path. The database stores the notebook identity, not the full notebook content. The actual \texttt{.ipynb} file remains in the local resource directory and is read by later modules when classification, execution, or comparison is performed.
+
+Figure~\ref{fig:notebook-registration-discovery} shows the notebook registration and discovery flow.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/notebook-registration-discovery.png}
+\caption{Notebook registration and discovery flow.}
+\label{fig:notebook-registration-discovery}
+\end{figure}
+
+Table~\ref{tab:notebook-path-cases} summarises the notebook path handling cases.
+
+\begin{table}[ht]
+\centering
+\caption{Notebook path handling cases.}
+\label{tab:notebook-path-cases}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{3.6cm}p{3.4cm}X@{}}
+\toprule
+Input case & Example input & Processing step & Stored value\tabularnewline
+\midrule
+GitHub \texttt{/blob/} link & \texttt{.../blob/main/}\linebreak\texttt{analysis.ipynb} & browser-specific segment removed & \texttt{analysis.ipynb}\tabularnewline
+Codeberg \texttt{/src/} link & \texttt{.../src/branch/}\linebreak\texttt{analysis.ipynb} & browser-specific segment removed & \texttt{analysis.ipynb}\tabularnewline
+Supplied relative path & \texttt{analysis.ipynb} & normalized and registered directly & \texttt{analysis.ipynb}\tabularnewline
+Zenodo discovered file & (none supplied) & recursive search after extraction, path made relative & path relative to the extracted record directory\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+After notebook rows are registered, the pipeline checks whether the resource contains notebooks and whether any registered notebook is a Python notebook. A resource with no notebooks receives a \texttt{NO\_NOTEBOOKS} status. A resource with notebooks but no Python notebooks receives a \texttt{NO\_PYTHON\_NOTEBOOKS} status. These outcomes are stored as normal terminal results because the resource may be valid even if it is not suitable for the Python reproducibility route.
+
+When at least one Python notebook exists, the resource can continue. At this point, platform-specific access is finished. The next stages operate on local notebook files and database identifiers.
+
+\subsection{Classification Handover inside the Pipeline}
+
+After notebook discovery, the pipeline calls the notebook-classification component. The detailed classifier implementation is explained separately in Section 5.2, but its position in the main pipeline is important here because the classification call is an added integration point in the route.
+
+Classification is performed before dependency inference, environment creation, and execution. This order is intentional. The classifier reads notebook content such as Markdown, code, imports, metadata, and stored output summaries. It does not require the notebook to execute successfully. Therefore, a notebook can still receive a purpose category even if it later fails because of missing packages, unavailable data, or runtime errors.
+
+From the perspective of the main pipeline, classification is a handover stage. The shell route provides the local notebook paths and working database location. The classification module reads the notebook files, creates one or more classification records, and stores the results in the working database. The main pipeline can then continue with the reproducibility stages while still preserving purpose information for later evaluation.
+
+Figure~\ref{fig:classification-handover} gives the classification handover in the main pipeline.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/classification-handover.png}
+\caption{Classification handover in the main pipeline.}
+\label{fig:classification-handover}
+\end{figure}
+
+If classification fails for a notebook, the failure is recorded without turning the whole resource into a hidden interruption. Depending on configuration, the pipeline can continue to the reproducibility stages so that execution evidence is still collected. This preserves the separation between notebook purpose classification and notebook execution.
+
+\subsection{Requirement Inference}
+
+After classification, the pipeline prepares dependency information for the execution environment. The implementation combines declared requirements with imports observed in the notebooks. This stage is partly inherited in purpose, but the important point for this thesis is that it now receives notebooks from all supported platforms through the same local-resource contract.
+
+Declared requirement files are used when they are supplied or discovered. These files may contain explicit package versions and therefore provide stronger evidence than imports alone. Missing supplied requirement files generate warnings, but they do not necessarily stop the route because dependency information may still be inferred from notebooks.
+
+For notebook-based inference, the implementation converts selected notebooks into temporary Python files and extracts import statements. It keeps only the top-level module name. Standard-library modules are skipped because they do not need to be installed. Local Python modules inside the resource are also skipped because they belong to the downloaded project itself. The remaining names are treated as external dependency candidates.
+
+The declared requirements and inferred imports are merged into one resource-level \texttt{requirements.txt}. Blank lines and comments are removed, duplicates are eliminated, and the result is sorted. If no package is found, an empty requirements file is still created so the environment stage receives a predictable input.
+
+Figure~\ref{fig:requirement-inference-flow} shows the requirement inference flow.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/requirement-inference-flow.png}
+\caption{Requirement inference flow.}
+\label{fig:requirement-inference-flow}
+\end{figure}
+
+Table~\ref{tab:dependency-sources} lists the dependency sources and treatment.
+
+\begin{table}[ht]
+\centering
+\caption{Dependency sources and treatment.}
+\label{tab:dependency-sources}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.8cm}p{3.0cm}p{3.0cm}X@{}}
+\toprule
+Source & Example & Treatment & Reason\tabularnewline
+\midrule
+Declared requirements & \texttt{requirements.txt} supplied with the resource & preferred, copied as-is & may contain explicit package versions\tabularnewline
+Notebook imports & \texttt{import pandas} & top-level module name extracted and added as a candidate & fills gaps when no declared file exists or is incomplete\tabularnewline
+Standard-library imports & \texttt{json}, \texttt{pathlib}, \texttt{sqlite3} & skipped & already part of Python; installing from PyPI would be redundant or fail\tabularnewline
+Local modules & a helper \texttt{.py} file inside the resource & skipped & belongs to the downloaded project, not an external package\tabularnewline
+Missing requirement files & a declared path that does not exist & warning logged, route continues & dependency information may still be inferred from notebook imports\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This inference is not presented as a perfect reconstruction of the author's original environment. An import name may not always equal the PyPI package name, and imports usually do not contain version information. The goal is to create the best available executable environment from the evidence present in the resource.
+
+\subsection{Python Environment Creation}
+
+The environment stage creates an isolated Python environment for the current resource. Isolation here is achieved with \texttt{pyenv}~\cite{pyenv} and a per-resource virtual environment, not with containers: each resource receives its own interpreter version and its own \texttt{venv}, so the packages installed for one resource cannot alter the environment of another. Docker is used only to package the pipeline itself for deployment; it is not used per resource, and no container is built or started during notebook execution. This choice trades the stronger filesystem and network isolation a container would provide for substantially lower per-resource overhead, which matters when a batch contains hundreds of resources. Its security implication is noted under NFR6 in Section~3.3 and revisited in Section~\ref{sec:threats}.
+
+This stage belongs to the shared reproducibility route. The extension makes it work identically after GitHub, Codeberg, or Zenodo acquisition by handing it the same two inputs in every case: a local resource directory and a resource-level requirements file.
+
+The first task is Python-version selection. It is important to state precisely what this selection is and is not. It is \emph{not} a recovery of the interpreter version the notebook's author actually used: the \texttt{.ipynb} format records a kernel name and, optionally, a language version in its metadata, but these fields are frequently absent, and when present they describe the kernel that last saved the notebook rather than the environment in which its results were produced~\cite{nbformat}. The implementation therefore does not read the version from the notebook. It infers a version from declarations the author made about the \emph{repository}, which are more reliable when they exist.
+
+The implementation consults five sources in a fixed precedence order and stops at the first that yields a version:
+
+\begin{enumerate}[label=\arabic*.,leftmargin=1.2cm,itemsep=0.15em,topsep=0.2em]
+\item \texttt{binder/runtime.txt} --- a Binder declaration of the form \texttt{python-3.8}. This ranks first because it is an explicit statement of the version the author intended for automated execution.
+\item \texttt{runtime.txt} at the repository root --- the same format in the non-Binder location.
+\item \texttt{.python-version} --- the pyenv project file, read as a literal version string.
+\item \texttt{setup.py} --- the lower bound of a \texttt{python\_requires} specifier, so that \texttt{>=3.7} yields 3.7.
+\item \texttt{setup.cfg} --- the same specifier in the declarative configuration.
+\end{enumerate}
+
+If none of the five yields a version, the implementation falls back to Python~3.10. Two consequences follow, and both are relevant to interpreting the results in Chapter~\ref{chap:evaluation}. First, the lower bound of \texttt{python\_requires} is a minimum compatible version, not the author's version; a project declaring \texttt{>=3.7} may have been developed on 3.11. Second, the fallback dominates in practice, because most resources declare no version at all --- which means that for those resources the execution environment is a plausible modern interpreter rather than a historically faithful one. A dependency failure observed under the fallback may therefore reflect an incompatibility between a pinned old package and a newer interpreter, rather than a genuinely missing dependency. This is a limitation of the measurement and is revisited in Section~\ref{sec:threats}.
+
+The selected version is realised through pyenv~\cite{pyenv}. If the requested interpreter is already installed, it is reused. If only a major and minor version are given, pyenv resolves them to the latest available patch release, installing it when necessary. If the interpreter can neither be found nor installed, the run terminates with a structured \texttt{PYTHON\_INSTALL\_FAIL} status rather than silently falling back to the system interpreter, so that an environment failure is never mistaken for a notebook failure.
+
+After the interpreter is available, the pipeline creates a fresh virtual environment for the resource. It upgrades packaging tools, installs Jupyter and \texttt{nbconvert}, installs the generated requirements, and applies supplied setup paths when present. Package installation is logged so that dependency failures can be inspected later.
+
+Table~\ref{tab:environment-inputs-outputs} summarises the environment creation inputs and outputs.
+
+\begin{table}[ht]
+\centering
+\caption{Environment creation inputs and outputs.}
+\label{tab:environment-inputs-outputs}
+\small
+\begin{tabularx}{\textwidth}{@{}p{3.4cm}p{4.4cm}X@{}}
+\toprule
+Item & Meaning & Example or result\tabularnewline
+\midrule
+Python version hints & files checked in order to select an interpreter version & \texttt{binder/runtime.txt}, \texttt{runtime.txt}, \texttt{.python-version}, \texttt{setup.py}, \texttt{setup.cfg}\tabularnewline
+Selected Python version & the version actually used, from a hint or the fallback & e.g.\ 3.10 when no hint is found\tabularnewline
+Virtual environment path & isolated environment created for this resource only & \texttt{REPO\_VENV\_DIR}\tabularnewline
+Generated requirements file & merged and cleaned dependency list installed into the environment & resource-level \texttt{requirements.txt}\tabularnewline
+Setup paths & supplied local packages installed in addition to requirements & \texttt{pip install .} on a supplied setup directory\tabularnewline
+Environment error type & structured category stored when interpreter or package setup fails & \texttt{PYTHON\_INSTALL\_FAIL}, \texttt{PYTHON\_BINARY\_MISSING}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The environment is temporary. It is removed after the resource finishes or after a terminal environment-related failure. The database and logs preserve the evidence, while the environment itself does not remain and influence later runs.
+
+\subsection{Notebook Execution and Output Comparison}
+
+Once the environment exists, the pipeline executes the selected notebooks. This execution mechanism is part of the shared route that the thesis preserves. The added work is that notebooks from all supported sources now arrive here through the same registered paths, run ID, metadata context, and working database. Notebook execution is performed with Jupyter \texttt{nbconvert}. Each notebook is executed from its own directory so that relative file paths inside the notebook still work. The executed version is saved beside the original notebook using an output filename. The original notebook is not overwritten.
+
+The implementation allows runtime errors to remain in the executed notebook. This is important because an error output is still reproducibility evidence. If the notebook fails in a particular cell, that failure should be available for later analysis instead of disappearing because execution stopped completely.
+
+For each notebook, the executor records whether an output notebook was created successfully, whether it contains error cells, or whether execution failed before an output notebook was created. If no output exists for any selected notebook, the route records an execution failure. If output notebooks exist, the pipeline continues to comparison.
+
+Figure~\ref{fig:execution-comparison-flow} gives the execution and comparison flow.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{figures/chapter5/execution_and_comparison_flowchart.png}
+    \caption{Execution and comparison flow.}
+    \label{fig:execution-comparison-flow}
+\end{figure}
+
+The comparison stage compares the original notebook with the newly executed notebook. Execution counts and notebook metadata are ignored because they do not represent result changes. Source and output differences are recorded separately. Output differences are classified into useful groups, such as numeric, textual, or structural differences.
+
+The comparison stage also checks for possible nondeterministic behaviour. Signals such as random-number generation, current time, environment variables, and UUID generation can explain why an output may change between two runs. These signals do not automatically prove that a changed output is acceptable, but they provide useful context for interpreting the result.
+
+Table~\ref{tab:execution-comparison-outputs} gives the execution and comparison outputs.
+
+\begin{table}[ht]
+\centering
+\caption{Execution and comparison outputs.}
+\label{tab:execution-comparison-outputs}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{4.3cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Output & Stored location & Purpose\tabularnewline
+\midrule
+Executed notebook & \texttt{*\_output.ipynb} beside the original & preserves the actual re-run result, including error cells\tabularnewline
+Execution log & per-resource log file & records install and run activity used for error categorisation\tabularnewline
+Notebook execution row & \texttt{notebook\_}\linebreak\texttt{executions} table & structured status, duration, and error fields for one execution\tabularnewline
+Reproducibility metrics row & \texttt{notebook\_}\linebreak\texttt{reproducibility\_}\linebreak\texttt{metrics} table & cell-level comparison counts and the reproducibility score\tabularnewline
+Comparison JSON & \texttt{data/output/}\linebreak\texttt{comparisons/} & detailed diff and extracted runtime errors for manual inspection\tabularnewline
+Runtime error category & \texttt{notebook\_}\linebreak\texttt{executions} columns & groups failures (dependency, file, data, code, resource, network, environment) for later analysis\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The comparison produces two types of evidence. The database stores the structured values needed for queries and evaluation. The file system stores detailed comparison JSON files that can be inspected when a specific notebook result needs explanation. In the extended implementation, this evidence can be connected back to the source platform and processing run instead of standing only as a GitHub-oriented notebook result.
+
+\FloatBarrier
+\subsection{Error Handling, Cleanup, and Batch Continuation}
+
+The implementation treats expected failures as evidence. This is especially important for the thesis contribution because cross-platform processing introduces failure points before notebook execution, such as unreachable Codeberg repositories or Zenodo records without usable files. A failed validation, failed metadata request, failed acquisition, missing notebook, environment error, execution error, or comparison error is not simply printed and forgotten. It is recorded with a status, message, and duration.
+
+This approach is necessary because the thesis evaluates reproducibility. A resource that fails to execute is still part of the result. For example, a missing package, unavailable file, invalid Zenodo record, or unreachable Git repository each explains something different. The pipeline therefore records where the route stopped.
+
+Every resource run starts as \texttt{RUNNING} and ends with a final status. The controller finalizes the run when a terminal condition is reached. Cleanup is performed when temporary environments or downloaded temporary archives are no longer needed. The resource's local files, logs, database rows, and comparison outputs remain available for inspection.
+
+Table~\ref{tab:terminal-statuses} lists the terminal statuses and their meaning.
+
+\begin{table}[ht]
+\centering
+\caption{Terminal statuses and their meaning.}
+\label{tab:terminal-statuses}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}p{2.4cm}p{3.4cm}XX@{}}
+\toprule
+Stage & Example status & Meaning & Does batch continue?\tabularnewline
+\midrule
+Platform detection & \texttt{UNSUPPORTED\_}\linebreak\texttt{PLATFORM} & host could not be matched to a supported platform & Yes\tabularnewline
+Validation & \texttt{INVALID\_REPOSITORY\_URL}, or \texttt{INVALID\_ZENODO\_RECORD} & the source could not be confirmed reachable & Yes\tabularnewline
+Metadata & \texttt{METADATA\_}\linebreak\texttt{FETCH\_FAILED} & the platform adapter could not return normalized metadata & Yes\tabularnewline
+Acquisition & \texttt{GIT\_CLONE\_FAILED}, or \texttt{ZENODO\_DOWNLOAD\_FAILED} & the local resource directory could not be created or updated & Yes\tabularnewline
+No notebooks & \texttt{NO\_NOTEBOOKS} & the resource contains no \texttt{.ipynb} files & Yes\tabularnewline
+No Python notebooks & \texttt{NO\_PYTHON\_}\linebreak\texttt{NOTEBOOKS} & notebooks exist but none use a Python kernel & Yes\tabularnewline
+Requirement inference & (no dedicated status) & declared files and imports could not be combined into any package name; an empty requirements file is written and the route continues & Yes\tabularnewline
+Environment / execution & \texttt{PYTHON\_INSTALL\_}\linebreak\texttt{FAIL}, \texttt{PYTHON\_}\linebreak\texttt{BINARY\_MISSING}, or another \texttt{ENV\_ERROR\_TYPE} value & interpreter installation, package installation, or notebook execution did not complete & Yes\tabularnewline
+Comparison & (no dedicated run status) & an individual notebook's comparison could not be completed; recorded in \texttt{notebook\_}\linebreak\texttt{reproducibility\_metrics} rather than as a run status & Yes\tabularnewline
+Successful completion & \texttt{SUCCESS} & the resource reached the end of the route & --\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Batch mode uses the same per-resource route. If one resource fails, the failure is stored and the next resource can continue. This batch behaviour is a practical part of the thesis implementation, because a cross-platform evaluation sample can contain invalid URLs, unavailable records, archives without notebooks, and notebooks with dependency problems. The whole experiment should not stop at the first difficult resource.
+
+For the larger evaluation sample, the implementation also supports a CSV-driven batch runner. This runner reads sample rows, applies optional filters, and can skip resources that already have run records. This makes the process resumable: if a long run is interrupted, already processed resources do not need to be repeated.
+
+For larger runs, the implementation can split the sample across several workers. Each worker receives a non-overlapping slice of the input. SQLite write-ahead logging helps the workers share the working database, and locking prevents multiple workers from installing the same missing Python version at the same time. These details support practical evaluation runs without changing the single-resource logic.
+
+\clearpage
+
+Figure~\ref{fig:batch-execution-continuation} illustrates the batch execution and continuation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/batch-execution-continuation.png}
+\caption{Batch execution and continuation.}
+\label{fig:batch-execution-continuation}
+\end{figure}
+
+At the end of a batch, the pipeline prints a summary containing processed resources, successful and failed attempts, elapsed time, and output locations. The same information can be checked later in the working database and log files. This completes the cross-platform pipeline implementation: the added controller and connector logic can process GitHub, Codeberg, and Zenodo resources through one route, preserve platform-specific failures as evidence, and produce the stored notebook outputs needed by the later classification, evaluation, and knowledge-graph stages.
+
+\clearpage

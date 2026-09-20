@@ -17,7 +17,7 @@ compare_notebook_outputs_json() {
 
 compare_notebook_outputs() {
     log "[NOTEBOOK] Comparing outputs for: $REPO_NAME"
-    IFS=";" read -ra NOTEBOOK_ARRAY <<< "$NOTEBOOK_PATHS"
+    IFS=";" read -ra NOTEBOOK_ARRAY <<<"$NOTEBOOK_PATHS"
     for NOTEBOOK_PATH in "${NOTEBOOK_ARRAY[@]}"; do
         if [ ! -f "$REPO_DIR/$NOTEBOOK_PATH" ]; then
             log "[NOTEBOOK] Not found: $REPO_DIR/$NOTEBOOK_PATH — skipping"
@@ -29,8 +29,8 @@ compare_notebook_outputs() {
         original_notebook="$REPO_DIR/$NOTEBOOK_PATH"
         executed_notebook="$REPO_DIR/${notebook_dir}/${base_name}_output.ipynb"
         comparison_result_file="${COMP_DIR}/${base_name}_comparison.json"
-        NOTEBOOK_ID=$(get_notebook_id_from_db "$NOTEBOOK_PATH")
-        REPO_ID=$(get_repo_id_from_db "$GITHUB_REPO")
+        REPO_ID=$(get_repo_id_from_db "$REPO_URL")
+        NOTEBOOK_ID=$(get_notebook_id_from_db "$REPO_ID" "$NOTEBOOK_PATH")
         log "[NOTEBOOK] ID=$NOTEBOOK_ID  REPO_ID=$REPO_ID  path=$NOTEBOOK_PATH"
         if [ -z "$NOTEBOOK_ID" ]; then
             log "[NOTEBOOK] No DB record for $NOTEBOOK_PATH — skipping"
@@ -38,7 +38,7 @@ compare_notebook_outputs() {
         fi
         if [ ! -f "$executed_notebook" ]; then
             log "[NOTEBOOK] Output missing for $NOTEBOOK_PATH — recording failure"
-            cat <<EOF > "$comparison_result_file"
+            cat <<EOF >"$comparison_result_file"
 {
   "notebook": "$NOTEBOOK_PATH",
   "NOTEBOOK_ID": "$NOTEBOOK_ID",

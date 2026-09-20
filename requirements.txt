@@ -44,3 +44,4 @@ seaborn==0.13.2
 six==1.17.0
 traitlets==5.14.3
 urllib3==2.6.3
+rdflib==7.6.0
