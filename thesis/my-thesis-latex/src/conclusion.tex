@@ -1,4 +1,62 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
 
-This chapter will summarise the contributions and findings of the thesis once the evaluation is complete. This chapter has not yet been written.
+This thesis started from an observation about evidence rather than about software.
+
+The computational reproducibility of Jupyter notebooks has been studied at a large scale, and the results are well established. But that evidence comes almost entirely from one platform. What was known about notebook reproducibility was really what was known about GitHub: one platform, one community of practice, and one metadata model. Whether those findings describe computational notebooks in general, or only one place where they are published, was an open question. It stayed open because the tool needed to answer it did not exist.
+
+\section{What Was Built}
+
+This thesis built that tool and used it.
+
+A platform-independent reproducibility workflow was developed. It processes resources from a commercial Git forge, a non-profit Git forge, and an archival research repository on the same terms. Platform-specific behaviour is confined to a connector layer. After that layer, the same shared stages handle notebook discovery, dependency inference, environment reconstruction, execution, and cell-by-cell output comparison.
+
+Descriptive metadata from three incompatible API vocabularies was normalized into eight common fields, under a strict rule against inventing values that the source did not provide.
+
+The database separates stable things from the actions performed on them. Every processing attempt is kept as history rather than overwriting the previous one, and the inherited baseline data is never modified.
+
+Notebook purpose is characterised by a hybrid method that keeps two independent automated decisions rather than a single label.
+
+Finally, the collected evidence is published as a knowledge graph. The FAIR Jupyter ontology was extended with hosting platforms, archived research records, pipeline runs, normalized metadata, and classification activities, and the graph is rebuilt from the database through versioned mappings.
+
+\section{What Was Measured}
+
+Applied to a corpus of 318 resources across the three platforms, the system executed and compared 2{,}291 notebooks covering 38{,}087 code cells, and assigned a purpose to every one of them. The knowledge graph contains 162{,}008 unique triples, passes every structural check, answers all seven of its competency questions, and reproduces the database's own platform comparison exactly.
+
+Four results follow.
+
+Platform-independent processing works, and its boundary can be located precisely. The platform determines whether a resource can be obtained at all, but once the files exist locally it no longer predicts what happens next. The evidence is that 21 of Zenodo's 25 unsuccessful resources failed before that boundary, and that the failures after it follow resource size rather than platform.
+
+Metadata differences between platforms are substantial, not cosmetic. The platforms separate completely on persistent identifiers, with Zenodo supplying a DOI for 98.2\% of its records and both Git forges supplying none, and on licensing, at 96.5\%, 50.5\%, and 0\%. The Codeberg figure describes its API rather than its repositories, and that distinction survives only because the system refuses to fill in values it was not given. Descriptive fields behave differently: titles, authors, and dates are almost complete everywhere, so the platforms differ in what they guarantee rather than in what they describe.
+
+Output reproducibility is low everywhere, and the platform ranking depends on how it is counted. Fewer than two code cells in five reproduce their stored output on any platform. Codeberg executes best, at 45.3\% clean runs, but counting every notebook once puts GitHub ahead on score while counting every repository once puts Codeberg ahead. Only one comparison survives every counting rule: Codeberg repositories reproduce better than Zenodo records. A study reporting a simple reproduced or not-reproduced verdict would have reached a different conclusion about which platform performs better.
+
+Missing dependencies are the largest single failure cause across the corpus, at 20.9\%, and they stay common on all three platforms, between 17.1\% and 25.8\%. That range is narrower than for any other cause. On GitHub, code errors are slightly more frequent still, at 21.9\%, but the stability of the dependency rate across platforms suggests that incomplete dependency information is a property of how notebooks are written rather than of where they are published.
+
+\section{What Was and Was Not Claimed}
+
+All four research questions are answered, but one of them invites a follow-up question that this work does not answer.
+
+RQ3 asked how far the rule-based and AI-based methods agree, and how far they complement one another. They chose the same category for 19.1\% of the 2{,}291 notebooks, rising to 25.5\% among the notebooks where the rule-based method committed to a substantive category. Confident contradiction is rare, at 8.0\%. Their divergence is structured rather than random: the rule-based method declines to commit on about a quarter of notebooks while the model almost always commits, and it resolves many of those open cases plausibly, recovering 193 tutorials the rules could not classify. The two methods are complementary, which is the assumption the hybrid design rests on.
+
+Measured against the category curated for each repository, the model reaches 36.6\% accuracy and a macro F1 of 0.29, and the rule-based method 17.8\% and 0.15. Both are weak, and the model beats a classifier that always answers the most common category by only about five percentage points.
+
+The follow-up question is which method is right when they differ, and that is deliberately not claimed. The curated category belongs to the repository, not to the individual notebook, so it is a weaker reference than a proper ground truth and the figures above are a lower bound rather than a measurement of accuracy. No value measured against human labels assigned to individual notebooks appears anywhere in this thesis. Section~\ref{sec:future-classification} sets out what establishing correctness would require.
+
+\section{Limitations}
+
+Three qualifications apply to everything reported here, and they are set out in full in Section~\ref{sec:threats}.
+
+The samples were chosen on purpose rather than at random, because no comparable list of candidates exists across the three platforms. That absence is itself a finding about the state of research infrastructure.
+
+Notebook purpose affects reproducibility by roughly as much as the platform does. Every notebook now carries a category, so the two can be reported side by side, but the categories come from a classifier of moderate quality, which is why the platform comparison relies on the curated repository category instead.
+
+The reconstructed execution environment is a plausible modern one rather than the author's original, which inflates the dependency-error category by an amount that cannot be determined from the data.
+
+\section{Closing}
+
+One conclusion is robust within this corpus, and it is the one this thesis set out to test.
+
+Low output reproducibility appears on all three platforms and under all three counting rules. The low level previously observed on GitHub is therefore not confined to GitHub in this sample: it is found on a non-profit forge and on an archival repository as well. This points to the artefact and to the practices that produce it, rather than to the place of publication, as the source of the problem. The corpus was chosen on purpose rather than at random, so this describes the repositories studied here and does not establish that the platform has no effect in general.
+
+That conclusion could not have been drawn from a single-platform corpus. Drawing it required a tool that treats different platforms on equal terms while keeping the origin of every measurement visible in the result. Building and validating that tool, and making it extensible to further platforms at the cost of one connector each, is what this thesis contributes to the study of computational reproducibility beyond a single platform.

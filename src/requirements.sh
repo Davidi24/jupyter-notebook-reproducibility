@@ -73,6 +73,18 @@ process_requirements() {
             fi
         }
 
+        package_name_for_import() {
+            case "$1" in
+                bs4) echo "beautifulsoup4" ;;
+                cv2) echo "opencv-python" ;;
+                PIL) echo "Pillow" ;;
+                sklearn) echo "scikit-learn" ;;
+                skimage) echo "scikit-image" ;;
+                yaml) echo "PyYAML" ;;
+                *) echo "$1" ;;
+            esac
+        }
+
         for NOTEBOOK_PATH in "${NOTEBOOK_ARRAY[@]}"; do
             NOTEBOOK_PATH=$(trim_whitespace "$NOTEBOOK_PATH")
             NOTEBOOK_NAME="$REPO_DIR/$NOTEBOOK_PATH"
@@ -105,8 +117,13 @@ process_requirements() {
                 elif is_local_module "$module_name" "$REPO_DIR"; then
                     log "[REQUIREMENT] Skipping local module: $module_name"
                 else
-                    echo "$module_name" >> "$TEMP_NB_REQS"
-                    log "[REQUIREMENT] Added external library from notebook: $module_name"
+                    package_name=$(package_name_for_import "$module_name")
+                    echo "$package_name" >> "$TEMP_NB_REQS"
+                    if [ "$package_name" != "$module_name" ]; then
+                        log "[REQUIREMENT] Added external library from notebook: $module_name -> $package_name"
+                    else
+                        log "[REQUIREMENT] Added external library from notebook: $module_name"
+                    fi
                 fi
             done
 

@@ -29,7 +29,7 @@ SELECT
         WHEN 'github' THEN 'https://github.com/' || repository
         WHEN 'codeberg' THEN 'https://codeberg.org/' || repository
         WHEN 'zenodo' THEN 'https://zenodo.org/records/' || repository
-        ELSE repository
+        ELSE 'https://w3id.org/notebookfair/repository/' || id
     END AS repository_url,
     CASE LOWER(COALESCE(platform, 'github'))
         WHEN 'github' THEN 'https://w3id.org/notebookfair#GitRepositoryResource'

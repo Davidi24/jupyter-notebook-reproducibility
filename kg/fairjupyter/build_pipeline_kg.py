@@ -160,6 +160,30 @@ def csv_row_counts() -> dict[str, int]:
     return counts
 
 
+def print_build_summary(summary: dict, summary_file: Path) -> None:
+    print("")
+    print("════════════════════════════════════════")
+    print("        KNOWLEDGE GRAPH SUMMARY         ")
+    print("════════════════════════════════════════")
+    print(f"  Source database      : {summary['source_database']}")
+    print(f"  Combined graph       : {summary['combined_graph']}")
+    print(f"  Build summary JSON   : {summary_file}")
+    print(f"  Total unique triples : {summary['total_unique_triples']}")
+    print("")
+    print("  CSV rows:")
+    for name, count in summary["csv_rows"].items():
+        print(f"    {name}: {count}")
+    print("")
+    print("  Mapping triples:")
+    for mapping in summary["mappings"]:
+        print(
+            f"    {mapping['mapping']}: {mapping['triples']} triples "
+            f"({mapping['seconds']}s)"
+        )
+    print("════════════════════════════════════════")
+    print("")
+
+
 def main() -> int:
     arguments = parse_arguments()
     output_dir = arguments.output_dir.resolve()
@@ -198,9 +222,7 @@ def main() -> int:
         summary_file = output_dir / "build-summary.json"
         summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
-        print(f"[KG BUILD] Combined graph: {combined_file}")
-        print(f"[KG BUILD] Total unique triples: {total_triples}")
-        print(f"[KG BUILD] Summary: {summary_file}")
+        print_build_summary(summary, summary_file)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"[KG BUILD] FAILED: {error}", file=sys.stderr)
         return 1

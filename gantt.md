@@ -30,13 +30,15 @@ gantt
     section Experiments & Analysis
     Execution pipeline runs             :done,   x1, after d3, 6d
     Cross-platform comparison           :done,   x2, after x1, 5d
-    Reproducibility patterns analysis   :active, x3, after x2, 7d
+    Reproducibility patterns analysis   :done,   x3, after x2, 7d
+    First-run validation & README       :done,   x4, 2026-09-14, 1d
 
     section Writing
     Continuous chapter drafting         :done,   w1, 2026-07-06, 2026-09-03
-    Full draft assembly                 :active, w2, 2026-09-04, 4d
-    Supervisor feedback round           :        w3, 2026-09-08, 3d
-    Final polish & submission           :crit,   w4, 2026-09-11, 2026-09-15
+    Chapters 1--5 ready for review      :done,   w2, 2026-09-04, 2026-09-14
+    Website dashboard integration       :active, w3, 2026-09-14, 2d
+    Supervisor feedback round           :        w4, 2026-09-16, 3d
+    Final polish & submission           :crit,   w5, 2026-09-19, 2026-09-22
 
     section Milestones
     Vision document approved            :milestone, m1, 2026-04-27, 0d
@@ -44,5 +46,6 @@ gantt
     All three connectors working        :milestone, m3, 2026-07-04, 0d
     Knowledge graph populated           :milestone, m4, 2026-07-28, 0d
     Evaluation complete                 :milestone, m5, 2026-09-07, 0d
-    Thesis submitted                    :milestone, m6, 2026-09-15, 0d
+    Chapters 1--5 ready                 :milestone, m6, 2026-09-14, 0d
+    Thesis submitted                    :milestone, m7, 2026-09-22, 0d
 ```

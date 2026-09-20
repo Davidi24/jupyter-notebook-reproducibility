@@ -3,7 +3,7 @@
 
 \section{Overall Architecture}
 
-This chapter presents the architecture that implements the requirements from Chapter~\ref{chap:requirements}. It places a platform-aware layer around the original pipeline's shared notebook-processing stages and connects the results to notebook classification, structured database storage, and knowledge-graph publication.
+This chapter presents the architecture that implements the requirements from Chapter~\ref{chap:requirements}. It places a platform-aware layer around the shared notebook-processing stages of the baseline pipeline~\cite{samuel2024computational} and connects the results to notebook classification, structured database storage, and knowledge-graph publication.
 
 The main architectural principle is the separation of platform-specific acquisition from shared notebook processing. GitHub and Codeberg primarily host Git repositories, whereas Zenodo provides archived research records with downloadable files. As a result, the three platforms differ in how a resource is identified, validated, described, and acquired. These differences are isolated in the early stages of the architecture. Once a resource has been converted into a common local representation, the remaining stages can process it through one shared reproducibility route.
 
@@ -69,6 +69,7 @@ After acquisition, notebook discovery decides whether there is any \texttt{.ipyn
 The same control flow is used in single-resource mode and batch mode. Batch mode simply repeats the route for many database resources. If one resource fails validation, metadata fetching, acquisition, discovery, classification, environment creation, execution, or comparison, the failure is stored and the next resource can continue. The result is a traceable experiment rather than a process that stops at the first failed case.
 
 \section{Connector Architecture}
+\label{sec:connector-design}
 
 The connector layer is the adapter between an external platform and the shared notebook pipeline. Its task is simple: take a resource reference from one platform and return a local resource that the rest of the system can process. This keeps platform rules in one place instead of spreading GitHub, Codeberg, and Zenodo cases through every later stage.
 
@@ -159,8 +160,11 @@ Statuses are stored as defined values instead of only free text. A run starts as
 This structure supports both detailed inspection and summary statistics. Repository and run rows support platform-level success rates. Execution rows support error analysis. Metadata rows show missing descriptive fields. Classification rows support analysis by notebook purpose. The graph exporter can reuse the same database identifiers, so relational evidence and semantic evidence remain connected.
 
 \section{Notebook Classification Architecture}
+\label{sec:classification-design}
 
 Notebook classification is part of the design because reproducibility results are easier to interpret when notebooks are grouped by purpose. At the design level, classification is not defined as a single model call. It is a reviewable decision process with four responsibilities: collect safe evidence from the notebook, represent that evidence in a bounded form, compare two independent classification views, and preserve uncertainty for human review.
+
+Figure~\ref{fig:classification-design} shows the hybrid notebook-classification design.
 
 \begin{figure}[htbp]
 \centering
@@ -178,8 +182,11 @@ The categories are design-level labels for purpose, not claims about scientific 
 The combined decision is conservative. Agreement can create a provisional category. Disagreement, low confidence, unavailable model output, or uncertainty creates a review state. A later human decision is stored separately from the automated answers. This design lets the evaluation measure the rule view, AI view, combined decision, and human-reviewed labels without mixing them.
 
 \section{Knowledge Graph and Provenance Design}
+\label{sec:kg-design}
 
 The knowledge graph is designed as a semantic publication layer over the same evidence stored in SQLite. It extends FAIR Jupyter instead of replacing it. The existing model already connects publications, software, notebooks, executions, and reproducibility results. The extension adds the concepts needed for this thesis: source platforms, Zenodo records, pipeline runs, normalized metadata, and notebook classifications.
+
+Figure~\ref{fig:kg-construction} illustrates the regenerable knowledge-graph construction route.
 
 \begin{figure}[htbp]
 \centering

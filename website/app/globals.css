@@ -239,6 +239,8 @@ tbody tr:hover { background: var(--surface-hover); }
 .filter-chip b { padding: 1px 5px; border-radius: 999px; background: var(--border-muted); font-size: 8px; }
 .filter-chip.active b { background: var(--accent-soft); color: var(--accent); }
 .mini-search { width: 240px; height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; color: var(--fg-subtle); background: var(--canvas); }
+.category-select { height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; color: var(--fg-muted); background: var(--canvas); font-size: 9px; font-weight: 600; }
+.category-select:hover { background: var(--surface-hover); }
 .mini-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: var(--fg); background: transparent; font-size: 10px; }
 .result-count { color: var(--fg-subtle); font-size: 9px; }
 
@@ -255,15 +257,41 @@ tbody tr:hover { background: var(--surface-hover); }
 .repo-card:last-child { border-bottom: 0; }
 .repo-card:hover { background: var(--surface-hover); }
 .repo-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.repo-card-title-link { display: block; text-decoration: none; color: inherit; }
 .repo-card-head h3 { margin: 0 0 4px; color: var(--accent); font-size: 13px; font-weight: 650; }
-.repo-card:hover .repo-card-head h3 { text-decoration: underline; }
+.repo-card-title-link:hover h3 { text-decoration: underline; }
 .repo-card-head p { margin: 0; color: var(--fg-subtle); font-size: 9px; font-family: var(--font-geist-mono), monospace; }
 .platform-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; color: var(--fg-muted); background: var(--surface-2); border: 1px solid var(--border); font-size: 8px; font-weight: 650; white-space: nowrap; }
-.repo-card-desc { margin: 0; color: var(--fg-muted); font-size: 9.5px; line-height: 1.6; max-width: 640px; }
+.repo-card-desc { display: -webkit-box; overflow: hidden; margin: 0; max-width: 640px; color: var(--fg-muted); font-size: 9.5px; line-height: 1.6; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .meta-bar-row { display: flex; align-items: center; justify-content: space-between; color: var(--fg-subtle); font-size: 8px; font-weight: 650; max-width: 320px; }
 .meta-bar { height: 5px; margin-top: 6px; overflow: hidden; border-radius: 3px; background: var(--border-muted); max-width: 320px; }
 .meta-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 .repo-card-foot { display: flex; align-items: center; gap: 16px; padding-top: 10px; color: var(--fg-subtle); font-size: 8.5px; }
+.repo-card-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.repo-action-rerun { border-color: var(--brand-fg) !important; color: var(--brand-fg) !important; background: color-mix(in srgb, var(--brand-fg) 16%, transparent) !important; }
+.repo-action-rerun:hover:not(:disabled) { background: var(--brand-fg) !important; color: var(--surface) !important; }
+.repo-action-rerun:disabled { opacity: .7; }
+.repo-action-expand { border-color: var(--border) !important; color: var(--fg-muted) !important; background: var(--surface-2) !important; }
+.repo-action-expand:hover { background: var(--surface-hover) !important; color: var(--fg) !important; }
+.repo-action-expand[aria-expanded='true'] { border-color: var(--brand-fg) !important; color: var(--brand-fg) !important; }
+.repo-expand-icon { display: inline-flex; }
+.repo-expand-icon svg { transition: transform .15s ease; }
+.repo-card.expanded .repo-expand-icon svg { transform: rotate(180deg); }
+.repo-card-notebooks { margin-top: 12px; border: 1px solid var(--border-muted); border-radius: 8px; }
+.repo-run-progress { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--border-muted); border-radius: 8px; background: var(--surface-2); }
+.repo-action-neutral { border-color: var(--border) !important; color: var(--fg-muted) !important; background: var(--surface-2) !important; }
+.repo-action-neutral:hover:not(:disabled) { background: var(--surface-hover) !important; color: var(--fg) !important; }
+.repo-upload-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px; color: var(--fg-muted); background: var(--surface-2); cursor: pointer; transition: .15s ease; }
+.repo-upload-icon-button:hover { background: var(--surface-hover); color: var(--fg); }
+.repo-upload-icon-button[aria-disabled='true'] { opacity: .7; cursor: default; pointer-events: none; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 14px 4px; }
+.pagination-summary { color: var(--fg-subtle); font-size: 9px; font-weight: 550; }
+.pagination-controls { display: flex; align-items: center; gap: 6px; }
+.pagination-arrow-prev svg { transform: scaleX(-1); }
+.pagination-page { min-width: 28px; border-color: var(--border) !important; color: var(--fg-muted) !important; background: var(--surface-2) !important; }
+.pagination-page:hover { background: var(--surface-hover) !important; color: var(--fg) !important; }
+.pagination-page.active { border-color: var(--brand-fg) !important; color: var(--brand-fg) !important; background: color-mix(in srgb, var(--brand-fg) 16%, transparent) !important; }
+.pagination-ellipsis { padding: 0 4px; color: var(--fg-subtle); font-size: 10px; }
 
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(240px, .8fr); gap: 18px; align-items: start; }
 .detail-panel { padding: 18px 20px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
@@ -818,7 +846,7 @@ td { border-top-color: var(--border-muted); }
 [data-slot='tooltip-content'] { border: 1px solid var(--border); color: var(--fg); background: var(--card); }
 
 .breadcrumb a, .repo-card-head h3 { color: var(--fg); }
-.filter-chip, .mini-search { border-radius: 8px; background: var(--card); }
+.filter-chip, .mini-search, .category-select { border-radius: 8px; background: var(--card); }
 .filter-chip.active { border-color: var(--fg-muted); color: var(--fg); background: var(--accent); }
 .filter-chip.active b { color: var(--fg); background: var(--surface-hover); }
 .status-pill, .keyword-tag { border: 1px solid var(--border); color: var(--fg-muted) !important; background: var(--surface-2) !important; }

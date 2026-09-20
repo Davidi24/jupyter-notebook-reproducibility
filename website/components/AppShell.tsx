@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ImportRepositoryModal from './ImportRepositoryModal';
-import AddNotebookModal from './AddNotebookModal';
 
 export const navItems: [string, string, string][] = [
   ['Analysis', 'spark', '/analysis'],
@@ -47,6 +46,7 @@ const iconPaths: Record<string, React.ReactNode> = {
   fileSearch: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h7"/><path d="M14 2v6h6M9 13h3"/><circle cx="18" cy="17" r="3"/><path d="m20.5 19.5 2 2"/></>,
   terminal: <><path d="m4 17 6-6-6-6M12 19h8"/></>,
   rerun: <><path d="M20 6v5h-5"/><path d="M19 11a7.5 7.5 0 1 0 1 6"/></>,
+  play: <path d="M6 4l14 8-14 8V4z" fill="currentColor" stroke="none"/>,
   panelLeft: <><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M14 8l-4 4 4 4"/></>,
 };
 
@@ -141,7 +141,7 @@ function Sidebar({ active, collapsed, onToggle }: { active: string; collapsed: b
   );
 }
 
-function Topbar({ onImport, onAddNotebook }: { onImport: () => void; onAddNotebook: () => void }) {
+function Topbar({ onImport }: { onImport: () => void }) {
   return (
     <header className="topbar">
       <label className="search"><Icon name="search" size={17} /><Input className="topbar-search-input" aria-label="Search" placeholder="Search notebooks, repositories..." /><kbd>Ctrl K</kbd></label>
@@ -154,7 +154,6 @@ function Topbar({ onImport, onAddNotebook }: { onImport: () => void; onAddNotebo
           <TooltipContent>Notifications</TooltipContent>
         </Tooltip>
         <Button className="button secondary" variant="outline" type="button" onClick={onImport}><Icon name="upload" size={16} />Import repository</Button>
-        <Button className="button primary" type="button" onClick={onAddNotebook}><Icon name="plus" size={16} />Add notebook</Button>
       </div>
     </header>
   );
@@ -171,7 +170,6 @@ export function PageHeading({ eyebrow, title, subtitle, status }: { eyebrow: str
 
 export default function AppShell({ active, children }: { active: string; children: React.ReactNode }) {
   const [importOpen, setImportOpen] = useState(false);
-  const [addNotebookOpen, setAddNotebookOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -205,11 +203,10 @@ export default function AppShell({ active, children }: { active: string; childre
     <main className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Sidebar active={active} collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       <section className="workspace">
-        <Topbar onImport={() => setImportOpen(true)} onAddNotebook={() => setAddNotebookOpen(true)} />
+        <Topbar onImport={() => setImportOpen(true)} />
         <div className="content">{children}</div>
       </section>
       <ImportRepositoryModal open={importOpen} onClose={() => setImportOpen(false)} />
-      <AddNotebookModal open={addNotebookOpen} onClose={() => setAddNotebookOpen(false)} />
     </main>
   );
 }

@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import type { PipelineJobSnapshot } from '@/lib/analysis-contract';
+import type { PipelineJobSnapshot, PipelineResult } from '@/lib/analysis-contract';
 
 type RuntimeBindings = { PIPELINE_RUNNER_URL?: string };
 
@@ -129,4 +129,136 @@ export async function cancelRunnerJob(repositoryId: string, runnerJobId: string)
   }
   const body = await runnerRequest(`/jobs/${runnerJobId}/cancel`, { method: 'POST', body: '{}' });
   return parseSnapshot(body, repositoryId);
+}
+
+export interface PipelineNotebookRow {
+  id: string;
+  name: string;
+  language: string;
+  finalCategory: string | null;
+  ruleCategory: string | null;
+  llmCategory: string | null;
+  agreement: string | null;
+  needsHumanReview: boolean;
+  executionStatus: string | null;
+  executionDuration: number | null;
+  reproducibilityScore: number | null;
+}
+
+export interface PipelineRepositoryRow {
+  id: string;
+  name: string;
+  platform: string;
+  url: string;
+  title: string;
+  description: string;
+  authors: string[];
+  license: string;
+  doi: string | null;
+  keywords: string[];
+  notebookCount: number;
+  lastRunStatus: string | null;
+  lastRunStartedAt: string | null;
+  lastRunFinishedAt: string | null;
+  runCount: number;
+  averageScorePercent: number | null;
+  notebooks: PipelineNotebookRow[];
+}
+
+// Reads real, already-executed repositories straight from the pipeline's own
+// SQLite database via the local runner service — distinct from the D1-backed
+// "imported repository" workspace the rest of the website uses.
+export async function listPipelineRepositories(): Promise<PipelineRepositoryRow[]> {
+  const body = await runnerRequest('/repositories');
+  return Array.isArray(body.repositories) ? (body.repositories as PipelineRepositoryRow[]) : [];
+}
+
+export interface DirectRerunJob {
+  id: string;
+  repositoryId: string;
+  notebookId: string;
+  notebookPath: string;
+  status: 'running' | 'succeeded' | 'partial' | 'failed';
+  stage: string;
+  progress: number;
+  message: string;
+  error: string | null;
+  log: string[];
+  createdAt: string;
+  updatedAt: string;
+  result: PipelineResult | null;
+}
+
+// Reruns one real pipeline notebook directly on the host (via WSL on
+// Windows) — no Docker required. Writes into the same real SQLite database
+// listPipelineRepositories() reads from.
+export async function startDirectRerun(repositoryId: string, notebookId: string): Promise<DirectRerunJob> {
+  const body = await runnerRequest('/direct-rerun', {
+    method: 'POST',
+    body: JSON.stringify({ repositoryId: Number(repositoryId), notebookId: Number(notebookId) }),
+  });
+  return body as unknown as DirectRerunJob;
+}
+
+// Reruns every notebook in a repository (not just one) — same mechanism as
+// startDirectRerun, driven by the repository's full notebook list.
+export async function startDirectRerunRepository(repositoryId: string): Promise<DirectRerunJob> {
+  const body = await runnerRequest('/direct-rerun-repository', {
+    method: 'POST',
+    body: JSON.stringify({ repositoryId: Number(repositoryId) }),
+  });
+  return body as unknown as DirectRerunJob;
+}
+
+export async function getDirectRerun(jobId: string): Promise<DirectRerunJob> {
+  if (!/^[0-9a-f]{32}$/.test(jobId)) {
+    throw new PipelineRunnerError('invalid_response', 'Invalid rerun job ID.');
+  }
+  const body = await runnerRequest(`/direct-rerun/${jobId}`);
+  return body as unknown as DirectRerunJob;
+}
+
+export interface ClassifyOnlyJob {
+  id: string;
+  repositoryId: string;
+  notebookId: string;
+  status: 'running' | 'succeeded' | 'failed';
+  message: string;
+  error: string | null;
+  result: {
+    rule_category: string | null;
+    llm_category: string | null;
+    final_category: string | null;
+    agreement_status: string | null;
+    needs_human_review: number;
+  } | null;
+}
+
+// Reclassifies one notebook only — clones/downloads if needed, then runs
+// just the classification step. No dependency install, no execution; much
+// faster than startDirectRerun.
+export async function startClassifyOnly(repositoryId: string, notebookId: string): Promise<ClassifyOnlyJob> {
+  const body = await runnerRequest('/classify-only', {
+    method: 'POST',
+    body: JSON.stringify({ repositoryId: Number(repositoryId), notebookId: Number(notebookId) }),
+  });
+  return body as unknown as ClassifyOnlyJob;
+}
+
+export async function getClassifyOnly(jobId: string): Promise<ClassifyOnlyJob> {
+  if (!/^[0-9a-f]{32}$/.test(jobId)) {
+    throw new PipelineRunnerError('invalid_response', 'Invalid reclassify job ID.');
+  }
+  const body = await runnerRequest(`/classify-only/${jobId}`);
+  return body as unknown as ClassifyOnlyJob;
+}
+
+// Uploads a notebook file straight from the user's computer, registering it
+// as a new standalone "local" entry in the same real pipeline database.
+export async function uploadLocalNotebook(filename: string, content: string): Promise<{ repositoryId: number; notebookFilename: string }> {
+  const body = await runnerRequest('/local-notebooks', {
+    method: 'POST',
+    body: JSON.stringify({ filename, content }),
+  });
+  return body as unknown as { repositoryId: number; notebookFilename: string };
 }

@@ -1,117 +1,335 @@
 id,repository_id,url,run_status,error_message,started_at,finished_at,duration_seconds,created_at
-1,3,https://github.com/ncbi/elastic-blast-demos,SUCCESS,Repository executed successfully,2026-02-15 23:51:40,2026-02-15 23:52:57,77.0,2026-02-15 23:51:40
-2,6,https://github.com/drorlab/pensa,SUCCESS,Repository executed successfully,2026-02-15 23:52:57,2026-02-15 23:54:00,63.0,2026-02-15 23:52:57
-3,8,https://github.com/predictive-clinical-neuroscience/braincharts,SUCCESS,Repository executed successfully,2026-02-15 23:54:00,2026-02-16 00:02:08,488.0,2026-02-15 23:54:00
-4,9,https://github.com/saigerutherford/evidence_embracing_nm,INVALID_REPOSITORY_URL,git ls-remote failed,2026-02-16 00:02:08,2026-02-16 00:02:58,50.0,2026-02-16 00:02:08
-5,10,https://github.com/draeger-lab/pymCADRE,SUCCESS,Repository executed successfully,2026-02-16 00:02:58,2026-02-16 00:03:48,50.0,2026-02-16 00:02:58
-6,11,https://github.com/ICAN-aneurysms/RIA-predict,SUCCESS,Repository executed successfully,2026-02-18 18:08:28,2026-02-18 18:10:48,140.0,2026-02-16 00:03:48
-7,14,https://github.com/mdjaffardjy/AnalyseDonneesNextflow,SUCCESS,Repository executed successfully,2026-02-16 00:04:41,2026-02-16 00:30:27,1546.0,2026-02-16 00:04:41
-8,15,https://github.com/mdjaffardjy/Reuse_in_processes,SUCCESS,Repository executed successfully,2026-02-16 00:30:52,2026-02-16 00:31:54,62.0,2026-02-16 00:30:52
-9,16,https://github.com/ziatdinovmax/gpax,SUCCESS,Repository executed successfully,2026-02-16 00:31:54,2026-02-16 01:21:57,3003.0,2026-02-16 00:31:54
-10,17,https://github.com/ai4up/eubucco,SUCCESS,Repository executed successfully,2026-02-16 01:21:57,2026-02-16 01:23:27,90.0,2026-02-16 01:21:57
-11,20,https://github.com/cslab-hub/multiSyncPy,SUCCESS,Repository executed successfully,2026-02-18 18:03:45,2026-02-18 18:05:31,106.0,2026-02-16 01:23:27
-12,22,https://github.com/IGGoncalves/PhysiCOOL,SUCCESS,Repository executed successfully,2026-02-16 01:24:04,2026-02-16 01:25:21,77.0,2026-02-16 01:24:04
-13,24,https://github.com/combio-dku/HiCAT,SUCCESS,Repository executed successfully,2026-02-16 01:25:21,2026-02-16 01:26:07,46.0,2026-02-16 01:25:21
-14,25,https://github.com/combio-dku/RCTIcollection,NO_PYTHON_NOTEBOOKS,Repository contains only non-Python notebooks,2026-02-16 01:26:07,2026-02-16 01:26:08,1.0,2026-02-16 01:26:07
-15,26,https://github.com/jwrth/xDBiT_toolbox,KERNEL_NOT_FOUND,Jupyter kernel not found: spatial,2026-02-16 01:26:08,2026-02-16 01:34:09,481.0,2026-02-16 01:26:08
-16,27,https://github.com/bioFAM/mofax,SUCCESS,Repository executed successfully,2026-02-16 01:34:09,2026-02-16 01:36:49,160.0,2026-02-16 01:34:09
-17,30,https://github.com/ieee8023/covid-chestxray-dataset,SUCCESS,Repository executed successfully,2026-02-16 01:36:49,2026-02-16 01:43:31,402.0,2026-02-16 01:36:49
-18,31,https://github.com/mahsan2/Monkeypox-dataset-2022,SUCCESS,Repository executed successfully,2026-02-16 01:43:31,2026-02-16 01:45:13,102.0,2026-02-16 01:43:31
-19,32,https://github.com/carlosvega/DebunkMonkeypoxML,SUCCESS,Repository executed successfully,2026-02-16 01:45:13,2026-02-16 01:51:06,353.0,2026-02-16 01:45:13
-20,33,https://github.com/Bristol-UNCOVER/Saliva_data_ML_analysis,SUCCESS,Repository executed successfully,2026-02-16 01:51:07,2026-02-16 01:51:45,38.0,2026-02-16 01:51:07
-21,34,https://github.com/miykael/fmriflows,KERNEL_NOT_FOUND,Jupyter kernel not found: conda-env-mvpa-py,2026-02-16 01:51:45,2026-02-16 01:52:44,59.0,2026-02-16 01:51:45
-22,35,https://github.com/poldracklab/fitlins,SUCCESS,Repository executed successfully,2026-02-16 01:52:44,2026-02-16 01:53:44,60.0,2026-02-16 01:52:44
-23,36,https://github.com/imaginationdykim/2022.CC,SUCCESS,Repository executed successfully,2026-02-16 01:53:44,2026-02-16 01:54:14,30.0,2026-02-16 01:53:44
-24,37,https://github.com/csabaiBio/RBD-AlphaFold2-structures-and-phenotypic-information,SUCCESS,Repository executed successfully,2026-02-16 01:54:14,2026-02-16 01:58:35,261.0,2026-02-16 01:54:14
-25,38,https://github.com/dchary/ucdeconvolve_paper,KERNEL_NOT_FOUND,Jupyter kernel not found: conda-root-py,2026-02-16 01:58:35,2026-02-16 02:07:13,518.0,2026-02-16 01:58:35
-26,39,https://github.com/dchary/ucdeconvolve,SUCCESS,Repository executed successfully,2026-02-16 02:07:13,2026-02-16 02:08:58,105.0,2026-02-16 02:07:13
-27,40,https://github.com/heprom/pymicro,SUCCESS,Repository executed successfully,2026-02-18 18:31:45,2026-02-18 18:37:43,358.0,2026-02-16 02:08:58
-28,41,https://github.com/FABLE-3DXRD/ImageD11,SUCCESS,Repository executed successfully,2026-02-16 02:10:13,2026-02-16 02:12:08,115.0,2026-02-16 02:10:13
-29,42,https://github.com/hechaohong/nucleu_areas,SUCCESS,Repository executed successfully,2026-02-16 02:12:08,2026-02-16 02:12:26,18.0,2026-02-16 02:12:08
-30,48,https://github.com/Draviam-lab/spinx_local,KERNEL_NOT_FOUND,Jupyter kernel not found: conda-env-ml_env-py,2026-02-16 02:12:26,2026-02-16 02:15:29,183.0,2026-02-16 02:12:26
-31,49,https://github.com/matterport/Mask_RCNN,SUCCESS,Repository executed successfully,2026-02-16 02:15:29,2026-02-16 02:18:55,206.0,2026-02-16 02:15:29
-32,51,https://github.com/aidelarazan/curbage_recognition,SUCCESS,Repository executed successfully,2026-02-16 02:18:55,2026-02-16 02:19:39,44.0,2026-02-16 02:18:55
-33,52,https://github.com/ipdgc/GP2-post-GWAS-analysis,SUCCESS,Repository executed successfully,2026-02-16 02:19:39,2026-02-16 02:20:18,39.0,2026-02-16 02:19:39
-34,53,https://github.com/ipdgc/GP2-pathway-enrichment-pipeline,KERNEL_NOT_FOUND,Jupyter kernel not found: ir,2026-02-16 02:20:18,2026-02-16 02:20:44,26.0,2026-02-16 02:20:18
-35,55,https://github.com/ipdgc/GP2-network-generation,NO_PYTHON_NOTEBOOKS,Repository contains only non-Python notebooks,2026-02-16 02:20:44,2026-02-16 02:20:44,0.0,2026-02-16 02:20:44
-36,57,https://github.com/zmahnoor14/MAW,KERNEL_NOT_FOUND,Jupyter kernel not found: mawrpy,2026-02-16 02:20:44,2026-02-16 02:21:55,71.0,2026-02-16 02:20:44
-37,58,https://github.com/zmahnoor14/MAW-Benchmark,KERNEL_NOT_FOUND,Jupyter kernel not found: ir,2026-02-16 02:21:55,2026-02-16 02:23:08,73.0,2026-02-16 02:21:55
-38,59,https://github.com/sokrypton/ColabDesign,SUCCESS,Repository executed successfully,2026-02-16 02:23:08,2026-02-16 02:32:25,557.0,2026-02-16 02:23:08
-39,60,https://github.com/maayanlab/prismexp,SUCCESS,Repository executed successfully,2026-02-16 07:01:40,2026-02-16 07:03:46,126.0,2026-02-16 07:01:40
-40,62,https://github.com/rinikerlab/decapeptides-membrane,KERNEL_NOT_FOUND,Jupyter kernel not found: mdtraj,2026-02-16 07:03:46,2026-02-16 07:04:13,27.0,2026-02-16 07:03:46
-41,65,https://github.com/VladislavNexby/ML,SUCCESS,Repository executed successfully,2026-02-16 07:04:13,2026-02-16 07:04:39,26.0,2026-02-16 07:04:13
-42,66,https://github.com/biorack/omaat,KERNEL_NOT_FOUND,Jupyter kernel not found: conda-root-py,2026-02-16 07:04:39,2026-02-16 07:05:09,30.0,2026-02-16 07:04:39
-43,69,https://github.com/fcphysics/CriticalityHeteroBNets,SUCCESS,Repository executed successfully,2026-02-16 07:05:09,2026-02-16 07:05:50,41.0,2026-02-16 07:05:09
-44,70,https://github.com/rionbr/CANA,SUCCESS,Repository executed successfully,2026-02-16 07:05:50,2026-02-16 07:07:37,107.0,2026-02-16 07:05:50
-45,72,https://github.com/morris-lab/CellOracle,SUCCESS,Repository executed successfully,2026-02-18 21:12:05,2026-02-18 21:21:38,573.0,2026-02-16 07:07:37
-46,74,https://github.com/theislab/paga,KERNEL_NOT_FOUND,Jupyter kernel not found: nowarn,2026-02-16 07:13:32,2026-02-16 07:15:01,89.0,2026-02-16 07:13:32
-47,76,https://github.com/catrionamurray/chromatic_fitting,KERNEL_NOT_FOUND,Jupyter kernel not found: pycharm-622329cb,2026-02-16 07:15:02,2026-02-16 07:18:23,201.0,2026-02-16 07:15:02
-48,77,https://github.com/zkbt/chromatic,SUCCESS,Repository executed successfully,2026-02-16 07:18:24,2026-02-16 07:20:31,127.0,2026-02-16 07:18:24
-49,78,https://github.com/spacetelescope/jwst,SUCCESS,Repository executed successfully,2026-02-16 07:20:31,2026-02-16 07:20:44,13.0,2026-02-16 07:20:31
-50,79,https://github.com/BelgianBiodiversityPlatform/data-publication-ITG,SUCCESS,Repository executed successfully,2026-02-16 07:20:44,2026-02-16 07:22:14,90.0,2026-02-16 07:20:44
-51,80,https://github.com/feigroup/TVDN,KERNEL_NOT_FOUND,Jupyter kernel not found: test,2026-02-16 07:22:14,2026-02-16 07:22:55,41.0,2026-02-16 07:22:14
-52,81,https://github.com/kramerlab/lipid_study,KERNEL_NOT_FOUND,Jupyter kernel not found: lipid-study,2026-02-16 07:22:55,2026-02-16 07:24:43,108.0,2026-02-16 07:22:55
-53,82,https://github.com/mlcotten13/SARS-CoV-2_spike_charge,SUCCESS,Repository executed successfully,2026-02-16 07:24:43,2026-02-16 07:25:37,54.0,2026-02-16 07:24:43
-54,83,https://github.com/mme-ucl/confined_LLPS,SUCCESS,Repository executed successfully,2026-02-16 07:25:37,2026-02-16 07:28:45,188.0,2026-02-16 07:25:37
-55,84,https://github.com/idc9/py_jive,SUCCESS,Repository executed successfully,2026-02-16 07:28:45,2026-02-16 07:30:32,107.0,2026-02-16 07:28:45
-56,86,https://github.com/baprice/AJIVE-jDR-Integration,SUCCESS,Repository executed successfully,2026-02-16 07:30:32,2026-02-16 07:31:50,78.0,2026-02-16 07:30:32
-57,88,https://github.com/atudell/Color-Cluster-Kit,SUCCESS,Repository executed successfully,2026-02-16 07:31:50,2026-02-16 07:33:15,85.0,2026-02-16 07:31:50
-58,89,https://github.com/DWALab/Osterlund_et_al_2021_BIK_Localization,KERNEL_NOT_FOUND,Jupyter kernel not found: conda-env-tfgpu-py,2026-02-16 07:33:15,2026-02-16 07:35:05,110.0,2026-02-16 07:33:15
-59,90,https://github.com/MeatYuan/MOS2,NO_PYTHON_NOTEBOOKS,Repository contains only non-Python notebooks,2026-02-16 07:35:05,2026-02-16 07:35:06,1.0,2026-02-16 07:35:05
-60,91,https://github.com/ICB-DCM/pyPESTO,SUCCESS,Repository executed successfully,2026-02-18 21:02:43,2026-02-18 21:05:07,144.0,2026-02-16 07:35:06
-61,97,https://github.com/PNNL-CompBio/Snekmer,SUCCESS,Repository executed successfully,2026-02-16 07:37:17,2026-02-16 07:39:20,123.0,2026-02-16 07:37:17
-62,98,https://github.com/feiglab/idpgan,SUCCESS,Repository executed successfully,2026-02-16 07:39:20,2026-02-16 07:45:39,379.0,2026-02-16 07:39:20
-63,99,https://github.com/zincware/MDSuite,SUCCESS,Repository executed successfully,2026-02-16 07:45:39,2026-02-16 07:48:57,198.0,2026-02-16 07:45:39
-64,101,https://github.com/vincentpmartin/sleep-content-analysis,SUCCESS,Repository executed successfully,2026-02-16 07:48:57,2026-02-16 07:50:02,65.0,2026-02-16 07:48:57
-65,102,https://github.com/mahsa-mirzaei/NMAOP_M-M_wo-ZP-,SUCCESS,Repository executed successfully,2026-02-18 17:43:14,2026-02-18 17:50:44,450.0,2026-02-16 07:50:02
-66,106,https://github.com/aalokpatwa/rasp-mibi,SUCCESS,Repository executed successfully,2026-02-16 07:50:06,2026-02-16 07:52:43,157.0,2026-02-16 07:50:06
-67,109,https://github.com/gambit4348/deception-detection-review-2022,SUCCESS,Repository executed successfully,2026-02-16 07:52:43,2026-02-16 07:54:27,104.0,2026-02-16 07:52:43
-68,112,https://github.com/Dongwon-Lee/gkmQC-manuscript,SUCCESS,Repository executed successfully,2026-02-16 07:54:27,2026-02-16 07:56:08,101.0,2026-02-16 07:54:27
-69,113,https://github.com/VisualNeuroscience-UH/SystemTools,SUCCESS,Repository executed successfully,2026-02-16 07:56:08,2026-02-16 08:00:05,237.0,2026-02-16 07:56:08
-70,114,https://github.com/VisualNeuroscience-UH/CxSystem2,SUCCESS,Repository executed successfully,2026-02-16 08:01:27,2026-02-16 08:04:35,188.0,2026-02-16 08:01:27
-72,116,https://github.com/isb-cgc/SL-Cloud-F1000,SUCCESS,Repository executed successfully,2026-02-16 09:38:54,2026-02-16 09:46:23,449.0,2026-02-16 09:38:54
-73,117,https://github.com/atgu/hgdp_tgp,SUCCESS,Repository executed successfully,2026-02-16 09:46:24,2026-02-16 09:51:03,279.0,2026-02-16 09:46:24
-74,125,https://github.com/rinikerlab/irsa,SUCCESS,Repository executed successfully,2026-02-16 09:51:03,2026-02-16 09:53:22,139.0,2026-02-16 09:51:03
-75,126,https://github.com/mims-harvard/PrimeKG,SUCCESS,Repository executed successfully,2026-02-16 09:53:22,2026-02-16 10:04:03,641.0,2026-02-16 09:53:22
-76,127,https://github.com/gnn4dr/DRKG,SUCCESS,Repository executed successfully,2026-02-16 10:04:03,2026-02-16 10:15:17,674.0,2026-02-16 10:04:03
-77,128,https://github.com/aos2/7_Plug_and_play_RNA_Detection,SUCCESS,Repository executed successfully,2026-02-16 10:15:17,2026-02-16 10:17:34,137.0,2026-02-16 10:15:17
-78,133,https://github.com/cytoscape/ipycytoscape,KERNEL_NOT_FOUND,Jupyter kernel not found: widgets-tutorial,2026-02-16 10:17:34,2026-02-16 10:33:34,960.0,2026-02-16 10:17:34
-79,134,https://github.com/nahitorres/aerialwaste,SUCCESS,Repository executed successfully,2026-02-16 10:33:34,2026-02-16 10:35:02,88.0,2026-02-16 10:33:34
-80,135,https://github.com/nahitorres/aerialwaste-model,SUCCESS,Repository executed successfully,2026-02-16 10:35:02,2026-02-16 10:35:26,24.0,2026-02-16 10:35:02
-81,136,https://github.com/nahitorres/demo-inspection-tool,SUCCESS,Repository executed successfully,2026-02-16 10:35:26,2026-02-16 10:35:46,20.0,2026-02-16 10:35:26
-82,138,https://github.com/aodn/imos-user-code-library,SUCCESS,Repository executed successfully,2026-02-16 10:35:46,2026-02-16 10:36:00,14.0,2026-02-16 10:35:46
-83,141,https://github.com/klarman-cell-observatory/skin-ILCs,KERNEL_NOT_FOUND,Jupyter kernel not found: ir,2026-02-16 10:36:00,2026-02-16 10:37:38,98.0,2026-02-16 10:36:00
-84,142,https://github.com/kratzert/Caravan,SUCCESS,Repository executed successfully,2026-02-16 10:37:39,2026-02-16 10:38:53,74.0,2026-02-16 10:37:39
-85,146,https://github.com/microsoft/genomicsnotebook,SUCCESS,Repository executed successfully,2026-02-18 21:28:13,2026-02-18 21:38:44,631.0,2026-02-16 10:38:53
-87,159,https://github.com/guijacquemet/Fast4DReg,SUCCESS,Repository executed successfully,2026-02-16 10:52:07,2026-02-16 10:53:06,59.0,2026-02-16 10:52:07
-88,163,https://github.com/ucph-rka/ScreenDB,SUCCESS,Repository executed successfully,2026-02-16 10:53:06,2026-02-16 10:53:49,43.0,2026-02-16 10:53:06
-89,165,https://github.com/zj-zhang/CHARM-AlternativeSplicing,SUCCESS,Repository executed successfully,2026-02-16 10:53:49,2026-02-16 10:58:46,297.0,2026-02-16 10:53:49
-90,167,https://github.com/AstraZeneca/jazzy,SUCCESS,Repository executed successfully,2026-02-16 10:58:46,2026-02-16 11:00:30,104.0,2026-02-16 10:58:46
-91,168,https://github.com/AurelienCD/DeepHybridLearning_RadiotherapyQA_Depository_ManuscriptID_22-1397,SUCCESS,Repository executed successfully,2026-02-16 11:00:30,2026-02-16 11:03:18,168.0,2026-02-16 11:00:30
-92,169,https://github.com/AurelienCD/DeepHybridLearning_RadiotherapyQA_Depository_ManuscriptID_Diagnostics,SUCCESS,Repository executed successfully,2026-02-16 11:03:18,2026-02-16 11:06:01,163.0,2026-02-16 11:03:18
-93,172,https://github.com/tnowotny/bee_al_2021,SUCCESS,Repository executed successfully,2026-02-16 11:06:01,2026-02-16 11:07:11,70.0,2026-02-16 11:06:01
-94,173,https://github.com/Luthey-Schulten-Lab/Lattice_Microbes,KERNEL_NOT_FOUND,Jupyter kernel not found: python2,2026-02-16 11:07:11,2026-02-16 11:08:49,98.0,2026-02-16 11:07:11
-95,174,https://github.com/Luthey-Schulten-Lab/Minimal_Cell,MODULE_NOT_FOUND,Missing Python module: pkg_resources,2026-02-16 11:08:49,2026-02-16 11:16:02,433.0,2026-02-16 11:08:49
-96,176,https://github.com/zanert2/Thornburg_FrontMolBiosci_2019,SUCCESS,Repository executed successfully,2026-02-16 11:16:02,2026-02-16 11:17:15,73.0,2026-02-16 11:16:02
-97,177,https://github.com/rene2718/EIRINI_rnaseq,SUCCESS,Repository executed successfully,2026-02-16 12:04:42,2026-02-16 12:06:56,134.0,2026-02-16 12:04:42
-98,179,https://github.com/lstrgar/seg-eval,SUCCESS,Repository executed successfully,2026-02-16 12:06:56,2026-02-16 12:08:05,69.0,2026-02-16 12:06:56
-99,186,https://github.com/hms-dbmi/vizarr,SUCCESS,Repository executed successfully,2026-02-16 12:08:05,2026-02-16 12:08:22,17.0,2026-02-16 12:08:05
-100,194,https://github.com/fsspec/kerchunk,SUCCESS,Repository executed successfully,2026-02-16 12:08:22,2026-02-16 12:29:52,1290.0,2026-02-16 12:08:22
-101,196,https://github.com/ome/omero-guide-python,KERNEL_NOT_FOUND,Jupyter kernel not found: omero-guide-python,2026-02-16 12:55:48,2026-02-16 13:07:32,704.0,2026-02-16 12:55:48
-112,474,https://github.com/WahlinLab/Retinal-Organoid-ATAC-RNAseq_Cells_2022,SUCCESS,Repository executed successfully,2026-02-18 12:38:54,2026-02-18 12:41:31,157.0,2026-02-18 12:38:54
-114,4641,https://github.com/DanJeffries/My_misc_scripts,SUCCESS,Repository executed successfully,2026-02-19 00:01:16,2026-02-19 00:12:20,664.0,2026-02-18 13:23:51
-115,1684,https://github.com/indralab/pybiopax,SUCCESS,Repository executed successfully,2026-02-18 13:38:12,2026-02-18 13:44:30,378.0,2026-02-18 13:38:12
-116,645,https://github.com/pauljaffe/lumos-ncpt-tools,SUCCESS,Repository executed successfully,2026-02-18 13:47:15,2026-02-18 13:49:12,117.0,2026-02-18 13:47:15
-117,646,https://github.com/ammarcsj/ecoli_survival_scoring,SUCCESS,Repository executed successfully,2026-02-18 13:49:51,2026-02-18 13:51:49,118.0,2026-02-18 13:49:51
-118,761,https://github.com/Surabhivj/BRANEnet,SUCCESS,Repository executed successfully,2026-02-18 13:53:08,2026-02-18 13:53:27,19.0,2026-02-18 13:53:08
-119,886,https://github.com/DataResponsibly/hiring-stability-audit,SUCCESS,Repository executed successfully,2026-02-18 14:12:46,2026-02-18 14:13:40,54.0,2026-02-18 14:12:46
-120,5005,https://github.com/IDR/idr-notebooks,SUCCESS,Repository executed successfully,2026-02-18 18:17:28,2026-02-18 18:25:52,505.0,2026-02-18 14:59:47
-121,4337,https://github.com/dfm/emcee,SUCCESS,Repository executed successfully,2026-02-18 15:04:15,2026-02-18 15:11:29,434.0,2026-02-18 15:04:15
-122,3836,https://github.com/schlegelp/navis,MODULE_NOT_FOUND,Missing Python module: notebook.services,2026-02-18 15:15:12,2026-02-18 15:28:52,820.0,2026-02-18 15:15:12
-123,353,https://github.com/scikit-learn-contrib/hdbscan,KERNEL_NOT_FOUND,Jupyter kernel not found: python2,2026-02-18 15:30:51,2026-02-18 15:34:14,203.0,2026-02-18 15:30:51
-124,415,https://github.com/cerlymarco/linear-tree,KERNEL_NOT_FOUND,Jupyter kernel not found: conda-env-prova-py,2026-02-18 15:37:37,2026-02-18 15:38:51,74.0,2026-02-18 15:37:37
-126,5075,https://github.com/iminuit/iminuit,SUCCESS,Repository executed successfully,2026-02-18 15:48:16,2026-02-18 15:58:42,626.0,2026-02-18 15:48:16
-127,3798,https://github.com/alessaan/rhapsody-in-blue,SUCCESS,Repository executed successfully,2026-02-18 15:59:09,2026-02-18 16:03:00,231.0,2026-02-18 15:59:09
-138,3015,https://github.com/ChristianMarzahl/Exact,SUCCESS,Repository executed successfully,2026-02-18 22:45:12,2026-02-18 22:58:01,769.0,2026-02-18 22:45:12
-139,2052,https://github.com/tensorflow/docs-l10n,NO_PYTHON_NOTEBOOKS,Repository contains only non-Python notebooks,2026-02-18 23:01:02,2026-02-18 23:01:02,0.0,2026-02-18 23:01:02
-140,3078,https://github.com/coskunlab/Ion-Beam-Tomography,SUCCESS,Repository executed successfully,2026-02-18 23:01:59,2026-02-18 23:15:45,826.0,2026-02-18 23:01:59
+1,28,https://gitlab.com/gitlab-org/gitlab.git,UNSUPPORTED_PLATFORM,"Only GitHub, Codeberg, and Zenodo are supported",2026-09-14 10:49:52,2026-09-14 10:49:52,0.0,2026-09-14 10:49:52
+2,29,https://github.com/this-user-does-not-exist-xyz123/nope.git,INVALID_REPOSITORY_URL,git ls-remote failed,2026-09-14 10:50:00,2026-09-14 10:50:01,1.0,2026-09-14 10:50:00
+3,30,https://zenodo.org/records/999999999999,INVALID_ZENODO_RECORD,Zenodo API validation failed,2026-09-14 10:50:04,2026-09-14 10:50:07,2.0,2026-09-14 10:50:04
+4,31,https://github.com/binder-examples/requirements.git,SUCCESS,Repository executed successfully,2026-09-14 10:54:32,2026-09-14 10:57:01,149.0,2026-09-14 10:54:32
+5,31,https://github.com/binder-examples/requirements.git,SUCCESS,Repository executed successfully,2026-09-14 11:56:47,2026-09-14 11:58:54,127.0,2026-09-14 11:56:47
+7,31,https://github.com/binder-examples/requirements,SUCCESS,Repository executed successfully,2026-09-14 15:24:13,2026-09-14 15:25:45,92.0,2026-09-14 15:24:13
+8,31,https://github.com/binder-examples/requirements,SUCCESS,Repository executed successfully,2026-09-14 15:26:15,2026-09-14 15:27:58,103.0,2026-09-14 15:26:15
+9,31,https://github.com/binder-examples/requirements,SUCCESS,Repository executed successfully,2026-09-14 15:27:59,2026-09-14 15:29:38,99.0,2026-09-14 15:27:59
+10,32,https://github.com/kavgan/nlp-in-practice,SUCCESS,Repository executed successfully,2026-09-14 16:59:20,2026-09-14 17:14:03,883.0,2026-09-14 16:59:20
+11,31,https://github.com/binder-examples/requirements,SUCCESS,Repository executed successfully,2026-09-14 17:03:45,2026-09-14 17:07:15,210.0,2026-09-14 17:03:45
+12,33,https://github.com/curiousily/Deep-Learning-For-Hackers,SUCCESS,Repository executed successfully,2026-09-14 17:14:03,2026-09-14 17:40:38,1595.0,2026-09-14 17:14:03
+13,34,https://github.com/MLforHealth/MIMIC_Extract,SUCCESS,Repository executed successfully,2026-09-14 17:40:38,2026-09-14 18:02:44,1326.0,2026-09-14 17:40:38
+15,35,https://github.com/cylondata/cylon,SUCCESS,Repository executed successfully,2026-09-14 22:16:06,2026-09-14 23:22:41,3995.0,2026-09-14 22:16:06
+16,36,https://github.com/PacktPublishing/Hands-On-Data-Preprocessing-in-Python,SUCCESS,Repository executed successfully,2026-09-14 23:22:41,2026-09-15 00:36:45,4444.0,2026-09-14 23:22:41
+17,37,https://github.com/allen-chiang/Time-Series-Transformer,SUCCESS,Repository executed successfully,2026-09-15 00:36:46,2026-09-15 00:54:19,1054.0,2026-09-15 00:36:46
+18,38,https://github.com/jbusecke/xMIP,SUCCESS,Repository executed successfully,2026-09-15 00:54:20,2026-09-15 01:04:33,613.0,2026-09-15 00:54:20
+19,39,https://github.com/wang-fujin/Battery-dataset-preprocessing-code-library,SUCCESS,Repository executed successfully,2026-09-15 01:04:34,2026-09-15 01:09:05,270.0,2026-09-15 01:04:34
+20,40,https://github.com/ymoslem/OpenNMT-Tutorial,SUCCESS,Repository executed successfully,2026-09-15 01:09:05,2026-09-15 01:36:09,1624.0,2026-09-15 01:09:05
+21,41,https://github.com/chakki-works/chariot,SUCCESS,Repository executed successfully,2026-09-15 01:36:10,2026-09-15 02:20:07,2637.0,2026-09-15 01:36:10
+22,42,https://github.com/vishnukanduri/Credit-Risk-Modeling-in-Python,SUCCESS,Repository executed successfully,2026-09-15 02:20:08,2026-09-15 02:24:07,239.0,2026-09-15 02:20:08
+23,43,https://github.com/MLD3/FIDDLE,SUCCESS,Repository executed successfully,2026-09-15 02:24:08,2026-09-15 02:30:22,374.0,2026-09-15 02:24:08
+24,44,https://github.com/etccapital/MultiFactor,SUCCESS,Repository executed successfully,2026-09-15 02:30:23,2026-09-15 02:36:09,346.0,2026-09-15 02:30:23
+25,45,https://github.com/Yu-Group/veridical-flow,SUCCESS,Repository executed successfully,2026-09-15 02:36:10,2026-09-15 03:26:40,3030.0,2026-09-15 02:36:10
+27,47,https://codeberg.org/Kzurro/Automar,SUCCESS,Repository executed successfully,2026-09-15 05:14:25,2026-09-15 05:47:07,1963.0,2026-09-15 05:14:25
+28,48,https://codeberg.org/hankuoffroad/hatlas-eda-pipeline,SUCCESS,Repository executed successfully,2026-09-15 05:47:08,2026-09-15 05:50:46,218.0,2026-09-15 05:47:08
+29,49,https://codeberg.org/concur1/pl-compare,SUCCESS,Repository executed successfully,2026-09-15 05:50:47,2026-09-15 05:54:13,207.0,2026-09-15 05:50:47
+30,50,https://codeberg.org/Yael-II/MSc2-Project-FITS,SUCCESS,Repository executed successfully,2026-09-15 05:54:13,2026-09-15 05:56:42,149.0,2026-09-15 05:54:13
+31,51,https://codeberg.org/kikocorreoso/s2froms3,SUCCESS,Repository executed successfully,2026-09-15 05:56:43,2026-09-15 05:59:37,175.0,2026-09-15 05:56:43
+32,52,https://codeberg.org/miri64/artifacts-tnsm26-cbor-dns-eval,SUCCESS,Repository executed successfully,2026-09-15 05:59:37,2026-09-15 07:09:13,4176.0,2026-09-15 05:59:37
+110,130,https://zenodo.org/record/5574279,INVALID_ZENODO_RECORD,Zenodo API validation failed,2026-09-15 07:40:46,2026-09-15 07:41:18,32.0,2026-09-15 07:40:46
+198,53,https://codeberg.org/openlandmap/GEDTM30,SUCCESS,Repository executed successfully,2026-09-15 22:41:42,2026-09-15 23:30:00,2898.0,2026-09-15 22:41:42
+199,56,https://codeberg.org/unkaktus/climate500,SUCCESS,Repository executed successfully,2026-09-15 22:43:19,2026-09-15 23:06:32,1393.0,2026-09-15 22:43:19
+200,57,https://codeberg.org/j0j/OSM,SUCCESS,Repository executed successfully,2026-09-15 22:43:31,2026-09-15 23:06:36,1387.0,2026-09-15 22:43:31
+201,54,https://codeberg.org/pathways/pathway-subtyping-framework,SUCCESS,Repository executed successfully,2026-09-15 22:43:31,2026-09-16 03:02:38,15547.0,2026-09-15 22:43:31
+202,55,https://codeberg.org/siniscalco/wiki-network-backboning,SUCCESS,Repository executed successfully,2026-09-15 22:43:32,2026-09-15 23:16:33,1981.0,2026-09-15 22:43:32
+204,64,https://zenodo.org/records/17422806,SUCCESS,Repository executed successfully,2026-09-15 23:06:36,2026-09-15 23:10:50,253.0,2026-09-15 23:06:36
+205,61,https://zenodo.org/records/11180681,SUCCESS,Repository executed successfully,2026-09-15 23:06:37,2026-09-15 23:12:49,372.0,2026-09-15 23:06:37
+206,68,https://zenodo.org/records/18615242,SUCCESS,Repository executed successfully,2026-09-15 23:10:50,2026-09-15 23:16:13,323.0,2026-09-15 23:10:50
+208,69,https://zenodo.org/records/10992164,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-15 23:13:00,2026-09-15 23:13:10,10.0,2026-09-15 23:13:00
+209,73,https://github.com/ajaymache/data-analysis-using-python,SUCCESS,Repository executed successfully,2026-09-15 23:13:11,2026-09-15 23:56:19,2588.0,2026-09-15 23:13:11
+210,72,https://github.com/khusheekapoor/DataAnalyticsProjects,SUCCESS,Repository executed successfully,2026-09-15 23:16:14,2026-09-15 23:33:33,1039.0,2026-09-15 23:16:14
+211,59,https://zenodo.org/records/18204385,SUCCESS,Repository executed successfully,2026-09-15 23:16:34,2026-09-15 23:38:17,1302.0,2026-09-15 23:16:34
+212,58,https://zenodo.org/records/10971421,SUCCESS,Repository executed successfully,2026-09-15 23:30:03,2026-09-15 23:39:38,576.0,2026-09-15 23:30:03
+213,76,https://github.com/PacktPublishing/Exploratory-Data-Analysis-with-Python-Cookbook,SUCCESS,Repository executed successfully,2026-09-15 23:33:34,2026-09-16 00:50:06,4592.0,2026-09-15 23:33:34
+215,67,https://zenodo.org/records/21122288,SUCCESS,Repository executed successfully,2026-09-15 23:38:35,2026-09-15 23:51:54,799.0,2026-09-15 23:38:35
+216,66,https://zenodo.org/records/14989827,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-15 23:39:44,2026-09-15 23:39:53,9.0,2026-09-15 23:39:44
+217,70,https://zenodo.org/records/10975456,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-15 23:39:55,2026-09-15 23:40:03,8.0,2026-09-15 23:39:55
+219,74,https://github.com/mrdbourke/your-first-kaggle-submission,SUCCESS,Repository executed successfully,2026-09-15 23:46:21,2026-09-15 23:56:29,608.0,2026-09-15 23:46:21
+221,77,https://github.com/Josephjiao7/Geographical-Gaussian-Process-Regression,SUCCESS,Repository executed successfully,2026-09-15 23:56:19,2026-09-16 00:38:37,2538.0,2026-09-15 23:56:19
+222,78,https://github.com/tdhopper/pythonplot.com,SUCCESS,Repository executed successfully,2026-09-15 23:56:32,2026-09-16 00:12:46,975.0,2026-09-15 23:56:32
+223,79,https://github.com/Viveckh/LilHomie,SUCCESS,Repository executed successfully,2026-09-16 00:12:47,2026-09-16 00:22:47,600.0,2026-09-16 00:12:47
+224,80,https://github.com/iNeuronai/EDACollection,SUCCESS,Repository executed successfully,2026-09-16 00:22:47,2026-09-16 01:21:58,3551.0,2026-09-16 00:22:47
+227,84,https://github.com/CoenMeintjes/data_science_notebook_templates,SUCCESS,Repository executed successfully,2026-09-16 00:50:04,2026-09-16 01:12:14,1330.0,2026-09-16 00:50:04
+228,89,https://codeberg.org/ceedee666/python-intro-mooc,SUCCESS,Repository executed successfully,2026-09-16 00:50:53,2026-09-16 03:13:35,8562.0,2026-09-16 00:50:53
+229,88,https://codeberg.org/alexkermani/PASTA-flow-model-tensile-test,SUCCESS,Repository executed successfully,2026-09-16 01:12:14,2026-09-16 01:18:03,349.0,2026-09-16 01:12:14
+230,92,https://codeberg.org/fpom/ecco,SUCCESS,Repository executed successfully,2026-09-16 01:18:04,2026-09-16 01:27:09,545.0,2026-09-16 01:18:04
+231,82,https://github.com/Deffro/Data-Science-Portfolio,SUCCESS,Repository executed successfully,2026-09-16 01:21:59,2026-09-16 04:51:25,12566.0,2026-09-16 01:21:59
+232,96,https://zenodo.org/records/20764307,SUCCESS,Repository executed successfully,2026-09-16 01:27:10,2026-09-16 01:37:11,603.0,2026-09-16 01:27:10
+234,86,https://codeberg.org/movingpandas/movingpandas-examples,SUCCESS,Repository executed successfully,2026-09-16 03:02:42,2026-09-16 05:52:13,10171.0,2026-09-16 03:02:42
+236,97,https://zenodo.org/records/16459132,SUCCESS,Repository executed successfully,2026-09-16 04:15:51,2026-09-16 04:25:08,557.0,2026-09-16 04:15:51
+237,101,https://zenodo.org/records/3732872,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-16 04:25:09,2026-09-16 04:25:17,8.0,2026-09-16 04:25:09
+238,105,https://github.com/CICIFLY/Data-Analytics-Projects,SUCCESS,Repository executed successfully,2026-09-16 04:25:17,2026-09-16 05:05:29,2412.0,2026-09-16 04:25:17
+239,83,https://github.com/Patotricks15/Ciencia-de-dados-projetos,SUCCESS,Repository executed successfully,2026-09-16 04:51:26,2026-09-16 06:51:12,7186.0,2026-09-16 04:51:26
+240,109,https://github.com/xShaimaa/Data-Analysis-Projects,SUCCESS,Repository executed successfully,2026-09-16 05:05:30,2026-09-16 05:15:41,611.0,2026-09-16 05:05:30
+241,113,https://github.com/TrainingByPackt/Data-Visualization-with-Python,SUCCESS,Repository executed successfully,2026-09-16 05:15:42,2026-09-16 06:11:35,3353.0,2026-09-16 05:15:42
+242,90,https://codeberg.org/pirofti/numeric.cs.unibuc.ro,SUCCESS,Repository executed successfully,2026-09-16 05:52:14,2026-09-16 05:55:30,196.0,2026-09-16 05:52:14
+244,117,https://codeberg.org/hhwerbefrei/geoanalyse,SUCCESS,Repository executed successfully,2026-09-16 06:11:36,2026-09-16 06:23:09,696.0,2026-09-16 06:11:36
+247,87,https://codeberg.org/elaraproject/build-logs,SUCCESS,Repository executed successfully,2026-09-16 06:51:15,2026-09-16 07:00:17,543.0,2026-09-16 06:51:15
+248,91,https://codeberg.org/LKR/DSCorr,SUCCESS,Repository executed successfully,2026-09-16 07:00:22,2026-09-16 07:13:10,767.0,2026-09-16 07:00:22
+249,95,https://zenodo.org/records/5500511,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-16 07:13:12,2026-09-16 07:17:48,276.0,2026-09-16 07:13:12
+250,98,https://zenodo.org/records/8365065,SUCCESS,Repository executed successfully,2026-09-16 07:17:51,2026-09-16 07:35:15,1044.0,2026-09-16 07:17:51
+251,99,https://zenodo.org/records/14890903,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-16 07:35:16,2026-09-16 07:35:33,18.0,2026-09-16 07:35:16
+252,102,https://github.com/mpld3/mpld3,SUCCESS,Repository executed successfully,2026-09-16 07:35:34,2026-09-16 07:47:11,697.0,2026-09-16 07:35:34
+253,103,https://github.com/gboeing/data-visualization,SUCCESS,Repository executed successfully,2026-09-16 07:47:12,2026-09-16 08:39:22,3130.0,2026-09-16 07:47:12
+256,119,https://codeberg.org/leouieda/landsat-wallpapers,SUCCESS,Repository executed successfully,2026-09-16 14:04:27,2026-09-16 14:33:00,1713.0,2026-09-16 14:04:27
+258,118,https://codeberg.org/shtrom/geoham,SUCCESS,Repository executed successfully,2026-09-16 14:04:30,2026-09-16 14:17:01,750.0,2026-09-16 14:04:30
+259,120,https://codeberg.org/unkaktus/climate-notebooks,SUCCESS,Repository executed successfully,2026-09-16 14:17:01,2026-09-16 14:22:08,307.0,2026-09-16 14:17:01
+260,122,https://codeberg.org/penguinsfly/tv-mania,SUCCESS,Repository executed successfully,2026-09-16 14:22:09,2026-09-16 14:37:09,900.0,2026-09-16 14:22:09
+261,123,https://codeberg.org/ljlazar/leaf,SUCCESS,Repository executed successfully,2026-09-16 14:33:01,2026-09-16 14:44:25,684.0,2026-09-16 14:33:01
+262,147,https://codeberg.org/sethuiyer/mlhub,SUCCESS,Repository executed successfully,2026-09-16 14:37:10,2026-09-16 15:37:21,3610.0,2026-09-16 14:37:10
+263,148,https://codeberg.org/jonne/discourse-relation-classification,SUCCESS,Repository executed successfully,2026-09-16 14:44:26,2026-09-16 14:53:38,552.0,2026-09-16 14:44:26
+264,150,https://codeberg.org/sail.black/carate,SUCCESS,Repository executed successfully,2026-09-16 14:53:39,2026-09-16 15:11:51,1092.0,2026-09-16 14:53:39
+265,152,https://codeberg.org/KOLANICH-ML/PreImgAugment.py,SUCCESS,Repository executed successfully,2026-09-16 15:11:51,2026-09-16 15:16:50,299.0,2026-09-16 15:11:51
+268,149,https://codeberg.org/Fontys/titanic-decision-tree,SUCCESS,Repository executed successfully,2026-09-16 15:37:21,2026-09-16 15:42:42,321.0,2026-09-16 15:37:21
+272,94,https://zenodo.org/records/3731390,SUCCESS,Repository executed successfully,2026-09-17 10:41:30,2026-09-17 14:22:04,13234.0,2026-09-17 10:41:30
+278,205,https://github.com/justmarkham/scikit-learn-videos,SUCCESS,Repository executed successfully,2026-09-17 16:08:44,2026-09-17 16:23:19,875.0,2026-09-17 16:08:44
+279,168,https://github.com/farhadkama/phasefield_usnccm,SUCCESS,Repository executed successfully,2026-09-17 16:08:45,2026-09-17 16:21:05,740.0,2026-09-17 16:08:45
+280,169,https://github.com/albertoreyescastro/computational-physics-numerical-methods,SUCCESS,Repository executed successfully,2026-09-17 16:21:06,2026-09-17 16:25:52,286.0,2026-09-17 16:21:06
+282,170,https://github.com/honglizhaobob/Winter21Autumn22Stat31120,SUCCESS,Repository executed successfully,2026-09-17 16:25:52,2026-09-17 17:00:38,2086.0,2026-09-17 16:25:52
+283,171,https://github.com/miamico/dynamical-Lamb-effect,SUCCESS,Repository executed successfully,2026-09-17 17:00:39,2026-09-17 17:47:22,2803.0,2026-09-17 17:00:39
+284,172,https://github.com/sharma2409/Numerical-Simulation-of-JP-10-Water-Combustion-at-High-Pressure,SUCCESS,Repository executed successfully,2026-09-17 17:47:22,2026-09-17 17:49:11,108.0,2026-09-17 17:47:22
+286,132,https://github.com/nfmcclure/tensorflow_cookbook,SUCCESS,Repository executed successfully,2026-09-17 18:58:22,2026-09-17 21:10:31,7929.0,2026-09-17 18:58:22
+287,167,https://github.com/qn895/reservoir-simulation,SUCCESS,Repository executed successfully,2026-09-17 18:58:23,2026-09-17 19:30:19,1916.0,2026-09-17 18:58:23
+288,204,https://github.com/NirDiamant/Prompt_Engineering,SUCCESS,Repository executed successfully,2026-09-17 18:58:23,2026-09-17 19:54:29,3365.0,2026-09-17 18:58:23
+289,234,https://github.com/mudigosa/Image-Classifier,SUCCESS,Repository executed successfully,2026-09-17 18:58:24,2026-09-17 19:33:26,2102.0,2026-09-17 18:58:24
+290,174,https://github.com/Tanishq7361/Forced-Damped-Oscillator-Simulation,SUCCESS,Repository executed successfully,2026-09-17 19:30:25,2026-09-17 19:38:13,468.0,2026-09-17 19:30:25
+292,175,https://github.com/parthpadia/IQC-URA-Gaussian-beam-simulation,SUCCESS,Repository executed successfully,2026-09-17 19:38:14,2026-09-17 19:50:22,728.0,2026-09-17 19:38:14
+293,176,https://github.com/danjackho/QuantumMemorySim,SUCCESS,Repository executed successfully,2026-09-17 19:50:23,2026-09-17 19:56:42,380.0,2026-09-17 19:50:23
+295,177,https://github.com/Tanishq7361/Coupled-Oscillators-and-Nonlinear-Pendulum,SUCCESS,Repository executed successfully,2026-09-17 19:56:42,2026-09-17 20:00:37,235.0,2026-09-17 19:56:42
+296,178,https://github.com/chroakPRO/research-learning,SUCCESS,Repository executed successfully,2026-09-17 20:00:38,2026-09-17 20:17:15,998.0,2026-09-17 20:00:38
+297,179,https://github.com/JorgikNoob/Xmode-WavesPlasma,SUCCESS,Repository executed successfully,2026-09-17 20:17:16,2026-09-17 20:45:46,1710.0,2026-09-17 20:17:16
+300,182,https://codeberg.org/sail.black/openmd,SUCCESS,Repository executed successfully,2026-09-17 21:15:07,2026-09-17 21:58:28,2598.0,2026-09-17 21:15:07
+301,195,https://zenodo.org/records/3832358,SUCCESS,Repository executed successfully,2026-09-17 21:15:07,2026-09-17 21:56:18,2471.0,2026-09-17 21:15:07
+302,218,https://codeberg.org/sketchingpy/example-jupyter-notebook,SUCCESS,Repository executed successfully,2026-09-17 21:15:13,2026-09-17 21:33:23,1091.0,2026-09-17 21:15:13
+304,229,https://zenodo.org/records/5495619,SUCCESS,Repository executed successfully,2026-09-17 21:15:22,2026-09-17 21:57:27,2524.0,2026-09-17 21:15:22
+306,220,https://codeberg.org/elaraproject/elara-handbook,SUCCESS,Repository executed successfully,2026-09-17 21:55:15,2026-09-17 22:01:57,402.0,2026-09-17 21:55:15
+307,196,https://zenodo.org/records/18383157,SUCCESS,Repository executed successfully,2026-09-17 21:56:20,2026-09-17 22:03:06,406.0,2026-09-17 21:56:20
+308,230,https://zenodo.org/records/6566768,SUCCESS,Repository executed successfully,2026-09-17 21:57:27,2026-09-17 22:07:42,615.0,2026-09-17 21:57:27
+309,183,https://codeberg.org/elaraproject/elara-labs,SUCCESS,Repository executed successfully,2026-09-17 21:58:29,2026-09-17 22:18:16,1187.0,2026-09-17 21:58:29
+310,221,https://codeberg.org/doruo/llm-from-scratch,SUCCESS,Repository executed successfully,2026-09-17 22:01:57,2026-09-17 22:18:30,992.0,2026-09-17 22:01:57
+311,197,https://zenodo.org/records/3633324,SUCCESS,Repository executed successfully,2026-09-17 22:03:07,2026-09-17 22:09:17,369.0,2026-09-17 22:03:07
+312,231,https://zenodo.org/record/59657,SUCCESS,Repository executed successfully,2026-09-17 22:07:43,2026-09-17 22:30:12,1349.0,2026-09-17 22:07:43
+315,249,https://codeberg.org/guix-science/guix-jupyter,SUCCESS,Repository executed successfully,2026-09-17 22:15:10,2026-09-17 22:53:48,2318.0,2026-09-17 22:15:10
+318,160,https://zenodo.org/records/12548630,SUCCESS,Repository executed successfully,2026-09-17 22:15:17,2026-09-17 23:00:38,2721.0,2026-09-17 22:15:17
+319,255,https://zenodo.org/records/7229326,SUCCESS,Repository executed successfully,2026-09-17 22:15:20,2026-09-17 22:52:42,2242.0,2026-09-17 22:15:20
+320,184,https://codeberg.org/francois.boulier/DifferentialAlgebra,SUCCESS,Repository executed successfully,2026-09-17 22:18:17,2026-09-17 22:34:33,976.0,2026-09-17 22:18:17
+321,222,https://codeberg.org/yajuna19bear/computer-assisted-calculus,SUCCESS,Repository executed successfully,2026-09-17 22:18:31,2026-09-17 22:38:00,1169.0,2026-09-17 22:18:31
+323,185,https://codeberg.org/elaraproject/elara-pdes-tutorial,SUCCESS,Repository executed successfully,2026-09-17 22:34:34,2026-09-17 22:56:14,1301.0,2026-09-17 22:34:34
+324,223,https://codeberg.org/AutomateAaron/simple-numpy-network,SUCCESS,Repository executed successfully,2026-09-17 22:38:00,2026-09-17 22:47:51,591.0,2026-09-17 22:38:00
+325,200,https://zenodo.org/records/21280458,SUCCESS,Repository executed successfully,2026-09-17 22:39:12,2026-09-17 23:01:56,1364.0,2026-09-17 22:39:12
+326,233,https://zenodo.org/records/3362625,SUCCESS,Repository executed successfully,2026-09-17 22:43:56,2026-09-17 23:05:11,1276.0,2026-09-17 22:43:56
+327,224,https://codeberg.org/BrotatoBoi/Python_Fundamentals_2026,SUCCESS,Repository executed successfully,2026-09-17 22:47:52,2026-09-17 23:39:05,3073.0,2026-09-17 22:47:52
+328,256,https://zenodo.org/records/2662552,SUCCESS,Repository executed successfully,2026-09-17 22:52:43,2026-09-17 23:05:49,786.0,2026-09-17 22:52:43
+329,250,https://codeberg.org/KOLANICH-libs/urm.py,SUCCESS,Repository executed successfully,2026-09-17 22:53:49,2026-09-17 23:00:25,396.0,2026-09-17 22:53:49
+330,186,https://codeberg.org/pirofti/cs.unibuc.ro,SUCCESS,Repository executed successfully,2026-09-17 22:56:15,2026-09-17 23:22:39,1584.0,2026-09-17 22:56:15
+331,251,https://codeberg.org/songtech-0912/math-tools,SUCCESS,Repository executed successfully,2026-09-17 23:00:26,2026-09-17 23:08:52,505.0,2026-09-17 23:00:26
+332,161,https://zenodo.org/records/10653704,SUCCESS,Repository executed successfully,2026-09-17 23:00:38,2026-09-17 23:19:44,1146.0,2026-09-17 23:00:38
+334,283,https://zenodo.org/records/14806948,SUCCESS,Repository executed successfully,2026-09-17 23:05:13,2026-09-17 23:27:01,1309.0,2026-09-17 23:05:13
+335,257,https://zenodo.org/records/18111874,SUCCESS,Repository executed successfully,2026-09-17 23:05:51,2026-09-17 23:21:10,920.0,2026-09-17 23:05:51
+336,202,https://zenodo.org/records/6677897,SUCCESS,Repository executed successfully,2026-09-17 23:07:04,2026-09-17 23:12:47,343.0,2026-09-17 23:07:04
+339,203,https://zenodo.org/records/7694030,SUCCESS,Repository executed successfully,2026-09-17 23:12:48,2026-09-17 23:22:12,563.0,2026-09-17 23:12:48
+340,162,https://zenodo.org/records/495739,SUCCESS,Repository executed successfully,2026-09-17 23:19:45,2026-09-18 00:08:00,2896.0,2026-09-17 23:19:45
+342,278,https://zenodo.org/records/19098398,SUCCESS,Repository executed successfully,2026-09-17 23:22:12,2026-09-17 23:56:53,2081.0,2026-09-17 23:22:12
+343,187,https://codeberg.org/rohandebsarkar/QiskitPractice,SUCCESS,Repository executed successfully,2026-09-17 23:22:40,2026-09-17 23:30:00,439.0,2026-09-17 23:22:40
+344,259,https://zenodo.org/records/10929081,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-17 23:23:09,2026-09-17 23:23:24,15.0,2026-09-17 23:23:09
+345,288,https://zenodo.org/records/16621265,SUCCESS,Repository executed successfully,2026-09-17 23:23:25,2026-09-17 23:47:38,1453.0,2026-09-17 23:23:25
+347,285,https://zenodo.org/records/10961359,SUCCESS,Repository executed successfully,2026-09-17 23:29:06,2026-09-18 01:15:48,6402.0,2026-09-17 23:29:06
+349,189,https://codeberg.org/rgarcia-herrera/sistemas-dinamicos,SUCCESS,Repository executed successfully,2026-09-17 23:30:36,2026-09-18 00:19:09,2913.0,2026-09-17 23:30:36
+350,225,https://codeberg.org/Release-Candidate/tzolkin-calendar,SUCCESS,Repository executed successfully,2026-09-17 23:39:06,2026-09-18 00:11:23,1937.0,2026-09-17 23:39:06
+351,289,https://zenodo.org/records/5078285,SUCCESS,Repository executed successfully,2026-09-17 23:47:39,2026-09-18 00:12:20,1481.0,2026-09-17 23:47:39
+354,281,https://zenodo.org/records/12208410,SUCCESS,Repository executed successfully,2026-09-17 23:57:34,2026-09-18 00:08:38,664.0,2026-09-17 23:57:34
+355,163,https://zenodo.org/records/13777396,SUCCESS,Repository executed successfully,2026-09-18 00:08:01,2026-09-18 00:25:24,1043.0,2026-09-18 00:08:01
+357,226,https://codeberg.org/umoqnier/python-human-course-2025,SUCCESS,Repository executed successfully,2026-09-18 00:11:23,2026-09-18 00:17:12,349.0,2026-09-18 00:11:23
+358,290,https://zenodo.org/records/15957138,SUCCESS,Repository executed successfully,2026-09-18 00:12:21,2026-09-18 02:53:08,9647.0,2026-09-18 00:12:21
+359,227,https://codeberg.org/foerstner-lab/Bits_and_pieces_for_the_carpentries_workshops,SUCCESS,Repository executed successfully,2026-09-18 00:17:12,2026-09-18 01:45:50,5317.0,2026-09-18 00:17:12
+360,190,https://codeberg.org/rgarcia-herrera/complejidad,SUCCESS,Repository executed successfully,2026-09-18 00:19:10,2026-09-18 00:31:11,721.0,2026-09-18 00:19:10
+361,164,https://zenodo.org/records/5227413,SUCCESS,Repository executed successfully,2026-09-18 00:25:25,2026-09-18 01:00:53,2128.0,2026-09-18 00:25:25
+362,191,https://codeberg.org/DynamicEcotox/ecotoxsystems.jl,SUCCESS,Repository executed successfully,2026-09-18 00:31:12,2026-09-18 00:36:11,299.0,2026-09-18 00:31:12
+363,192,https://codeberg.org/cpraveen/numpde,SUCCESS,Repository executed successfully,2026-09-18 00:36:13,2026-09-18 00:42:58,404.0,2026-09-18 00:36:13
+364,193,https://codeberg.org/cpraveen/fem,SUCCESS,Repository executed successfully,2026-09-18 00:42:58,2026-09-18 00:50:51,473.0,2026-09-18 00:42:58
+365,194,https://codeberg.org/akitxu/Estrategia_Tortuga_Coja,SUCCESS,Repository executed successfully,2026-09-18 00:50:52,2026-09-18 01:06:55,962.0,2026-09-18 00:50:52
+370,273,https://zenodo.org/records/18681791,SUCCESS,Repository executed successfully,2026-09-18 01:02:35,2026-09-18 01:24:56,1341.0,2026-09-18 01:02:35
+371,286,https://zenodo.org/records/14806425,SUCCESS,Repository executed successfully,2026-09-18 01:15:48,2026-09-18 01:24:40,531.0,2026-09-18 01:15:48
+372,287,https://zenodo.org/records/5944708,SUCCESS,Repository executed successfully,2026-09-18 01:24:40,2026-09-18 01:46:47,1327.0,2026-09-18 01:24:40
+373,274,https://zenodo.org/records/7972459,SUCCESS,Repository executed successfully,2026-09-18 01:24:57,2026-09-18 01:46:07,1271.0,2026-09-18 01:24:57
+374,275,https://zenodo.org/records/6857164,SUCCESS,Repository executed successfully,2026-09-18 01:46:08,2026-09-18 01:57:21,673.0,2026-09-18 01:46:08
+375,276,https://zenodo.org/records/15684176,SUCCESS,Repository executed successfully,2026-09-18 01:57:22,2026-09-18 02:13:03,941.0,2026-09-18 01:57:22
+376,277,https://zenodo.org/records/19764926,SUCCESS,Repository executed successfully,2026-09-18 02:13:03,2026-09-18 02:25:39,756.0,2026-09-18 02:13:03
+378,124,https://zenodo.org/records/7005203,SUCCESS,Repository executed successfully,2026-09-18 08:40:39,2026-09-18 09:23:04,2544.0,2026-09-18 08:40:39
+382,166,https://zenodo.org/records/6084791,SUCCESS,Repository executed successfully,2026-09-18 08:40:47,2026-09-18 10:31:41,6654.0,2026-09-18 08:40:47
+385,153,https://codeberg.org/elenaferr0/bnb-branching-strategy-learning,SUCCESS,Repository executed successfully,2026-09-18 08:41:03,2026-09-18 09:30:38,2975.0,2026-09-18 08:41:03
+387,155,https://codeberg.org/bladeacer/yolo-finetune,SUCCESS,Repository executed successfully,2026-09-18 09:30:39,2026-09-18 10:05:14,2075.0,2026-09-18 09:30:39
+388,63,https://zenodo.org/records/17422341,SUCCESS,Repository executed successfully,2026-09-18 09:34:36,2026-09-18 09:52:51,1096.0,2026-09-18 09:34:36
+389,65,https://zenodo.org/records/6863001,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-18 09:52:52,2026-09-18 09:53:10,18.0,2026-09-18 09:52:52
+390,260,https://zenodo.org/records/22142519,SUCCESS,Repository executed successfully,2026-09-18 09:53:13,2026-09-18 10:11:32,1098.0,2026-09-18 09:53:13
+395,280,https://zenodo.org/records/17063005,SUCCESS,Repository executed successfully,2026-09-18 10:18:46,2026-09-18 11:24:55,3969.0,2026-09-18 10:18:46
+397,272,https://zenodo.org/records/15133256,SUCCESS,Repository executed successfully,2026-09-18 10:31:51,2026-09-18 11:28:17,3386.0,2026-09-18 10:31:51
+402,261,https://zenodo.org/records/19477022,SUCCESS,Repository executed successfully,2026-09-18 11:54:19,2026-09-18 11:55:44,85.0,2026-09-18 11:54:19
+404,156,https://codeberg.org/michael-0acf4/deep-learning-sandbox,SUCCESS,Repository executed successfully,2026-09-18 12:23:46,2026-09-18 13:11:16,2851.0,2026-09-18 12:23:46
+407,157,https://codeberg.org/ishrikantbhosale/first-thinking-machine,SUCCESS,Repository executed successfully,2026-09-18 13:11:19,2026-09-18 13:21:41,623.0,2026-09-18 13:11:19
+408,158,https://codeberg.org/AutomateAaron/mnist-examples,SUCCESS,Repository executed successfully,2026-09-18 13:21:42,2026-09-18 13:38:37,1015.0,2026-09-18 13:21:42
+409,159,https://codeberg.org/Cognibuild/ROOP-FLOYD,SUCCESS,Repository executed successfully,2026-09-18 13:38:37,2026-09-18 13:58:58,1221.0,2026-09-18 13:38:37
+415,232,https://zenodo.org/records/5907206,TIMEOUT_ERROR,run abandoned (repository too large / worker stopped); closed during final data cleanup,2026-09-18 17:44:01,2026-09-19 21:15:24,,2026-09-18 17:44:01
+416,258,https://zenodo.org/records/15349480,NO_NOTEBOOKS,No .ipynb files found in repo,2026-09-18 17:44:02,2026-09-18 17:45:02,59.0,2026-09-18 17:44:02
+422,264,https://zenodo.org/records/17601463,SUCCESS,Repository executed successfully,2026-09-18 19:34:37,2026-09-18 20:21:12,2795.0,2026-09-18 19:34:37
+426,265,https://zenodo.org/records/13854996,SUCCESS,Repository executed successfully,2026-09-18 20:21:13,2026-09-18 20:58:51,2257.0,2026-09-18 20:21:13
+427,266,https://zenodo.org/records/13943854,SUCCESS,Repository executed successfully,2026-09-18 20:58:52,2026-09-18 21:32:10,1998.0,2026-09-18 20:58:52
+428,267,https://zenodo.org/records/11395688,SUCCESS,Repository executed successfully,2026-09-18 21:32:12,2026-09-18 22:02:58,1846.0,2026-09-18 21:32:12
+429,268,https://zenodo.org/records/3952525,INVALID_ZENODO_RECORD,Zenodo API validation failed,2026-09-18 22:02:59,2026-09-18 22:04:31,92.0,2026-09-18 22:02:59
+1000001,211,https://github.com/jadianes/spark-py-notebooks,SUCCESS,Repository executed successfully,2026-09-19 19:51:37,2026-09-19 19:59:19,462.0,2026-09-19 19:51:37
+1000002,115,https://github.com/jcwill415/Stock_Market_Data_Analysis,SUCCESS,Repository executed successfully,2026-09-19 19:51:40,2026-09-19 20:01:23,583.0,2026-09-19 19:51:40
+1000003,173,https://github.com/Tanishq7361/Euler-Cromer-Oscillator-Simulation,SUCCESS,Repository executed successfully,2026-09-19 19:51:40,2026-09-19 19:56:13,273.0,2026-09-19 19:51:40
+1000004,239,https://github.com/TUDelft-CITG/OpenCLSim-Notebooks,SUCCESS,Repository executed successfully,2026-09-19 19:56:14,2026-09-19 20:10:28,854.0,2026-09-19 19:56:14
+1000005,144,https://github.com/javedsha/text-classification,SUCCESS,Repository executed successfully,2026-09-19 19:59:19,2026-09-19 20:12:07,768.0,2026-09-19 19:59:19
+1000007,142,https://github.com/NishkarshRaj/100DaysofMLCode,SUCCESS,Repository executed successfully,2026-09-19 20:01:27,2026-09-19 21:16:54,4527.0,2026-09-19 20:01:27
+1000008,154,https://codeberg.org/miri64/artifacts-eurosp26-doc-privacy,SUCCESS,Repository executed successfully,2026-09-19 20:10:29,2026-09-19 20:53:52,2603.0,2026-09-19 20:10:29
+1000009,180,https://github.com/tommasonobili/Numerical-Simulation-Laboratory,SUCCESS,Repository executed successfully,2026-09-19 20:12:07,2026-09-19 20:52:53,2446.0,2026-09-19 20:12:07
+1000010,139,https://github.com/dformoso/sklearn-classification,SUCCESS,Repository executed successfully,2026-09-19 20:52:53,2026-09-19 21:00:02,429.0,2026-09-19 20:52:53
+1000011,114,https://github.com/pmaji/practical-python-data-viz-guide,SUCCESS,Repository executed successfully,2026-09-19 20:53:52,2026-09-19 21:02:44,532.0,2026-09-19 20:53:52
+1000012,137,https://github.com/dipanjanS/practical-machine-learning-with-python,SUCCESS,Repository executed successfully,2026-09-19 21:00:03,2026-09-19 22:32:34,5552.0,2026-09-19 21:00:03
+1000013,243,https://github.com/clarkevanswx/data-wrangling-examples,SUCCESS,Repository executed successfully,2026-09-19 21:02:45,2026-09-19 21:11:07,501.0,2026-09-19 21:02:45
+1000014,213,https://github.com/curiousily/Get-Things-Done-with-Prompt-Engineering-and-LangChain,PYTHON_INSTALL_FAIL,Could not install Python mlexpert inside the isolated container.,2026-09-19 21:16:55,2026-09-19 21:19:50,175.0,2026-09-19 21:16:55
+1000015,237,https://github.com/Aurokrishnaa/Algorithmic-trading-with-IBridgePy-python-Aurokrishnaa,SUCCESS,Repository executed successfully,2026-09-19 21:19:50,2026-09-19 21:21:27,97.0,2026-09-19 21:19:50
+2000001,208,https://github.com/curiousily/Getting-Things-Done-with-Pytorch,SUCCESS,Repository executed successfully,2026-09-19 19:51:48,2026-09-19 20:56:22,3874.0,2026-09-19 19:51:48
+2000002,133,https://github.com/timeseriesAI/tsai,SUCCESS,Repository executed successfully,2026-09-19 19:51:51,2026-09-19 20:52:55,3664.0,2026-09-19 19:51:51
+2000003,62,https://zenodo.org/records/12533514,SUCCESS,Repository executed successfully,2026-09-19 19:51:51,2026-09-19 20:01:54,603.0,2026-09-19 19:51:51
+2000004,93,https://codeberg.org/thiesgehrmann/GOTO_blood_analysis,ENV_RUN_FAIL,Environment execution failed,2026-09-19 20:01:54,2026-09-19 20:45:01,2587.0,2026-09-19 20:01:54
+2000005,81,https://github.com/chiragsamal/Zomato,SUCCESS,Repository executed successfully,2026-09-19 20:45:02,2026-09-19 20:48:00,178.0,2026-09-19 20:45:02
+2000006,108,https://github.com/milaan9/11_Python_Matplotlib_Module,SUCCESS,Repository executed successfully,2026-09-19 20:48:01,2026-09-19 20:49:47,107.0,2026-09-19 20:48:01
+2000007,236,https://github.com/Bibhuti5/Potato-Disease-Classification,SUCCESS,Repository executed successfully,2026-09-19 20:49:48,2026-09-19 20:54:59,311.0,2026-09-19 20:49:48
+2000009,104,https://github.com/ptyadana/Data-Science-and-Machine-Learning-Projects-Dojo,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 20:54:29,2026-09-19 22:34:29,,2026-09-19 20:54:29
+2000010,263,https://zenodo.org/records/17426841,SUCCESS,Repository executed successfully,2026-09-19 20:56:22,2026-09-19 20:58:44,142.0,2026-09-19 20:56:22
+2000011,145,https://github.com/syamkakarla98/Satellite_Imagery_Analysis,SUCCESS,Repository executed successfully,2026-09-19 20:58:44,2026-09-19 21:03:27,283.0,2026-09-19 20:58:44
+2000013,212,https://github.com/mGalarnyk/Python_Tutorials,SUCCESS,Repository executed successfully,2026-09-19 21:03:32,2026-09-19 22:38:33,5701.0,2026-09-19 21:03:32
+2000014,131,https://zenodo.org/records/21460383,SUCCESS,Repository executed successfully,2026-09-19 22:34:29,2026-09-19 22:35:51,82.0,2026-09-19 22:34:29
+3000001,206,https://github.com/openvinotoolkit/openvino_notebooks,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 19:51:44,2026-09-19 21:31:44,,2026-09-19 19:51:44
+3000002,85,https://codeberg.org/arando/GarminDB,PYTHON_INSTALL_FAIL,Could not install Python 3.0 inside the isolated container. Reason: ERROR: The Python ssl extension was not compiled. Missing the OpenSSL lib? BUILD FAILED (Ubuntu 22.04 using python-build 2.8.6),2026-09-19 19:51:47,2026-09-19 19:57:44,357.0,2026-09-19 19:51:47
+3000003,199,https://zenodo.org/records/17239171,ENV_RUN_FAIL,Environment execution failed,2026-09-19 19:51:47,2026-09-19 20:17:54,1567.0,2026-09-19 19:51:47
+3000004,252,https://codeberg.org/axelr/blank-canvas,SUCCESS,Repository executed successfully,2026-09-19 19:57:44,2026-09-19 20:02:14,270.0,2026-09-19 19:57:44
+3000005,136,https://github.com/tirthajyoti/Machine-Learning-with-Python,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 20:02:14,2026-09-19 21:42:14,,2026-09-19 20:02:14
+3000006,138,https://github.com/anujvyas/Machine-Learning-Projects,SUCCESS,Repository executed successfully,2026-09-19 20:17:55,2026-09-19 20:24:30,395.0,2026-09-19 20:17:55
+3000007,126,https://zenodo.org/records/3549652,SUCCESS,Repository executed successfully,2026-09-19 20:24:30,2026-09-19 20:25:47,77.0,2026-09-19 20:24:30
+3000008,143,https://github.com/mhuzaifadev/machine-learning_zero-to-hero,SUCCESS,Repository executed successfully,2026-09-19 20:25:47,2026-09-19 21:03:24,2257.0,2026-09-19 20:25:47
+3000009,151,https://codeberg.org/epjane/BoggleCV,SUCCESS,Repository executed successfully,2026-09-19 21:03:24,2026-09-19 21:06:38,194.0,2026-09-19 21:03:24
+3000010,181,https://github.com/JakobBD/innusint,SUCCESS,Repository executed successfully,2026-09-19 21:31:44,2026-09-19 21:38:22,398.0,2026-09-19 21:31:44
+3000012,129,https://zenodo.org/records/14923642,SUCCESS,Repository executed successfully,2026-09-19 21:38:26,2026-09-19 21:41:13,167.0,2026-09-19 21:38:26
+3000013,219,https://codeberg.org/cpence/topic-modeling-tutorial,SUCCESS,Repository executed successfully,2026-09-19 21:41:13,2026-09-19 21:48:28,435.0,2026-09-19 21:41:13
+3000014,270,https://zenodo.org/records/3952138,SUCCESS,Repository executed successfully,2026-09-19 21:42:14,2026-09-19 21:51:00,526.0,2026-09-19 21:42:14
+3000015,248,https://github.com/milan6rt/Python-Packages,SUCCESS,Repository executed successfully,2026-09-19 21:51:00,2026-09-19 21:52:17,77.0,2026-09-19 21:51:00
+4000001,241,https://github.com/mwauters92/TIQIT_tutorial,SUCCESS,Repository executed successfully,2026-09-19 19:51:41,2026-09-19 19:58:20,399.0,2026-09-19 19:51:41
+4000002,146,https://github.com/sharmaroshan/Twitter-Sentiment-Analysis,SUCCESS,Repository executed successfully,2026-09-19 19:51:44,2026-09-19 19:58:01,377.0,2026-09-19 19:51:44
+4000003,210,https://github.com/sachinruk/deepschool.io,SUCCESS,Repository executed successfully,2026-09-19 19:51:44,2026-09-19 20:56:10,3866.0,2026-09-19 19:51:44
+4000004,262,https://zenodo.org/records/22034059,ENV_RUN_FAIL,Environment execution failed,2026-09-19 19:58:03,2026-09-19 20:20:02,1319.0,2026-09-19 19:58:03
+4000005,244,https://github.com/lnxpy/pypi-prediction-examples,SUCCESS,Repository executed successfully,2026-09-19 19:58:20,2026-09-19 20:00:50,150.0,2026-09-19 19:58:20
+4000007,207,https://github.com/phlippe/uvadlc_notebooks,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 20:00:54,2026-09-19 21:40:54,,2026-09-19 20:00:54
+4000008,238,https://github.com/pankaj614/gdp-analysis-india-2014-15,SUCCESS,Repository executed successfully,2026-09-19 20:20:03,2026-09-19 20:21:53,110.0,2026-09-19 20:20:03
+4000010,135,https://github.com/rasbt/pattern_classification,SUCCESS,Repository executed successfully,2026-09-19 20:21:56,2026-09-19 21:26:03,3847.0,2026-09-19 20:21:56
+4000011,217,https://github.com/QuantConnect/Tutorials,SUCCESS,Repository executed successfully,2026-09-19 20:56:10,2026-09-19 21:07:25,675.0,2026-09-19 20:56:10
+4000012,188,https://codeberg.org/din14970/msci_monte_carlo,SUCCESS,Repository executed successfully,2026-09-19 21:07:25,2026-09-19 21:18:34,669.0,2026-09-19 21:07:25
+4000013,111,https://github.com/DataForScience/DataViz,SUCCESS,Repository executed successfully,2026-09-19 21:18:34,2026-09-19 21:24:57,383.0,2026-09-19 21:18:34
+4000015,242,https://github.com/TUDelft-CITG/OpenTNSim-Notebooks,SUCCESS,Repository executed successfully,2026-09-19 21:40:54,2026-09-19 21:46:44,350.0,2026-09-19 21:40:54
+5000001,247,https://github.com/calebjore/08_data-validation,SUCCESS,Repository executed successfully,2026-09-19 19:51:59,2026-09-19 20:00:26,507.0,2026-09-19 19:51:59
+5000002,214,https://github.com/qiskit-community/qiskit-community-tutorials,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 19:52:02,2026-09-19 21:32:02,,2026-09-19 19:52:02
+5000004,201,https://zenodo.org/records/10900882,SUCCESS,Repository executed successfully,2026-09-19 19:52:03,2026-09-19 20:06:54,891.0,2026-09-19 19:52:03
+5000005,100,https://zenodo.org/records/17638925,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 20:00:26,2026-09-19 21:40:26,,2026-09-19 20:00:26
+5000006,75,https://github.com/drshahizan/Python_EDA,TIMEOUT_ERROR,repository exceeded the per-repository time limit,2026-09-19 20:06:54,2026-09-19 21:46:54,,2026-09-19 20:06:54
+5000007,140,https://github.com/azminewasi/Machine-Learning-AndrewNg-DeepLearning.AI,SUCCESS,Repository executed successfully,2026-09-19 21:32:02,2026-09-19 22:07:37,2135.0,2026-09-19 21:32:02
+5000008,121,https://codeberg.org/unkaktus/rose,SUCCESS,Repository executed successfully,2026-09-19 21:40:26,2026-09-19 21:45:15,289.0,2026-09-19 21:40:26
+5000009,215,https://github.com/KeithGalli/NumPy,SUCCESS,Repository executed successfully,2026-09-19 21:45:15,2026-09-19 21:46:47,92.0,2026-09-19 21:45:15
+5000010,245,https://github.com/shanujans/loan-risk-prediction,SUCCESS,Repository executed successfully,2026-09-19 21:46:47,2026-09-19 21:50:18,211.0,2026-09-19 21:46:47
+5000011,106,https://github.com/KeithGalli/matplotlib_tutorial,SUCCESS,Repository executed successfully,2026-09-19 21:46:54,2026-09-19 21:49:02,128.0,2026-09-19 21:46:54
+5000012,116,https://github.com/akcarsten/fMRI_data_analysis,SUCCESS,Repository executed successfully,2026-09-19 22:07:37,2026-09-19 22:09:51,134.0,2026-09-19 22:07:37
+5000013,246,https://github.com/mirko-leccese/Scraping-Spotify-Chart-with-Python,SUCCESS,Repository executed successfully,2026-09-19 22:09:51,2026-09-19 22:11:58,127.0,2026-09-19 22:09:51
+5000014,110,https://github.com/croach/oreilly-matplotlib-course,SUCCESS,Repository executed successfully,2026-09-19 22:11:59,2026-09-19 22:24:41,763.0,2026-09-19 22:11:59
+6000001,71,https://github.com/PacktPublishing/Hands-on-Exploratory-Data-Analysis-with-Python,SUCCESS,Repository executed successfully,2026-09-19 21:50:05,2026-09-19 22:06:01,956.0,2026-09-19 21:50:05
+6000002,107,https://github.com/stefmolin/python-data-viz-workshop,SUCCESS,Repository executed successfully,2026-09-19 21:50:08,2026-09-19 22:40:54,3046.0,2026-09-19 21:50:08
+6000003,125,https://zenodo.org/records/12614664,SUCCESS,Repository executed successfully,2026-09-19 21:50:08,2026-09-19 22:48:15,3487.0,2026-09-19 21:50:08
+6000005,240,https://github.com/hyperactive-project/hyperactive-tutorials,SUCCESS,Repository executed successfully,2026-09-19 22:06:07,2026-09-19 22:10:02,235.0,2026-09-19 22:06:07
+6000006,127,https://zenodo.org/records/4444154,SUCCESS,Repository executed successfully,2026-09-19 22:10:02,2026-09-19 22:12:48,166.0,2026-09-19 22:10:02
+6000007,209,https://github.com/justmarkham/pandas-videos,SUCCESS,Repository executed successfully,2026-09-19 22:12:48,2026-09-19 22:19:45,417.0,2026-09-19 22:12:48
+6000008,216,https://github.com/gordicaleksa/get-started-with-JAX,SUCCESS,Repository executed successfully,2026-09-19 22:40:54,2026-09-19 22:49:38,524.0,2026-09-19 22:40:54
+6000009,134,https://github.com/BinRoot/TensorFlow-Book,SUCCESS,Repository executed successfully,2026-09-19 22:48:16,2026-09-19 23:02:55,879.0,2026-09-19 22:48:16
+6000010,141,https://github.com/dchad/malware-detection,SUCCESS,Repository executed successfully,2026-09-19 22:49:39,2026-09-19 23:50:42,3663.0,2026-09-19 22:49:39
+6000012,46,https://github.com/ChaitanyaK77/Building-a-Small-Language-Model-SLM-,TIMEOUT_ERROR,Execution timed out,2026-09-19 23:03:00,2026-09-20 00:07:44,3884.0,2026-09-19 23:03:00
+6000014,269,https://zenodo.org/records/8344368,SUCCESS,Repository executed successfully,2026-09-19 23:50:46,2026-09-19 23:55:11,265.0,2026-09-19 23:50:46
+7000001,7000001,https://zenodo.org/records/3572703,SUCCESS,Repository executed successfully,2026-09-19 22:03:52,2026-09-19 22:06:30,158.0,2026-09-19 22:03:52
+7000002,7000002,https://codeberg.org/zaccesss/DG1AID-Labs,SUCCESS,Repository executed successfully,2026-09-19 22:03:56,2026-09-19 22:27:11,1395.0,2026-09-19 22:03:56
+7000003,7000003,https://zenodo.org/records/14398707,SUCCESS,Repository executed successfully,2026-09-19 22:03:56,2026-09-19 22:05:49,113.0,2026-09-19 22:03:56
+7000004,7000004,https://zenodo.org/records/7612718,SUCCESS,Repository executed successfully,2026-09-19 22:05:49,2026-09-19 22:07:23,94.0,2026-09-19 22:05:49
+7000005,7000005,https://zenodo.org/records/18881265,SUCCESS,Repository executed successfully,2026-09-19 22:06:31,2026-09-19 22:08:11,100.0,2026-09-19 22:06:31
+7000006,7000006,https://zenodo.org/records/15422988,SUCCESS,Repository executed successfully,2026-09-19 22:07:23,2026-09-19 22:13:23,360.0,2026-09-19 22:07:23
+7000007,7000007,https://github.com/seif-a096/car-price-predictor-eda,SUCCESS,Repository executed successfully,2026-09-19 22:08:12,2026-09-19 22:11:03,171.0,2026-09-19 22:08:12
+7000008,7000008,https://zenodo.org/records/11069325,SUCCESS,Repository executed successfully,2026-09-19 22:11:03,2026-09-19 22:12:54,111.0,2026-09-19 22:11:03
+7000009,7000009,https://codeberg.org/tmwProjects/Georoc_jupyter,SUCCESS,Repository executed successfully,2026-09-19 22:12:55,2026-09-19 22:15:15,140.0,2026-09-19 22:12:55
+7000010,7000010,https://codeberg.org/haraldthunem/matplotlib-learn,SUCCESS,Repository executed successfully,2026-09-19 22:13:23,2026-09-19 22:15:58,155.0,2026-09-19 22:13:23
+7000011,7000011,https://codeberg.org/scuti/stacksurvey,SUCCESS,Repository executed successfully,2026-09-19 22:15:15,2026-09-19 22:17:24,129.0,2026-09-19 22:15:15
+7000012,7000012,https://zenodo.org/records/22746120,SUCCESS,Repository executed successfully,2026-09-19 22:15:58,2026-09-19 22:18:11,133.0,2026-09-19 22:15:58
+7000013,7000013,https://zenodo.org/records/14823435,SUCCESS,Repository executed successfully,2026-09-19 22:18:11,2026-09-19 22:21:57,226.0,2026-09-19 22:18:11
+7000014,7000014,https://github.com/bshivambharadwaj/Reinforcement-Learning-Course,SUCCESS,Repository executed successfully,2026-09-19 22:27:11,2026-09-19 22:47:05,1194.0,2026-09-19 22:27:11
+7000015,7000015,https://codeberg.org/rf-develop/pandas_joins,SUCCESS,Repository executed successfully,2026-09-19 22:47:05,2026-09-19 22:48:25,80.0,2026-09-19 22:47:05
+7000016,7000016,https://zenodo.org/records/12775187,SUCCESS,Repository executed successfully,2026-09-19 22:48:25,2026-09-19 22:52:33,248.0,2026-09-19 22:48:25
+7000017,7000017,https://github.com/PilotLeoYan/inside-deep-learning,SUCCESS,Repository executed successfully,2026-09-19 22:52:33,2026-09-19 23:02:57,624.0,2026-09-19 22:52:33
+8000001,8000001,https://zenodo.org/records/21631037,SUCCESS,Repository executed successfully,2026-09-19 22:36:56,2026-09-19 22:39:19,143.0,2026-09-19 22:36:56
+8000002,8000002,https://codeberg.org/Fontys/wine_categorizer,SUCCESS,Repository executed successfully,2026-09-19 22:36:59,2026-09-19 22:39:43,164.0,2026-09-19 22:36:59
+8000003,8000003,https://codeberg.org/fdobad/matplotlib-jupyterlab-tutorial,SUCCESS,Repository executed successfully,2026-09-19 22:36:59,2026-09-19 22:41:44,285.0,2026-09-19 22:36:59
+8000004,8000004,https://zenodo.org/records/22745896,SUCCESS,Repository executed successfully,2026-09-19 22:39:19,2026-09-19 22:41:11,112.0,2026-09-19 22:39:19
+8000005,8000005,https://codeberg.org/andrewresearch/tap-notebooks,SUCCESS,Repository executed successfully,2026-09-19 22:39:43,2026-09-19 22:45:07,324.0,2026-09-19 22:39:43
+8000006,8000006,https://github.com/BolajiAyodeji/deploy-ml-web-workshop,SUCCESS,Repository executed successfully,2026-09-19 22:41:11,2026-09-19 22:43:59,168.0,2026-09-19 22:41:11
+8000007,8000007,https://github.com/EdinburghAI/workshops,SUCCESS,Repository executed successfully,2026-09-19 22:41:44,2026-09-19 23:21:35,2391.0,2026-09-19 22:41:44
+8000008,8000008,https://codeberg.org/cordelya/co2-sensor-notebooks,SUCCESS,Repository executed successfully,2026-09-19 22:43:59,2026-09-19 22:48:56,297.0,2026-09-19 22:43:59
+8000009,8000009,https://zenodo.org/records/17054903,SUCCESS,Repository executed successfully,2026-09-19 22:45:08,2026-09-19 22:49:31,263.0,2026-09-19 22:45:08
+8000010,8000010,https://codeberg.org/fferreyra/EDA_NBA,SUCCESS,Repository executed successfully,2026-09-19 22:48:56,2026-09-19 22:51:49,173.0,2026-09-19 22:48:56
+8000011,8000011,https://zenodo.org/records/15660259,SUCCESS,Repository executed successfully,2026-09-19 22:49:33,2026-09-19 22:52:54,201.0,2026-09-19 22:49:33
+8000012,8000012,https://codeberg.org/sc0v0ne/ExploratoryDataAnalysis,SUCCESS,Repository executed successfully,2026-09-19 22:51:49,2026-09-19 22:54:42,173.0,2026-09-19 22:51:49
+8000013,8000013,https://zenodo.org/records/5636045,SUCCESS,Repository executed successfully,2026-09-19 22:52:54,2026-09-19 22:54:56,122.0,2026-09-19 22:52:54
+8000014,8000014,https://codeberg.org/sc0v0ne/article_apply_test_in_jupyter_notebook,SUCCESS,Repository executed successfully,2026-09-19 22:54:56,2026-09-19 22:56:32,96.0,2026-09-19 22:54:56
+8000015,8000015,https://zenodo.org/records/15089565,SUCCESS,Repository executed successfully,2026-09-19 23:21:35,2026-09-19 23:33:42,727.0,2026-09-19 23:21:35
+8000016,8000016,https://zenodo.org/records/18003824,SUCCESS,Repository executed successfully,2026-09-19 23:33:42,2026-09-19 23:36:18,156.0,2026-09-19 23:33:42
+8000017,8000017,https://codeberg.org/ayushbhattacharya/customer-call-list,SUCCESS,Repository executed successfully,2026-09-19 23:36:19,2026-09-19 23:37:32,73.0,2026-09-19 23:36:19
+9000001,9000001,https://codeberg.org/TeresaVits/olympics_dashboard,SUCCESS,Repository executed successfully,2026-09-19 22:40:20,2026-09-19 22:42:05,105.0,2026-09-19 22:40:20
+9000002,9000002,https://zenodo.org/records/4589040,SUCCESS,Repository executed successfully,2026-09-19 22:40:22,2026-09-19 22:41:38,76.0,2026-09-19 22:40:22
+9000003,9000003,https://zenodo.org/records/7432295,SUCCESS,Repository executed successfully,2026-09-19 22:40:23,2026-09-19 22:44:45,262.0,2026-09-19 22:40:23
+9000004,9000004,https://codeberg.org/ale-sandro/hands_on_data_analysis_with_pandas-2ed,SUCCESS,Repository executed successfully,2026-09-19 22:41:38,2026-09-19 23:11:25,1787.0,2026-09-19 22:41:38
+9000005,9000005,https://zenodo.org/records/11538368,SUCCESS,Repository executed successfully,2026-09-19 22:42:05,2026-09-19 22:43:44,99.0,2026-09-19 22:42:05
+9000006,9000006,https://zenodo.org/records/22080853,SUCCESS,Repository executed successfully,2026-09-19 22:43:44,2026-09-19 22:50:40,416.0,2026-09-19 22:43:44
+9000007,9000007,https://codeberg.org/Curbal/1-dataset-100-visualizations-in-matplotlib,SUCCESS,Repository executed successfully,2026-09-19 22:44:45,2026-09-19 22:46:07,82.0,2026-09-19 22:44:45
+9000008,9000008,https://codeberg.org/liuyinzhe/matplotlib_learn,SUCCESS,Repository executed successfully,2026-09-19 22:46:07,2026-09-19 22:49:51,224.0,2026-09-19 22:46:07
+9000009,9000009,https://zenodo.org/records/22019920,SUCCESS,Repository executed successfully,2026-09-19 22:49:52,2026-09-19 22:51:42,110.0,2026-09-19 22:49:52
+9000010,9000010,https://zenodo.org/records/5171595,SUCCESS,Repository executed successfully,2026-09-19 22:50:40,2026-09-19 22:52:02,82.0,2026-09-19 22:50:40
+9000011,9000011,https://zenodo.org/records/14717235,SUCCESS,Repository executed successfully,2026-09-19 22:51:42,2026-09-19 22:53:12,90.0,2026-09-19 22:51:42
+9000012,9000012,https://codeberg.org/Curbal/Matplotlib-Labs,SUCCESS,Repository executed successfully,2026-09-19 22:52:02,2026-09-19 22:59:15,432.0,2026-09-19 22:52:02
+9000013,9000013,https://zenodo.org/records/15302481,SUCCESS,Repository executed successfully,2026-09-19 22:59:15,2026-09-19 23:02:13,177.0,2026-09-19 22:59:15
+9000014,9000014,https://zenodo.org/records/6463891,SUCCESS,Repository executed successfully,2026-09-19 23:11:25,2026-09-19 23:12:14,49.0,2026-09-19 23:11:25
+9000015,9000015,https://codeberg.org/ayushbhattacharya/US-Adult-Census-Study,SUCCESS,Repository executed successfully,2026-09-19 23:12:14,2026-09-19 23:13:40,86.0,2026-09-19 23:12:14
+9000016,9000016,https://zenodo.org/records/15823944,SUCCESS,Repository executed successfully,2026-09-19 23:13:40,2026-09-19 23:15:11,91.0,2026-09-19 23:13:40
+9000017,9000017,https://github.com/SaharStudios/LungCancerClassification,SUCCESS,Repository executed successfully,2026-09-19 23:15:11,2026-09-19 23:17:25,134.0,2026-09-19 23:15:11
+10000001,10000001,https://codeberg.org/sc0v0ne/article_oop,SUCCESS,Repository executed successfully,2026-09-19 22:46:56,2026-09-19 22:48:21,85.0,2026-09-19 22:46:56
+10000002,10000002,https://codeberg.org/sc0v0ne/replace_query_with_parameter,SUCCESS,Repository executed successfully,2026-09-19 22:46:59,2026-09-19 22:48:26,87.0,2026-09-19 22:46:59
+10000003,10000003,https://codeberg.org/sc0v0ne/change_function_declaration_jupyter,SUCCESS,Repository executed successfully,2026-09-19 22:46:59,2026-09-19 22:48:24,85.0,2026-09-19 22:46:59
+10000004,10000004,https://codeberg.org/JelleLa/ChiPy,SUCCESS,Repository executed successfully,2026-09-19 22:48:21,2026-09-19 22:49:48,87.0,2026-09-19 22:48:21
+10000005,10000005,https://codeberg.org/JosefAlbers/Roy,SUCCESS,Repository executed successfully,2026-09-19 22:48:25,2026-09-19 22:49:29,64.0,2026-09-19 22:48:25
+10000006,10000006,https://codeberg.org/thefrenchartist/pdf_watermark_pipeline,SUCCESS,Repository executed successfully,2026-09-19 22:48:26,2026-09-19 22:49:42,76.0,2026-09-19 22:48:26
+10000007,10000007,https://codeberg.org/norlek/Software_Deteccion_Arritmias-Pediatricas-mediante-PDS_ECG,SUCCESS,Repository executed successfully,2026-09-19 22:49:29,2026-09-19 22:51:43,134.0,2026-09-19 22:49:29
+10000008,10000008,https://codeberg.org/FObersteiner/uv_env,SUCCESS,Repository executed successfully,2026-09-19 22:49:42,2026-09-19 22:50:41,59.0,2026-09-19 22:49:42
+10000009,10000009,https://codeberg.org/aludwig/mldevops_build-ml-pipeline-for-short-term-rental-prices,SUCCESS,Repository executed successfully,2026-09-19 22:49:48,2026-09-19 22:51:57,129.0,2026-09-19 22:49:48
+10000011,10000011,https://codeberg.org/sergedroz/Jupyter_Training,SUCCESS,Repository executed successfully,2026-09-19 22:51:10,2026-09-19 22:55:02,232.0,2026-09-19 22:51:10
+10000012,10000012,https://codeberg.org/alice/Ava-Notebooks,SUCCESS,Repository executed successfully,2026-09-19 22:51:44,2026-09-19 22:52:48,64.0,2026-09-19 22:51:44
+10000013,10000013,https://codeberg.org/HPC-NRW/Python-PerfOpt,SUCCESS,Repository executed successfully,2026-09-19 22:51:57,2026-09-19 23:07:09,912.0,2026-09-19 22:51:57
+10000014,10000014,https://codeberg.org/itech-bs14/JupyterLab-Einfuehrung-in-Python,SUCCESS,Repository executed successfully,2026-09-19 22:52:48,2026-09-19 22:55:29,161.0,2026-09-19 22:52:48
+10000015,10000015,https://codeberg.org/The-Taggart-Institute/python-for-defenders,SUCCESS,Repository executed successfully,2026-09-19 23:07:09,2026-09-19 23:09:39,149.0,2026-09-19 23:07:09
+10000016,10000016,https://codeberg.org/paarmann/tutorial-jupyter,SUCCESS,Repository executed successfully,2026-09-19 23:09:39,2026-09-19 23:19:07,568.0,2026-09-19 23:09:39
+11000001,279,https://zenodo.org/records/18560777,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:06,2026-09-20 00:22:10,4.0,2026-09-20 00:22:06
+11000002,198,https://zenodo.org/records/7512701,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:09,2026-09-20 00:22:13,4.0,2026-09-20 00:22:09
+11000003,284,https://zenodo.org/records/19091112,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:09,2026-09-20 00:22:48,39.0,2026-09-20 00:22:09
+11000004,254,https://zenodo.org/records/7789585,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:10,2026-09-20 00:22:12,2.0,2026-09-20 00:22:10
+11000005,282,https://zenodo.org/records/18628991,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:12,2026-09-20 00:22:15,3.0,2026-09-20 00:22:12
+11000006,271,https://zenodo.org/records/21390425,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:13,2026-09-20 00:22:16,3.0,2026-09-20 00:22:13
+11000007,165,https://zenodo.org/records/15716537,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:15,2026-09-20 00:22:18,3.0,2026-09-20 00:22:15
+11000008,253,https://codeberg.org/aiocoap/aiocoap,METADATA_FETCH_FAILED,Could not fetch and save normalized repository metadata,2026-09-20 00:22:16,2026-09-20 00:22:18,1.0,2026-09-20 00:22:16
+11000009,60,https://zenodo.org/records/6957842,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:18,2026-09-20 00:22:20,2.0,2026-09-20 00:22:18
+11000010,10000010,https://codeberg.org/tlint101/pharmacophore-toolkit,SUCCESS,Repository executed successfully,2026-09-20 00:22:18,2026-09-20 00:25:02,164.0,2026-09-20 00:22:18
+11000011,128,https://zenodo.org/records/3255070,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:22:50,2026-09-20 00:22:53,3.0,2026-09-20 00:22:50
+11000012,112,https://github.com/034adarsh/Stock-Price-Prediction-Using-LSTM,SUCCESS,Repository executed successfully,2026-09-20 00:22:53,2026-09-20 00:45:43,1370.0,2026-09-20 00:22:53
+11000013,228,https://zenodo.org/records/8053980,ZENODO_DOWNLOAD_FAILED,Could not download or extract the Zenodo record,2026-09-20 00:45:43,2026-09-20 00:45:46,3.0,2026-09-20 00:45:43

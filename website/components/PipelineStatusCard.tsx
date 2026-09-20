@@ -7,9 +7,9 @@ import { Icon, ScoreRing } from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-const ACTIVE = new Set<PipelineJobSnapshot['status']>(['queued', 'preparing', 'building', 'running']);
+export const ACTIVE = new Set<PipelineJobSnapshot['status']>(['queued', 'preparing', 'building', 'running']);
 
-const PIPELINE_PHASES = [
+export const PIPELINE_PHASES = [
   { label: 'Acquire repository', detail: 'Validate the source and collect notebook files.' },
   { label: 'Classify notebooks', detail: 'Detect each notebook\'s research purpose.' },
   { label: 'Resolve dependencies', detail: 'Read requirements and discover imported packages.' },
@@ -18,10 +18,10 @@ const PIPELINE_PHASES = [
   { label: 'Compare and save', detail: 'Compare outputs, calculate scores, and save results.' },
 ] as const;
 
-type Activity = { label: string; detail: string; state: 'done' | 'active' | 'pending' };
+export type Activity = { label: string; detail: string; state: 'done' | 'active' | 'pending' };
 type AnalysisFactor = { title: string; detail: string; tone: 'positive' | 'warning' | 'critical' };
 
-function pipelinePhase(job: PipelineJobSnapshot) {
+export function pipelinePhase(job: PipelineJobSnapshot) {
   const stage = job.stage.toLowerCase();
   if (stage.includes('classif')) return 1;
   if (stage.includes('resolving depend')) return 2;
@@ -49,7 +49,7 @@ function findLast(lines: string[], pattern: RegExp) {
   return null;
 }
 
-function buildActivity(job: PipelineJobSnapshot, phase: number): Activity[] {
+export function buildActivity(job: PipelineJobSnapshot, phase: number): Activity[] {
   const lines = job.log ?? [];
   const successfulTerminal = job.status === 'succeeded' || job.status === 'partial';
   const stateFor = (index: number): Activity['state'] => (

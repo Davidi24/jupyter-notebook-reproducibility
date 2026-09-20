@@ -6,14 +6,17 @@ command_exists () {
 
 validate_repo() {
     local repo_url="$1"
+    local attempt
     log "[REPO] Validating repository URL: $repo_url"
-    if git ls-remote "$repo_url" &>/dev/null; then
-        log "[REPO] Repository URL is valid."
-        return 0
-    else
-        log "[ERROR] Invalid repository URL - $repo_url"
-        return 1
-    fi
+    for attempt in 1 2 3; do
+        if timeout 30 git ls-remote "$repo_url" &>/dev/null; then
+            log "[REPO] Repository URL is valid."
+            return 0
+        fi
+        [ "$attempt" -lt 3 ] && sleep 3
+    done
+    log "[ERROR] Invalid repository URL - $repo_url"
+    return 1
 }
 
 validate_zenodo() {

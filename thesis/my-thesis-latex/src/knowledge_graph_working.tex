@@ -7,6 +7,8 @@ The implementation does not manually write RDF triples by hand. Instead, it foll
 
 The main flow of the knowledge-graph implementation is therefore: working SQLite database $\rightarrow$ CSV export $\rightarrow$ YARRRML/RML mappings $\rightarrow$ RDF fragments $\rightarrow$ combined graph $\rightarrow$ SPARQL validation.
 
+Figure~\ref{fig:kg-publication-flow} shows the knowledge-graph publication flow.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/kg_publication_flow.png}
@@ -19,6 +21,8 @@ The main flow of the knowledge-graph implementation is therefore: working SQLite
 The implementation builds on the existing FAIR Jupyter knowledge graph rather than replacing it. FAIR Jupyter provides the semantic baseline for notebook reproducibility. It already contains the REPRODUCE-ME ontology, mapping files, and a Morph-KGC-based materialisation workflow. Its original data model focuses on publications, authors, GitHub repositories, notebooks, code features, requirements, executions, and reproducibility results \cite{samuel2024fairjupyter}.
 
 The contribution of this thesis is a second operational data view produced by the cross-platform pipeline. This view comes from the working SQLite database created during pipeline execution. It describes GitHub and Codeberg repositories, Zenodo archived records, normalized metadata, processing runs, notebook executions, output-comparison results, and notebook classifications. These elements are not written as a separate unrelated graph. They are published under the same Notebook FAIR namespace and connected through an ontology extension.
+
+Table~\ref{tab:fairjupyter-division} summarises the division between FAIR Jupyter baseline and this extension.
 
 \begin{table}[ht]
 \centering
@@ -51,12 +55,14 @@ The database connection is opened in read-only mode. This is important because k
 
 The exporter uses seven named SQL queries. Each query corresponds to one evidence area of the pipeline: resources, metadata, notebooks, runs, executions, reproducibility metrics, and classifications. The queries select columns in a fixed order instead of using \texttt{SELECT *}. This makes the CSV headers stable, which is necessary because the mapping files depend on predictable column names.
 
+Table~\ref{tab:kg-csv-exports} shows the CSV exports for the pipeline graph.
+
 \begin{table}[ht]
 \centering
 \caption{CSV exports for the pipeline graph.}
 \label{tab:kg-csv-exports}
 \footnotesize
-\begin{tabularx}{\textwidth}{@{}p{3.6cm}p{2.6cm}p{1.7cm}X@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.15cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{1.7cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
 CSV file & Source evidence & Key identifier & Main semantic content\tabularnewline
 \midrule
@@ -65,7 +71,7 @@ CSV file & Source evidence & Key identifier & Main semantic content\tabularnewli
 \texttt{notebooks.csv} & notebooks & \texttt{id} & repository link, path, language\tabularnewline
 \texttt{repository\_runs.csv} & processing runs & \texttt{id} & resource link, status, message, timing\tabularnewline
 \texttt{notebook\_}\linebreak\texttt{executions.csv} & notebook executions & \texttt{id} & run/notebook links, status, cells, errors\tabularnewline
-\texttt{notebook\_}\linebreak\texttt{reproducibility\_}\linebreak\texttt{metrics.csv} & reproducibility metrics & \texttt{id} & execution link, comparison counts, score\tabularnewline
+\texttt{notebook\ub}\linebreak\texttt{reproduci\-}\linebreak\texttt{bility\ub metrics}\linebreak\texttt{.csv} & reproducibility metrics & \texttt{id} & execution link, comparison counts, score\tabularnewline
 \texttt{notebook\_}\linebreak\texttt{classifications.csv} & classifications & \texttt{id} & method labels, confidence, review, final label\tabularnewline
 \bottomrule
 \end{tabularx}
@@ -74,6 +80,8 @@ CSV file & Source evidence & Key identifier & Main semantic content\tabularnewli
 The repository export also prepares semantic information that is easier to compute in SQL than inside the mapping file. It creates the complete platform URL and selects the RDF resource type. GitHub and Codeberg rows become \texttt{GitRepositoryResource}, while Zenodo rows become \texttt{ArchivedResearchRecord}. This preserves the difference between Git repositories and archived research records before RDF materialisation begins.
 
 The classification export also prepares an effective category. If a human-reviewed final category exists, that category is used as the effective category. Otherwise, the provisional automated category is used. The original rule result, AI result, agreement status, and review information remain available as separate fields, so the export does not hide how the classification was produced.
+
+Figure~\ref{fig:relational-export-flow} shows the relational export flow.
 
 \begin{figure}[H]
 \centering
@@ -92,6 +100,8 @@ The central resource class is \texttt{RepositoryResource}. This is a neutral par
 
 However, the ontology also keeps the platform difference visible. \texttt{GitRepositoryResource} represents resources that are real Git repositories. GitHub and Codeberg use this class. \texttt{ArchivedResearchRecord} represents non-Git archived records, such as Zenodo records. These two classes are kept separate because a Zenodo record does not become a Git repository just because its downloaded archive is processed as a local folder.
 
+Figure~\ref{fig:kg-resource-classes} shows the resource classes in the ontology extension.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/kg_resource_classes.png}
@@ -105,7 +115,9 @@ The ontology also represents notebooks and processing activities. \texttt{Notebo
 
 Processing is represented with PROV activities. \texttt{RepositoryRun} represents one pipeline attempt for a resource. \texttt{NotebookExecution} represents the execution of one notebook during a run. \texttt{ReproducibilityResult} represents the measured comparison result linked to a notebook execution. This placement is important because the reproducibility score belongs to a specific execution result, not permanently to a repository.
 
-Notebook classification is also represented as an activity. \texttt{NotebookClassificationActivity} links a classification result to the notebook that was classified. This is necessary because the same notebook can be classified several times with different rule versions, AI models, prompts, thresholds, or human review decisions.
+Notebook classification is also represented as an activity. \texttt{Notebook\-Classification\-Activity} links a classification result to the notebook that was classified. This is necessary because the same notebook can be classified several times with different rule versions, AI models, prompts, thresholds, or human review decisions.
+
+Figure~\ref{fig:main-rdf-path} illustrates the main provenance path in the ontology.
 
 \begin{figure}[H]
 \centering
@@ -113,6 +125,8 @@ Notebook classification is also represented as an activity. \texttt{NotebookClas
 \caption{Main provenance path in the ontology.}
 \label{fig:main-rdf-path}
 \end{figure}
+
+Table~\ref{tab:ontology-classes} shows the main ontology classes added by the extension.
 
 \begin{table}[ht]
 \centering
@@ -144,7 +158,9 @@ Descriptive metadata uses standard terms where possible. Dublin Core provides pr
 
 After the ontology defines the model, mapping files define how CSV rows become RDF statements. The readable mapping source is written as seven \texttt{pipeline\_*.yaml} files. These files use YARRRML because it provides a compact syntax for describing CSV sources, subject templates, and predicate-object rules \cite{heyvaert2018yarrrml}.
 
-The YARRRML files are not executed directly by Morph-KGC. The script \texttt{compile\_pipeline\_mappings.py} converts them into RML Turtle files using the pinned YARRRML parser package \cite{rmlspec}. The RML files are the executable mappings used during materialisation.
+The YARRRML files are not executed directly by Morph-KGC. The script \texttt{compile\ub pipeline\ub mappings.py} converts them into RML Turtle files using the pinned YARRRML parser package \cite{rmlspec}. The RML files are the executable mappings used during materialisation.
+
+Figure~\ref{fig:mapping-compilation-flow} shows the mapping compilation flow.
 
 \begin{figure}[H]
 \centering
@@ -156,6 +172,8 @@ The YARRRML files are not executed directly by Morph-KGC. The script \texttt{com
 Stable subject templates are the most important part of the mapping design. A repository always receives an IRI based on its database ID. Notebooks, runs, executions, results, and classifications use their table name and database ID. Because the same identifier pattern is used across mappings, data from different CSV files can connect to the same RDF resource.
 
 For example, the repository mapping creates a repository IRI from the repository ID. The metadata mapping uses the same repository IRI instead of creating a separate metadata object. This means title, authors, licence, DOI, and dates enrich the existing repository resource. They do not become disconnected metadata nodes.
+
+Table~\ref{tab:subject-templates} lists the RDF subject templates used by the pipeline mappings.
 
 \begin{table}[ht]
 \centering
@@ -170,7 +188,7 @@ Repository & \texttt{repositories.csv} & \texttt{.../repository/\$(id)} & matche
 Notebook & \texttt{notebooks.csv} & \texttt{.../notebook/\$(id)} & same pattern, keyed by the notebook table ID\tabularnewline
 Run & \texttt{repository\_runs.csv} & \texttt{.../run/\$(id)} & one IRI per processing attempt\tabularnewline
 Execution & \texttt{notebook\_}\linebreak\texttt{executions.csv} & \texttt{.../execution/\$(id)} & one IRI per notebook execution\tabularnewline
-Reproducibility result & \texttt{notebook\_}\linebreak\texttt{reproducibility\_}\linebreak\texttt{metrics.csv} & \texttt{.../result/\$(id)} & keeps the score attached to one specific execution\tabularnewline
+Reproducibility result & \texttt{notebook\ub}\linebreak\texttt{reproduci\-}\linebreak\texttt{bility\ub metrics}\linebreak\texttt{.csv} & \texttt{.../result/\$(id)} & keeps the score attached to one specific execution\tabularnewline
 Classification activity & \texttt{notebook\_}\linebreak\texttt{classifications.csv} & \texttt{.../classification/}\linebreak\texttt{\$(id)} & keeps each classification attempt separately addressable\tabularnewline
 Platform & derived from the platform column & \texttt{.../platform/}\linebreak\texttt{\$(platform)} & creates one shared individual per platform name rather than per row\tabularnewline
 \bottomrule
@@ -182,6 +200,8 @@ The mappings also write inverse relationships where useful. A notebook is linked
 Typed values are handled in the mappings. Counts use integer datatypes. Scores and durations use decimal datatypes. URLs and RDF classes are emitted as IRIs. Labels, statuses, messages, and category names remain literals. Empty CSV fields are left empty instead of being converted into invented values.
 
 The compiler also supports a check mode. In check mode, the readable YARRRML files are compiled into a temporary location and compared with the committed RML files. If they differ, the build fails. This prevents a situation where the readable mapping was changed but the executable mapping was not updated. The build also requires exactly seven pipeline RML files, so a partial graph cannot be created unnoticed.
+
+Table~\ref{tab:mapping-files} summarises the mapping files and responsibility.
 
 \begin{table}[ht]
 \centering
@@ -208,6 +228,8 @@ Mapping file & Source CSV & Main RDF entities & Main relationships\tabularnewlin
 Materialisation is controlled by \texttt{build\_pipeline\_kg.py}. This script runs the complete graph-building process. Before creating RDF, it checks that Morph-KGC can be imported, that all seven mapping files exist, that the ontology extension can be parsed as RDF/XML, and that each mapping can be parsed as Turtle. These checks catch syntax or dependency problems before a long conversion starts.
 
 Unless the user explicitly skips export, the builder first calls the CSV exporter. This ensures that the CSV files match the current working database. It then prepares output folders under \texttt{data/output/kg/}. These folders store Morph-KGC configuration files, logs, split graph fragments, the combined graph, and the build summary.
+
+Table~\ref{tab:kg-generated-files} shows the generated files during one knowledge-graph build.
 
 \begin{table}[ht]
 \centering
@@ -236,6 +258,8 @@ After each fragment is produced, RDFLib parses it and counts its triples. Parsin
 
 When all fragments are valid, the builder combines them. It loads the ontology extension and all RDF fragments into one RDFLib graph. Because RDFLib treats the graph as a set of triples, duplicate statements are stored only once. The combined graph is then serialized as \texttt{notebookfair-pipeline.nt}.
 
+Figure~\ref{fig:materialisation-combination-flow} shows the materialisation and combination flow.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/materialisation_combination_flow.png}
@@ -245,15 +269,17 @@ When all fragments are valid, the builder combines them. It loads the ontology e
 
 The build summary records the UTC build time, source database path, ontology path, combined graph path, total unique triple count, CSV row counts, fragment outputs, fragment triple counts, and mapping durations. These values connect the final RDF graph to the relational snapshot from which it was created.
 
-The complete graph build can be started through the wrapper script \texttt{kg/fairjupyter/run\_fairjupyter\_kg.sh}. The wrapper resolves the project root, selects the correct Python environment, and passes the working database and output directory to the builder. This provides one repeatable command for rebuilding the graph.
+The complete graph build can be started through the wrapper script \texttt{kg/}\allowbreak\texttt{fairjupyter/}\allowbreak\texttt{run\ub fairjupyter\ub kg.sh}. The wrapper resolves the project root, selects the correct Python environment, and passes the working database and output directory to the builder. This provides one repeatable command for rebuilding the graph.
 
 Generated graph files can be deleted and recreated from the database, ontology, and mappings. This is preferable to editing N-Triples manually because every RDF statement has a documented source column and mapping rule. If new classifications or executions are added to the database, the graph is updated by rerunning the same build process.
 
 \subsection{Representation of Notebook Classifications in RDF}
 
-Notebook classification is included in the semantic publication route through the seventh mapping. Each stored classification row becomes a \texttt{NotebookClassificationActivity}. The subject IRI contains the classification row ID, and the activity points to the notebook that was classified.
+Notebook classification is included in the semantic publication route through the seventh mapping. Each stored classification row becomes a \texttt{Notebook\-Classification\-Activity}. The subject IRI contains the classification row ID, and the activity points to the notebook that was classified.
 
 This representation preserves the method-specific results instead of publishing only one final category. The rule-based decision is represented separately from the AI-based decision. The reconciliation result is also represented. This means the graph can show whether the rule method and AI method agreed, disagreed, had low confidence, or required human review.
+
+Table~\ref{tab:classification-rdf} lists the classification columns mapped into RDF properties.
 
 \begin{table}[ht]
 \centering
@@ -283,6 +309,8 @@ The classification mapping writes both the forward and inverse relationship. The
 
 Only classification rows connected to a registered notebook ID are exported into RDF. If a notebook path cannot be resolved uniquely, the classification can still remain in SQLite and JSON, but it does not create an unsupported RDF link. This avoids creating a graph relationship that cannot be trusted.
 
+Figure~\ref{fig:classification-rdf-representation} illustrates the classification representation in RDF.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/classification_rdf_representation.png}
@@ -299,6 +327,8 @@ The important point is that disagreement is not removed. If the rule method choo
 After materialisation, the generated graph must be checked. The implementation does this with SPARQL competency questions and structural validation. The goal is not only to prove that the RDF file parses. The goal is to show that the graph actually contains the relationships required by the thesis.
 
 Seven SPARQL files express the main questions that the graph must answer. They cover platform counts, metadata values, the path from repository to notebook execution and score, run statuses, average reproducibility score per platform, Zenodo archived records with DOI values, and notebook classification categories.
+
+Table~\ref{tab:sparql-questions} shows the implemented SPARQL competency questions.
 
 \begin{table}[ht]
 \centering
@@ -325,6 +355,8 @@ The script \texttt{run\_pipeline\_sparql\_tests.py} loads the combined N-Triples
 The structural checks are stricter than parsing. Entity counts for repositories, notebooks, runs, executions, results, and classifications must match the corresponding CSV row counts. The graph must contain all three platform names. Zenodo resources must be typed as archived records and must not be typed as Git repositories. A Zenodo DOI must be present when the test expects it.
 
 Relationship counts are also checked. Every exported notebook must have a repository link. Every run must link to a resource. Every execution must link to a run. Every metrics row must link to an execution result. Every exported classification must link to a notebook. These checks confirm that the graph is connected rather than only containing isolated resources.
+
+Figure~\ref{fig:graph-validation-flow} shows the graph validation flow.
 
 \begin{figure}[H]
 \centering

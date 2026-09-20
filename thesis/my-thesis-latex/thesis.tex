@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt,oneside,BCOR=1cm,DIV=12,toc=chapterentrywithdots]{scrbook}
+\documentclass[a4paper,11pt,oneside,BCOR=1cm,DIV=12,toc=chapterentrywithdots,numbers=noenddot]{scrbook}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -6,6 +6,7 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{multirow}
 \usepackage{float}
 \usepackage{placeins}
 \usepackage{amsmath}
@@ -29,16 +30,23 @@
   bookmarksnumbered=true,
   bookmarksopen=true,
   pdfauthor={David Keci},
-  pdftitle={Extending Jupyter Notebook Reproducibility Analysis to Non-GitHub Repositories (Codeberg, Zenodo)}
+  pdftitle={Cross-Platform Reproducibility Analysis of Jupyter Notebooks across GitHub, Codeberg, and Zenodo}
 }
 
 \clearpairofpagestyles
 \ihead{Cross-Platform Notebook Reproducibility}
-\ohead{Draft}
+\ohead{Master Thesis}
 \cfoot[\pagemark]{\pagemark}
 \setkomafont{pageheadfoot}{\small}
-\setkomafont{chapter}{\color{tucgreen}}
-\setkomafont{section}{\color{tucgreen}}
+
+% Chapter headings are set large and in the TUC accent colour so that the start of
+% a chapter is immediately visible when leafing through the document.
+\setkomafont{chapter}{\color{tucgreen}\fontsize{26}{30}\selectfont\bfseries}
+\setkomafont{chapterprefix}{\color{tucgreen}\fontsize{15}{18}\selectfont\bfseries}
+\setkomafont{section}{\color{tucgreen}\Large\bfseries}
+\setkomafont{subsection}{\color{tucgreen}\large\bfseries}
+\setkomafont{subsubsection}{\color{tucgreen}\normalsize\bfseries}
+\RedeclareSectionCommand[beforeskip=-1.5\baselineskip,afterskip=1.6\baselineskip]{chapter}
 
 \lstset{
   basicstyle=\ttfamily\small,
@@ -53,8 +61,15 @@
   belowskip=1em
 }
 
+% Long database identifiers set in \texttt{} do not hyphenate and overflow narrow
+% table columns. \ub is an underscore that permits a line break after it, so
+% identifiers such as notebook_reproducibility_metrics wrap instead of running
+% past the column edge.
+\newcommand{\ub}{\_\allowbreak}
+
 \newcommand{\systemname}{Notebook FAIR Cross-Platform Pipeline}
-\newcommand{\draftwarning}{\textbf{Draft status:} Chapters 1--5 document the completed cross-platform pipeline, notebook classifier, and knowledge-graph extension. Chapters 6--8 (Evaluation, Future Work, and Conclusion) show the planned thesis structure and have not yet been written.}
+% Placeholder: replace with the actual date on submission.
+\newcommand{\submissiondate}{XX Month 2026}
 
 \begin{document}
 \hypersetup{pageanchor=false}
@@ -62,8 +77,8 @@
 \begin{titlepage}
   \begin{center}
     \raisebox{-1ex}{\includegraphics[scale=1.5]{../template/TU_Chemnitz_positiv_gruen.pdf}}\\[1.2cm]
-    {\Large\bfseries Extending Jupyter Notebook Reproducibility Analysis to\\ Non-GitHub Repositories (Codeberg, Zenodo)\\[1.3cm]}
-    {\Large\bfseries Master Thesis - Draft}\\[0.8cm]
+    {\Large\bfseries Cross-Platform Reproducibility Analysis of Jupyter\\ Notebooks across GitHub, Codeberg, and Zenodo\\[1.3cm]}
+    {\Large\bfseries Master Thesis}\\[0.8cm]
     Submitted in Fulfilment of the Requirements for the Academic Degree\\
     Master of Science\\[0.5cm]
     Department of Computer Science\\
@@ -73,132 +88,37 @@
   \begin{tabular}{@{}ll@{}}
     Submitted by: & David Keci\\
     Programme: & M.Sc. Web Engineering\\
-    Supervisor: & Prof. Dr. Sheeba Samuel\\
+    Examiner: & Prof. Dr. Martin Gaedke\\
+    Supervisor: & Dr. Sheeba Samuel\\
     University: & Chemnitz University of Technology\\
-    Draft date: & 13 September 2026
+    Submission date: & \submissiondate
   \end{tabular}
 \end{titlepage}
 
 \hypersetup{pageanchor=true}
+\frontmatter
+
 \addchap{Abstract}
-Jupyter notebooks combine executable code, narrative text, and generated results, but their apparent self-containment does not guarantee computational reproducibility. Existing large-scale reproducibility pipelines and the downstream FAIR Jupyter knowledge graph primarily operate on GitHub-hosted notebooks. This focus excludes resources distributed through alternative Git forges and research repositories whose access mechanisms and metadata models differ from GitHub. This thesis develops a cross-platform extension that processes GitHub, Codeberg, and Zenodo resources through a common reproducibility route while preserving the distinctions between Git repositories and archived research records.
+Jupyter notebooks combine executable code, narrative text, and generated results, but their apparent self-containment does not guarantee computational reproducibility. The large-scale studies that established this finding, and the FAIR Jupyter knowledge graph that publishes their results, draw their evidence almost entirely from GitHub. What is presently known about notebook reproducibility is therefore what is true of one platform, one community of practice, and one metadata model. This thesis develops a platform-independent reproducibility workflow that processes GitHub, Codeberg, and Zenodo resources on identical terms, and uses it to ask whether findings established on a single platform transfer to others.
 
-The implementation introduces platform detection, platform-specific validation and acquisition, normalized metadata extraction, mixed-platform batch processing, and a copy-on-first-run database architecture. GitHub and Codeberg resources are validated and acquired with Git, whereas Zenodo records are validated through the Records API and downloaded as archives. Eight descriptive metadata fields are normalized and stored in a dedicated table. After acquisition, the existing platform-independent stages collect notebooks, infer requirements, create Python environments, execute notebooks, compare outputs, and record provenance and error information.
+The implementation introduces platform detection, platform-specific validation and acquisition, normalized metadata extraction under a strict non-fabrication rule, mixed-platform batch processing, and a copy-on-first-run database architecture that leaves the inherited baseline data unmodified. GitHub and Codeberg resources are validated and acquired with Git, whereas Zenodo records are validated through the Records API and downloaded as archives. Eight descriptive metadata fields are reconciled across the three API vocabularies. After acquisition, shared platform-independent stages discover notebooks, infer requirements, create isolated Python environments, execute the notebooks, compare their outputs cell by cell, and record provenance and error information. A hybrid classifier characterises notebook purpose by combining a transparent weighted-rule method with a locally hosted language model, retaining both decisions, their confidences, and their agreement state rather than a single label.
 
-The database is subsequently exported into seven CSV datasets and transformed into RDF using YARRRML-derived RML mappings and Morph-KGC. An ontology extension represents platforms, Git repositories, archived records, notebooks, repository runs, notebook executions, reproducibility results, and notebook-classification activities. The confirmed reproducibility snapshot generated 222,048 unique triples and passed structural and SPARQL competency checks. A hybrid classifier compares transparent weighted rules with a structured AI-model response, stores both decisions, and requests human clarification when the methods disagree or have low confidence.
+The resulting database is exported into seven CSV datasets and materialised as RDF through YARRRML-derived RML mappings and Morph-KGC. An ontology extension represents hosting platforms, Git repositories, archived research records, notebooks, repository runs, notebook executions, reproducibility results, and notebook-classification activities. The evaluation corpus comprises 318 resources across the three platforms, yielding 2{,}291 executed and compared notebooks and 162{,}008 unique triples that pass structural and SPARQL competency validation. Across 38{,}087 compared code cells the mean per-notebook reproducibility score is 0.365 --- GitHub 0.378, Codeberg 0.367, Zenodo 0.348 --- but the ranking depends on whether notebooks or repositories are counted, and only the difference between Codeberg and Zenodo holds under every counting rule. Metadata completeness shows the opposite ordering: Zenodo supplies DOI and licence metadata for most of its records, neither Git forge supplies a DOI, and licence coverage differs sharply between GitHub and Codeberg. Across the whole corpus, missing dependencies are the single largest execution failure cause at 20.9\%, and they remain common on all three platforms at 17.1\% to 25.8\%. Every executed notebook was classified by both methods, which agree on 19.1\% of them; measured against the curated repository category the language model reaches a macro F1 of 0.29 and the rule-based method 0.15, so the two are complementary but neither is reliable on its own.
 
 \vspace{0.6cm}
 \noindent\textbf{Keywords:} computational reproducibility, Jupyter notebooks, metadata normalization, knowledge graphs, GitHub, Codeberg, Zenodo
 
-\vspace{0.6cm}
-\noindent\draftwarning
-
-\addchap*{Table of Contents}
-{\color{tucgreen}\hrule height 0.7pt}
-\vspace{0.45cm}
-
-\newcommand{\tocpagerange}[1]{\StrBehind{#1}{. }[\tocpagerangevalue]\tocpagerangevalue}
-\newcommand{\tocchapterline}[3]{\noindent\textcolor{tucgreen}{\textbf{#1\quad #2}}\dotfill\textbf{\tocpagerange{#3}}\par\vspace{0.28em}}
-\newcommand{\tocsectionline}[3]{\noindent\hspace{1.5em}\textcolor{black!82}{#1\quad #2}\dotfill\textcolor{black!65}{\tocpagerange{#3}}\par}
-\newcommand{\tocsubsectionline}[3]{\noindent\hspace{3em}\textcolor{black!68}{#1\quad #2}\dotfill\textcolor{black!55}{\tocpagerange{#3}}\par}
-\newcommand{\tocfrontline}[2]{\noindent\textcolor{tucgreen}{\textbf{#1}}\dotfill\textbf{#2}\par\vspace{0.28em}}
-
+% \tableofcontents emits its own chapter-level heading, so the heading is set
+% through \contentsname rather than a separate \addchap* (which would leave the
+% heading stranded on a page of its own).
+\renewcommand{\contentsname}{Table of Contents}
 \begingroup
 \small
-\setlength{\parskip}{0.08em}
-
-\tocfrontline{Abstract}{1 page}
-
-\tocchapterline{1.}{Introduction}{pp. 7--10}
-\tocsectionline{1.1}{Motivation}{p. 7}
-\tocsectionline{1.2}{Problem Statement}{p. 8}
-\tocsectionline{1.3}{Research Goal and Research Questions}{p. 8}
-\tocsectionline{1.4}{Contributions}{p. 9}
-\tocsectionline{1.5}{Thesis Structure}{p. 10}
-
-\tocchapterline{2.}{Background and Related Work}{pp. 11--19}
-\tocsectionline{2.1}{Computational Reproducibility}{p. 11}
-\tocsectionline{2.2}{Jupyter Notebooks and Reproducibility}{p. 12}
-\tocsectionline{2.3}{Existing Notebook Reproducibility Analysis}{p. 13}
-\tocsectionline{2.4}{GitHub, Codeberg, and Zenodo}{p. 14}
-\tocsectionline{2.5}{Metadata Normalization and Provenance}{pp. 14--15}
-\tocsectionline{2.6}{Environment Reconstruction and Notebook Execution}{p. 16}
-\tocsectionline{2.7}{Notebook Classification Approaches}{p. 17}
-\tocsectionline{2.8}{FAIR Data and Knowledge Graphs}{p. 18}
-\tocsectionline{2.9}{Research Gap}{p. 19}
-
-\tocchapterline{3.}{Requirements and System Analysis}{pp. 20--26}
-\tocsectionline{3.1}{Baseline System and Scope}{p. 20}
-\tocsectionline{3.2}{Functional Requirements}{p. 21}
-\tocsectionline{3.3}{Non-Functional Requirements}{p. 22}
-\tocsectionline{3.4}{Input and Output Contracts}{pp. 23--24}
-\tocsectionline{3.5}{Data and Classification Requirements}{p. 25}
-\tocsectionline{3.6}{Evaluation Requirements}{p. 26}
-
-\tocchapterline{4.}{System Design}{pp. 27--35}
-\tocsectionline{4.1}{Overall Architecture}{pp. 27--29}
-\tocsectionline{4.2}{Pipeline Control Flow}{p. 30}
-\tocsectionline{4.3}{Connector Architecture}{p. 31}
-\tocsectionline{4.4}{Metadata Model and Normalization Design}{p. 31}
-\tocsectionline{4.5}{Persistence and Database Design}{p. 32}
-\tocsectionline{4.6}{Notebook Classification Architecture}{p. 33}
-\tocsectionline{4.7}{Knowledge Graph and Provenance Design}{pp. 34--35}
-
-\clearpage
-\tocchapterline{5.}{Implementation}{pp. 36--77}
-\tocsectionline{5.1}{Cross-Platform Pipeline Implementation}{pp. 37--54}
-\tocsubsectionline{5.1.1}{Entry Point and Runtime Preparation}{p. 38}
-\tocsubsectionline{5.1.2}{Working Directories and Working Database}{pp. 38--39}
-\tocsubsectionline{5.1.3}{Input Modes and Resource Context}{p. 40}
-\tocsubsectionline{5.1.4}{Platform Detection and Validation}{p. 41}
-\tocsubsectionline{5.1.5}{Metadata Retrieval and Normalization}{pp. 42--43}
-\tocsubsectionline{5.1.6}{Resource Acquisition}{p. 44}
-\tocsubsectionline{5.1.7}{Notebook Registration and Discovery}{pp. 45--46}
-\tocsubsectionline{5.1.8}{Classification Handover inside the Pipeline}{p. 47}
-\tocsubsectionline{5.1.9}{Requirement Inference}{p. 47}
-\tocsubsectionline{5.1.10}{Python Environment Creation}{p. 48}
-\tocsubsectionline{5.1.11}{Notebook Execution and Output Comparison}{pp. 49--51}
-\tocsubsectionline{5.1.12}{Error Handling, Cleanup, and Batch Continuation}{pp. 52--54}
-\tocsectionline{5.2}{Notebook Classification Implementation}{pp. 55--64}
-\tocsubsectionline{5.2.1}{Classification Objective and Taxonomy}{pp. 55--56}
-\tocsubsectionline{5.2.2}{Notebook Evidence Collection}{p. 57}
-\tocsubsectionline{5.2.3}{Rule-Based Classification}{p. 58}
-\tocsubsectionline{5.2.4}{AI-Based Classification}{pp. 59--60}
-\tocsubsectionline{5.2.5}{Hybrid Reconciliation Strategy}{p. 61}
-\tocsubsectionline{5.2.6}{Database Storage and Human Review}{pp. 62--63}
-\tocsubsectionline{5.2.7}{Command-Line Integration and Failure Handling}{p. 64}
-\tocsectionline{5.3}{Knowledge Graph Extension Implementation}{pp. 65--77}
-\tocsubsectionline{5.3.1}{Relationship to the FAIR Jupyter Knowledge Graph}{p. 66}
-\tocsubsectionline{5.3.2}{Relational Data Export}{p. 67}
-\tocsubsectionline{5.3.3}{Ontology Extension and Resource Model}{pp. 68--70}
-\tocsubsectionline{5.3.4}{YARRRML and RML Mapping Design}{p. 71}
-\tocsubsectionline{5.3.5}{Knowledge Graph Materialisation}{pp. 72--73}
-\tocsubsectionline{5.3.6}{Representation of Notebook Classifications in RDF}{p. 74}
-\tocsubsectionline{5.3.7}{SPARQL Competency Questions and Structural Validation}{p. 75}
-\tocsubsectionline{5.3.8}{Resulting Knowledge Graph}{pp. 76--77}
-
-\tocchapterline{6.}{Evaluation}{pp. 78--94}
-\tocsectionline{6.1}{Evaluation Strategy}{pp. 79--80}
-\tocsectionline{6.2}{Metadata Integration Test}{pp. 81--82}
-\tocsectionline{6.3}{Database Inspection}{pp. 83--84}
-\tocsectionline{6.4}{Knowledge-Graph Build Validation}{pp. 85--86}
-\tocsectionline{6.5}{Planned Cross-Platform Experiment}{pp. 87--88}
-\tocsectionline{6.6}{Hybrid Notebook Classification}{pp. 89--90}
-\tocsectionline{6.7}{Reproducibility of the Evaluation}{pp. 91--92}
-\tocsectionline{6.8}{Interim Assessment}{pp. 93--94}
-
-\tocchapterline{7.}{Future Work}{pp. 95--99}
-\tocsectionline{7.1}{Completing the Controlled Cross-Platform Experiment}{p. 96}
-\tocsectionline{7.2}{Labelled Classification Evaluation}{p. 97}
-\tocsectionline{7.3}{Ontology and Mapping Review}{p. 98}
-\tocsectionline{7.4}{Technical and Robustness Improvements}{p. 99}
-
-\tocchapterline{8.}{Conclusion}{p. 100}
-
-\tocfrontline{Bibliography}{}
-\tocfrontline{Appendices}{}
+\setlength{\parskip}{0.06em}
+\tableofcontents
 \endgroup
 
+\cleardoublepage
 \begingroup
 \small
 \listoffigures
@@ -209,6 +129,32 @@ The database is subsequently exported into seven CSV datasets and transformed in
 \listoftables
 \endgroup
 
+\cleardoublepage
+\addchap{List of Abbreviations}
+\begin{acronym}[YARRRML]
+\acro{AI}{Artificial Intelligence}
+\acro{API}{Application Programming Interface}
+\acro{CSV}{Comma-Separated Values}
+\acro{DOI}{Digital Object Identifier}
+\acro{FAIR}{Findable, Accessible, Interoperable, Reusable}
+\acro{HTTP}{Hypertext Transfer Protocol}
+\acro{IRI}{Internationalized Resource Identifier}
+\acro{JSON}{JavaScript Object Notation}
+\acro{KG}{Knowledge Graph}
+\acro{LLM}{Large Language Model}
+\acro{OWL}{Web Ontology Language}
+\acro{PROV-O}{PROV Ontology}
+\acro{RDF}{Resource Description Framework}
+\acro{REST}{Representational State Transfer}
+\acro{RML}{RDF Mapping Language}
+\acro{SPARQL}{SPARQL Protocol and RDF Query Language}
+\acro{SQL}{Structured Query Language}
+\acro{URL}{Uniform Resource Locator}
+\acro{UUID}{Universally Unique Identifier}
+\acro{YARRRML}{Yet Another RDF and RML Multi-Line Language}
+\end{acronym}
+
+\mainmatter
 \include{src/introduction_working}
 \include{src/background_working}
 \include{src/requirements_working}

@@ -42,6 +42,7 @@ APT_PACKAGES=(
     curl
     jq
     unzip
+    zstd
     sqlite3
     python3
     python3-pip
@@ -67,8 +68,13 @@ info "Installing Linux system dependencies..."
 $SUDO apt-get update
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y "${APT_PACKAGES[@]}"
 
+SYSTEM_PYTHON="${SYSTEM_PYTHON:-/usr/bin/python3}"
+[ -x "$SYSTEM_PYTHON" ] || fail "System Python not found at $SYSTEM_PYTHON."
+"$SYSTEM_PYTHON" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' \
+    || fail "Python 3.11 or newer is required for this project's pinned dependencies."
+
 export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
-export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 
 if ! command -v pyenv >/dev/null 2>&1; then
     info "Installing pyenv..."
@@ -77,7 +83,7 @@ else
     info "pyenv already installed."
 fi
 
-export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 if command -v pyenv >/dev/null 2>&1; then
     eval "$(pyenv init - bash)"
 fi
@@ -95,13 +101,19 @@ if ! grep -q 'CPRPMC setup' "$HOME/.bashrc" 2>/dev/null; then
 fi
 
 PIP_FLAGS=(--user)
-if python3 -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
+if "$SYSTEM_PYTHON" -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
     PIP_FLAGS+=(--break-system-packages)
 fi
 
 info "Installing Python dependencies from requirements.txt..."
-python3 -m pip install "${PIP_FLAGS[@]}" --upgrade pip
-python3 -m pip install "${PIP_FLAGS[@]}" -r "$PROJECT_ROOT/requirements.txt"
+"$SYSTEM_PYTHON" -m pip install "${PIP_FLAGS[@]}" --upgrade pip
+"$SYSTEM_PYTHON" -m pip install "${PIP_FLAGS[@]}" -r "$PROJECT_ROOT/requirements.txt"
+
+info "Installing Knowledge Graph dependencies..."
+KG_VENV="$PROJECT_ROOT/kg/fairjupyter/.venv"
+"$SYSTEM_PYTHON" -m venv "$KG_VENV"
+"$KG_VENV/bin/python" -m pip install --upgrade pip
+"$KG_VENV/bin/python" -m pip install -r "$PROJECT_ROOT/kg/fairjupyter/requirements-kg.txt"
 
 info "Verifying required commands..."
 for command_name in python3 sqlite3 jq unzip git pyenv jupyter; do

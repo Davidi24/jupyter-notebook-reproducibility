@@ -2,7 +2,9 @@
 
 import argparse
 import json
+import sqlite3
 import sys
+import time
 from pathlib import Path
 
 from .categories import ALL_CATEGORIES
@@ -20,6 +22,38 @@ from .storage import (
     review_classification,
     save_classification,
 )
+
+
+DB_RETRY_ATTEMPTS = 8
+
+
+def _with_db_retry(operation):
+    for attempt in range(1, DB_RETRY_ATTEMPTS + 1):
+        try:
+            return operation()
+        except sqlite3.OperationalError:
+            if attempt == DB_RETRY_ATTEMPTS:
+                raise
+            time.sleep(3 * attempt)
+
+
+def _save_with_retry(connection, arguments, result):
+    # The LLM answer already cost minutes; never lose it to a transient lock or I/O error.
+    for attempt in range(1, DB_RETRY_ATTEMPTS + 1):
+        try:
+            identifier = save_classification(
+                connection, result, notebook_id=arguments.notebook_id
+            )
+            return identifier, connection
+        except sqlite3.OperationalError:
+            if attempt == DB_RETRY_ATTEMPTS:
+                raise
+            time.sleep(3 * attempt)
+            try:
+                connection.close()
+            except sqlite3.Error:
+                pass
+            connection = _with_db_retry(lambda: open_database(arguments.db_file))
 
 
 def _notebook_paths(inputs):
@@ -114,7 +148,11 @@ def _run_classify(arguments):
         raise ValueError(
             "--notebook-id can only be used when classifying one notebook"
         )
-    connection = open_database(arguments.db_file) if arguments.db_file else None
+    connection = (
+        _with_db_retry(lambda: open_database(arguments.db_file))
+        if arguments.db_file
+        else None
+    )
     outputs = []
 
     try:
@@ -130,10 +168,8 @@ def _run_classify(arguments):
             )
             output = result.to_dict()
             if connection:
-                output["database_id"] = save_classification(
-                    connection,
-                    result,
-                    notebook_id=arguments.notebook_id,
+                output["database_id"], connection = _save_with_retry(
+                    connection, arguments, result
                 )
             outputs.append(output)
     finally:

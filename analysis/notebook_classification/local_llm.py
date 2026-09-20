@@ -11,7 +11,7 @@ from .models import ClassifierResult
 DEFAULT_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:4b")
 DEFAULT_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 DEFAULT_TIMEOUT = 600
-PROMPT_VERSION = "1.0.0"
+PROMPT_VERSION = "1.1.0"
 
 
 class LocalLLMError(RuntimeError):
@@ -25,10 +25,15 @@ OUTPUT_SCHEMA = {
         "secondary_categories": {
             "type": "array",
             "items": {"type": "string", "enum": list(ALL_CATEGORIES)},
+            "maxItems": 4,
         },
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
-        "reason": {"type": "string"},
-        "evidence": {"type": "array", "items": {"type": "string"}},
+        "reason": {"type": "string", "maxLength": 700},
+        "evidence": {
+            "type": "array",
+            "items": {"type": "string", "maxLength": 160},
+            "maxItems": 8,
+        },
     },
     "required": [
         "primary_category", "secondary_categories", "confidence", "reason", "evidence"
@@ -106,9 +111,11 @@ Notebook data:
         ],
         "stream": False,
         "format": OUTPUT_SCHEMA,
-        "options": {"temperature": 0},
+        "options": {"temperature": 0, "num_predict": 900},
     }
 
+    response_data = {}
+    raw_content = ""
     try:
         response = requester(
             f"{base_url.rstrip('/')}/api/chat",
@@ -120,7 +127,10 @@ Notebook data:
         raw_content = response_data["message"]["content"]
         parsed = json.loads(raw_content)
     except (requests.RequestException, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
-        raise LocalLLMError(f"Local Ollama classification failed: {error}") from error
+        detail = ""
+        if raw_content:
+            detail = f" [done_reason={response_data.get('done_reason')!r}, raw_tail={raw_content[-100:]!r}]"
+        raise LocalLLMError(f"Local Ollama classification failed: {error}{detail}") from error
 
     primary = parsed.get("primary_category")
     if primary not in ALL_CATEGORIES:

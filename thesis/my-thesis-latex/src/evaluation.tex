@@ -1,70 +1,741 @@
-\newcommand{\evalreserved}[1]{\vspace*{4cm}\begin{center}\textit{\color{black!45}Reserved for #1 once this section is written.}\end{center}}
-
 \chapter{Evaluation}
 \label{chap:evaluation}
 
-This chapter will evaluate the implemented pipeline, covering metadata integration testing, database inspection, knowledge-graph build validation, a controlled cross-platform experiment, and hybrid notebook classification accuracy. The sections below outline the planned structure of this chapter; none of them have been written yet.
+This chapter reports what the system measured. It answers two different kinds of question, and it keeps them apart.
 
-\clearpage
+The first question is whether the software works as Chapter~\ref{chap:requirements} required. Do the connectors recognise and download resources correctly? Is metadata normalized without inventing values? Does the database keep the evidence? Does the knowledge graph build and answer its queries? This is called \emph{technical validation}.
+
+The second question is what the measurements say about the notebooks themselves. Three questions are asked, in this order:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{How reproducible are the notebooks, and does the hosting platform make a difference?} This is the main empirical result, and Section~\ref{sec:eval-cross-platform} reports it.
+\item \textbf{How well does the notebook classification work?} The pipeline assigns a purpose to every notebook using two independent methods. Section~\ref{sec:eval-classification} measures how good those assignments actually are.
+\item \textbf{How well does the knowledge-graph build work?} Section~\ref{sec:eval-kg} checks that the graph contains the same evidence as the database and can answer the questions it was designed for.
+\end{enumerate}
+
+These two kinds of question must be separated. Passing the technical tests does not prove any research result. Measuring a corpus with an untested tool does not give trustworthy numbers either. The technical validation is therefore reported first, and the empirical results follow.
+
 \section{Evaluation Strategy}
+\label{sec:eval-strategy}
 
-This section will explain the division between technical validation and comparative research evaluation, and why the two must be reported separately. This section has not yet been written.
+\subsection{Which Evidence Answers Which Research Question}
 
-\clearpage
-\evalreserved{the full strategy discussion}
+Each research question from Section~\ref{sec:research-questions} is answered by specific evidence. Table~\ref{tab:rq-evidence} states which evidence belongs to which question. This mapping is given before the results, so that a description of the system is not mistaken for an answer to a research question.
 
-\clearpage
-\section{Metadata Integration Test}
+\begin{table}[htbp]
+\centering
+\caption{Research questions, the evidence that answers them, and where it is reported.}
+\label{tab:rq-evidence}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.9cm}>{\raggedright\arraybackslash}p{4.3cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.0cm}@{}}
+\toprule
+RQ & Question in short & Evidence used & Reported in\tabularnewline
+\midrule
+RQ1 & Does one workflow work across different platforms? & Connector tests per platform; run results per platform; where platform-specific handling ends & \S\ref{sec:eval-connectors}, \S\ref{sec:eval-cross-platform}\tabularnewline
+RQ2 & How does different metadata affect integration? & Completeness of each field per platform; normalization tests; graph validation & \S\ref{sec:eval-metadata}, \S\ref{sec:eval-kg}\tabularnewline
+RQ3 & How well do the rule-based and AI methods combine? & Precision and recall against the curated category; cross-tabulation of the two methods; agreement rates and $\kappa$; confidence behaviour & \S\ref{sec:eval-classification}\tabularnewline
+RQ4 & Do the platforms differ in their results? & Comparison of metadata, run outcomes, execution outcomes, failure causes, and scores, under three different counting rules & \S\ref{sec:eval-cross-platform}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
 
-This section will report the metadata extraction test across the GitHub, Codeberg, and Zenodo connectors. This section has not yet been written.
+\subsection{Experimental Setup}
 
-\clearpage
-\evalreserved{test results and sample metadata rows}
+All numbers in this chapter come from one corpus, processed in a single pipeline run. Table~\ref{tab:eval-setup} lists the settings that affect the results.
 
-\clearpage
-\section{Database Inspection}
+\begin{table}[htbp]
+\centering
+\caption{Settings under which the measurements were produced.}
+\label{tab:eval-setup}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.0cm}X@{}}
+\toprule
+Aspect & Value\tabularnewline
+\midrule
+Interpreter selection & version declared by the repository when available, otherwise Python 3.10\tabularnewline
+Isolation & \texttt{pyenv} interpreter and one virtual environment per resource\tabularnewline
+Time limits & 1{,}200\,s per notebook, 100 minutes per resource\tabularnewline
+Parallelism & several workers in parallel, each writing its own database copy, merged afterwards\tabularnewline
+Execution environments & two Linux environments, both running the same pipeline scripts\tabularnewline
+Network conditions & public API access without authentication; no proxy or mirror\tabularnewline
+Graph toolchain & Morph-KGC~\cite{arenas2024morph} with RML mappings compiled from YARRRML~\cite{heyvaert2018yarrrml}, checked with \texttt{rdflib} 7.2.1\tabularnewline
+Database & SQLite working copy in rollback-journal mode; the source database was never modified\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
 
-This section will inspect the working database and the current pipeline outputs. This section has not yet been written.
+The corpus was executed in two Linux environments. An environment difference could be mistaken for a platform difference, so Section~\ref{sec:eval-environment} measures how much the two environments differ.
 
-\clearpage
-\evalreserved{inspection tables and counts}
+\subsection{How the Corpus Was Selected}
+\label{sec:eval-corpus}
 
-\clearpage
-\section{Knowledge-Graph Build Validation}
+The corpus was not selected randomly. It was built by searching each platform for each notebook category on purpose, for the following reason.
 
-This section will report the knowledge-graph build checks and the SPARQL competency-question results. This section has not yet been written.
+A random sample needs a list of everything that could be sampled. No comparable list exists for these three platforms. GitHub offers a search API that can filter by programming language. Codeberg's Forgejo instance offers only limited search. Zenodo restricts automated access to its web search paths, so candidates there had to be collected through its records API instead. A random sample would therefore have been possible for GitHub and impossible in the same form for the other two. The result would have been one real sample and two convenience samples presented as if they were equal.
 
-\clearpage
-\evalreserved{build and SPARQL validation results}
+Candidates were instead collected per platform and per category, covering the seven substantive categories of the taxonomy from Section~\ref{sec:classification-taxonomy}. The categories \texttt{mixed\ub purpose} and \texttt{uncertain} were not searched for, because the classifier assigns them as outcomes; they are not something a repository can be found by.
 
-\clearpage
-\section{Planned Cross-Platform Experiment}
+Every candidate was then opened and checked by hand for real \texttt{.ipynb} files. This step removed a surprising number of candidates: repositories that did not exist, pure Python libraries described as containing notebooks, and projects using Marimo notebooks, which are \texttt{.py} files rather than Jupyter notebooks. Candidates that passed this check were processed by the pipeline. Those that then failed remain in the corpus as recorded failures. They were not removed, because a failure is evidence too.
 
-This section will describe the design of the controlled cross-platform sample and the stages it will record. This section has not yet been written.
+The corpus contains 318 repositories, spread over the three platforms and the seven categories. Table~\ref{tab:corpus-composition} shows its composition.
 
-\clearpage
-\evalreserved{the finished experiment design and sample description}
+\begin{table}[htbp]
+\centering
+\caption{Corpus composition. ``Notebooks executed'' counts the notebooks that were run and compared.}
+\label{tab:corpus-composition}
+\small
+\begin{tabularx}{\textwidth}{@{}l r r r r >{\raggedright\arraybackslash}p{3.6cm}@{}}
+\toprule
+Platform & Resources & With a run & With results & Notebooks executed & Kind of resource\tabularnewline
+\midrule
+GitHub & 101 & 100 & 93 & 913 & Git repository\tabularnewline
+Zenodo & 114 & 114 & 89 & 733 & Archived research record\tabularnewline
+Codeberg & 103 & 103 & 100 & 645 & Git repository (Forgejo)\tabularnewline
+\midrule
+\textbf{Total} & \textbf{318} & \textbf{317} & \textbf{282} & \textbf{2{,}291} & \tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\clearpage
-\section{Hybrid Notebook Classification}
+\subsection{How the Numbers Are Counted}
+\label{sec:eval-counting}
 
-This section will report the accuracy of the hybrid notebook classifier against a labelled sample. This section has not yet been written.
+The repositories in the corpus have very different sizes. The median repository contributed 3 notebooks, 104 of the 282 repositories with results contributed exactly one, and the largest contributed 260. Two rules follow from this, and they apply to every table in this chapter.
 
-\clearpage
-\evalreserved{classifier accuracy and evaluation metrics}
+\paragraph{Each notebook counts once.} Where a notebook has more than one execution result, the newer one is used. ``Notebooks'' in this chapter therefore always means distinct notebooks, not execution attempts.
 
-\clearpage
-\section{Reproducibility of the Evaluation}
+\paragraph{Averages are reported in three ways.} Because the sizes differ so much, the way an average is taken changes the answer. A short example shows why. Suppose a platform has two repositories: one with 100 notebooks that each score 0.1, and one with a single notebook that scores 0.9. Averaging over notebooks gives 0.11, because the large repository decides the result. Averaging over repositories gives 0.50, because each repository counts once. Neither number is wrong, but they answer different questions, so this chapter reports both, plus a third:
 
-This section will describe what must be recorded so that the experiment itself can be repeated. This section has not yet been written.
+\begin{itemize}[leftmargin=*]
+\item \textbf{Notebook average:} every executed notebook counts once. This describes a typical \emph{notebook}, and large repositories carry the most weight.
+\item \textbf{Repository average:} every repository counts once, using the mean score of its own notebooks. This describes a typical \emph{repository}, and a repository with one notebook counts as much as one with fifty.
+\item \textbf{Balanced average:} the same number of repositories, and the same number of notebooks, is taken from every category on every platform. This compares the platforms on equal footing, because no category and no repository can contribute more than any other.
+\end{itemize}
 
-\clearpage
-\evalreserved{the reproducibility checklist}
+Section~\ref{sec:eval-balanced} shows that the three do not agree on which platform ranks first, which is the reason all three are reported.
 
-\clearpage
-\section{Interim Assessment}
+\section{Connector and Pipeline Validation}
+\label{sec:eval-connectors}
 
-This section will summarise what the available evidence does and does not yet support. This section has not yet been written.
+\subsection{Recognising and Rejecting URLs}
 
-\clearpage
-\evalreserved{the final interim assessment}
+FR1 requires that supported URLs are recognised and unsupported hosts rejected. Detection was tested with valid and invalid URLs for each platform. The tests covered repository URLs with and without a trailing \texttt{.git}, links pointing into a file tree (\texttt{/blob/} on GitHub and \texttt{/src/branch/} on Codeberg), Zenodo record URLs in both the \texttt{/record/} and \texttt{/records/} forms, and plain numeric record identifiers.
+
+All supported forms produced the correct platform and the correct normalized identifier. A deliberately unsupported URL ended with the status \texttt{UNSUPPORTED\ub PLATFORM} and produced no metadata row. This shows two things: the URL was rejected, and it was rejected before any platform API was contacted.
+
+\subsection{What Happened to Each Resource}
+
+Table~\ref{tab:run-status} shows the final status of every one of the 318 analysed resources. Of these, 281 (88.4\,\%) finished with \texttt{SUCCESS}, which means the resource was validated, described, downloaded, and processed all the way to notebook execution.
+
+\begin{table}[htbp]
+\centering
+\caption{Final status of each analysed resource. Percentages are of that platform's resources.}
+\label{tab:run-status}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.6cm} r r r X@{}}
+\toprule
+Status & GitHub & Codeberg & Zenodo & What it means\tabularnewline
+\midrule
+\texttt{SUCCESS} & 92 & 100 & 89 & processed through to execution\tabularnewline
+\texttt{ZENODO\ub DOWNLOAD\ub FAILED} & --- & --- & 10 & record valid, files not downloadable\tabularnewline
+\texttt{NO\ub NOTEBOOKS} & --- & --- & 9 & downloaded, but contained no notebooks\tabularnewline
+\texttt{TIMEOUT\ub ERROR} & 7 & --- & 2 & resource exceeded its time limit\tabularnewline
+\texttt{ENV\ub RUN\ub FAIL} & --- & 1 & 2 & environment created but not usable\tabularnewline
+\texttt{INVALID\ub ZENODO\ub RECORD} & --- & --- & 2 & record not found through the API\tabularnewline
+\texttt{PYTHON\ub INSTALL\ub FAIL} & 1 & 1 & --- & interpreter could not be installed\tabularnewline
+\texttt{METADATA\ub FETCH\ub FAILED} & --- & 1 & --- & API returned no usable metadata\tabularnewline
+no run record & 1 & --- & --- & partial run, record removed by cleanup\tabularnewline
+\midrule
+\textbf{Total resources} & \textbf{101} & \textbf{103} & \textbf{114} & \tabularnewline
+\textbf{Success rate} & \textbf{91.1\,\%} & \textbf{97.1\,\%} & \textbf{78.1\,\%} & \tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The success rate is less interesting than the pattern of the failures, and that pattern answers part of RQ1. The failures fall into two groups.
+
+The first group is \emph{acquisition failures}. These depend on the platform. \texttt{METADATA\ub FETCH\ub FAILED} can only happen on a Git forge. \texttt{ZENODO\ub DOWNLOAD\ub FAILED}, \texttt{INVALID\ub ZENODO\ub RECORD}, and every case of \texttt{NO\ub NOTEBOOKS} happened only on Zenodo.
+
+The second group is \emph{processing failures}: \texttt{PYTHON\ub INSTALL\ub FAIL}, \texttt{ENV\ub RUN\ub FAIL}, and \texttt{TIMEOUT\ub ERROR}. They occurred on more than one platform, and their share does not follow the platform. The timeouts are a property of resource size rather than of the host: they affected the largest repositories, such as a GitHub repository of tutorial notebooks that needs hours to run, and the 1{,}116-notebook Zenodo record mentioned above.
+
+This split is the practical meaning of platform independence. The platform decides whether a resource can be obtained at all. Once the files exist in a local folder, the platform no longer predicts what happens next.
+
+Zenodo's lower success rate is explained almost entirely by this. Of its 25 unsuccessful resources, 21 (84.0\,\%) failed before a single notebook was executed, either because the files could not be downloaded or because the record contained no notebooks. Neither is a fault of the pipeline. A Zenodo record may quite legitimately contain only a PDF, a dataset, or a source archive; this happened nine times. A GitHub-only study would never observe this situation, because its inputs are repositories that were selected for containing notebooks in the first place.
+
+\subsection{Checking the Non-Functional Requirements}
+
+NFR1 requires that the source database stays unchanged. It was compared before and after every run and remained byte-identical; all writes went to the working copy in \texttt{data/output/db/}.
+
+NFR5 requires that a failure does not stop the batch. Table~\ref{tab:run-status} demonstrates this directly: 37 resources ended in a failure state, and every later resource still completed. Each failed resource kept its status and message.
+
+NFR4 requires that the generated files can be rebuilt. The entire CSV and RDF output was deleted and regenerated from the working database, the mappings, and the ontology. The result is reported in Section~\ref{sec:eval-kg}.
+
+NFR2 and NFR3 are used by every cross-platform query in this chapter. Each of them groups resources of different origin using shared status and metric definitions, while still keeping the platform of each result visible.
+
+\section{Metadata Integration}
+\label{sec:eval-metadata}
+
+\subsection{Was Anything Invented?}
+
+FR4 requires that metadata from each platform is mapped into eight common fields without inventing values that the source did not provide. This was tested for each platform by comparing the stored row against the raw API response.
+
+Two things were confirmed. Every stored value can be traced back to a field in the API response. Every field that the response did not contain is stored as empty, and not as a default value, a placeholder, or a value taken from somewhere else.
+
+All 318 analysed resources have a metadata row, including those whose notebooks could not be executed. Metadata retrieval and notebook execution are therefore independent: a resource that fails to run still contributes evidence about its platform's metadata.
+
+\subsection{How Complete Is the Metadata on Each Platform?}
+
+Table~\ref{tab:metadata-completeness} is the main evidence for RQ2. For each platform it shows how many resources have a non-empty value in each normalized field.
+
+\begin{table}[htbp]
+\centering
+\caption{Metadata completeness per platform: resources with a non-empty value, and the percentage of that platform's resources.}
+\label{tab:metadata-completeness}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.2cm} r r r r r r X@{}}
+\toprule
+& \multicolumn{2}{c}{GitHub ($n$=101)} & \multicolumn{2}{c}{Codeberg ($n$=103)} & \multicolumn{2}{c}{Zenodo ($n$=114)} & \tabularnewline
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Field & $n$ & \% & $n$ & \% & $n$ & \% & Reason for the difference\tabularnewline
+\midrule
+title & 101 & 100.0 & 103 & 100.0 & 114 & 100.0 & required everywhere\tabularnewline
+description & 101 & 100.0 & 91 & 88.3 & 110 & 96.5 & optional on all three\tabularnewline
+authors & 101 & 100.0 & 102 & 99.0 & 112 & 98.2 & owner field vs.\ creator list\tabularnewline
+licence & 51 & 50.5 & 0 & 0.0 & 110 & 96.5 & not offered by the Forgejo API\tabularnewline
+keywords & 56 & 55.4 & 43 & 41.7 & 55 & 48.2 & topics vs.\ keywords\tabularnewline
+DOI & 0 & 0.0 & 0 & 0.0 & 112 & 98.2 & created only when depositing\tabularnewline
+created & 101 & 100.0 & 102 & 99.0 & 112 & 98.2 & ---\tabularnewline
+updated & 101 & 100.0 & 102 & 99.0 & 112 & 98.2 & ---\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Three observations follow from this table, and together they answer RQ2.
+
+\paragraph{The platforms separate completely on persistent identifiers.} Zenodo provides a DOI for 112 of its 114 records (98.2\,\%). GitHub and Codeberg provide none, for any of the 204 resources between them. This is not a weakness of the connectors. It is a structural property: a DOI is created when a record is deposited, and a Git forge does not deposit anything. The consequence matters for reproducibility. A notebook published only on a Git forge has no persistent identifier, so it cannot be cited or resolved reliably once the repository is renamed, moved, or deleted.
+
+\paragraph{Licensing shows the same difference more sharply.} Zenodo records a licence for 96.5\,\% of records, because the deposit form asks for one. GitHub records one for 50.5\,\%, because about half of the sampled repositories have no licence file. Codeberg records one for none at all, and the reason is worth stating carefully. The Forgejo repository endpoint does not return a licence field, not even for repositories that clearly contain a licence file. The 0\,\% therefore describes the API, not the repositories.
+
+This is what the no-invention rule from FR4 prevents. A normalizer that filled this field by guessing, for example by searching the cloned folder for a \texttt{LICENSE} file, would have produced a number that looks just like GitHub's 50.5\,\% but means something completely different. The empty value keeps the two cases distinguishable.
+
+\paragraph{Descriptive fields are nearly complete everywhere, and keywords are the exception.} Title, authors, and the two dates are present for 98--100\,\% of resources on all three platforms, so an integrated view of the corpus is possible without gaps in its basic description. Keywords are the one descriptive field that is weak everywhere, between 41.7\,\% and 55.4\,\%. Keywords are optional on all three platforms, and roughly half of all authors do not supply them, regardless of where they publish.
+
+Taken together, metadata differences are not a formatting problem. They are a real difference in what each platform knows about the objects it stores. The value of normalization is not that it removes this difference, but that it makes the difference measurable. A design that had filled the gaps would have reported almost complete metadata everywhere and would have shown nothing at all.
+
+\section{Knowledge-Graph Validation}
+\label{sec:eval-kg}
+
+This section answers the third evaluation question: does the knowledge-graph build work, and does the graph really contain what the database contains?
+
+\subsection{Building the Graph}
+
+The knowledge graph was rebuilt from the working database after the corpus was complete. The full route was used: seven named SQL exports to CSV, seven RML mappings compiled from YARRRML, materialisation with Morph-KGC, and combination with the ontology extension.
+
+Table~\ref{tab:kg-build} shows the result. The build produced \textbf{162{,}008 unique triples}, and all seven mappings completed without error. The graph is a faithful copy of the whole database, which also holds rows outside the analysed corpus, so the row counts here are slightly higher than the notebook counts used elsewhere in this chapter.
+
+\begin{table}[htbp]
+\centering
+\caption{Knowledge-graph build: CSV rows exported and triples produced per mapping.}
+\label{tab:kg-build}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X r r@{}}
+\toprule
+Mapping and source table & CSV rows & Triples\tabularnewline
+\midrule
+\texttt{notebook\ub classifications} & 4{,}695 & 57{,}394\tabularnewline
+\texttt{notebook\ub executions} & 2{,}872 & 36{,}322\tabularnewline
+\texttt{notebooks} & 5{,}617 & 33{,}702\tabularnewline
+\texttt{notebook\ub reproducibility\ub metrics} & 2{,}872 & 25{,}848\tabularnewline
+\texttt{repositories} & 345 & 3{,}120\tabularnewline
+\texttt{repository\ub runs} & 334 & 2{,}998\tabularnewline
+\texttt{repository\ub metadata} & 330 & 2{,}392\tabularnewline
+\midrule
+\textbf{Combined graph (unique triples)} & & \textbf{162{,}008}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Structural Checks}
+
+The graph is checked against the database it came from. All checks passed.
+
+The entity counts recovered from the graph match the exported row counts exactly: 345 repositories, 5{,}617 notebooks, 334 runs, 2{,}872 executions, 2{,}872 reproducibility results, and 4{,}695 classification activities. The relation counts match as well, which confirms that no link between a repository and a notebook, a run and an execution, an execution and a result, or a notebook and a classification was lost or duplicated during mapping.
+
+Two further checks protect the distinction that the ontology extension exists for. Every Zenodo resource is typed as an \texttt{ArchivedResearchRecord}, and no Zenodo resource is typed as a \texttt{GitRepositoryResource}. A graph that mixed these two would still be structurally valid, while describing an archived deposit as a version-controlled repository.
+
+A third check confirms that Zenodo DOIs appear in the graph as \texttt{dcterms:identifier} values. The persistent identifiers from Table~\ref{tab:metadata-completeness} therefore survive into the semantic layer instead of being lost on the way.
+
+\subsection{Competency Questions}
+
+Seven SPARQL competency questions were run against the graph. All returned results, and their sizes match the database. Table~\ref{tab:kg-queries} lists them.
+
+\begin{table}[htbp]
+\centering
+\caption{SPARQL competency questions and the number of rows each returned.}
+\label{tab:kg-queries}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.8cm} r X@{}}
+\toprule
+Competency question & Rows & What a non-empty answer shows\tabularnewline
+\midrule
+Repositories grouped by hosting platform & 5 & platforms are linked to their resources\tabularnewline
+Normalized metadata per resource & 329 & metadata reached the graph intact\tabularnewline
+Notebook execution route (platform to result) & 50 & the full provenance chain can be followed\tabularnewline
+Run statuses with counts & 10 & every final status is represented\tabularnewline
+Reproducibility grouped by platform & 3 & the platform comparison is answerable in SPARQL\tabularnewline
+Zenodo archived records with DOIs & 115 & archived records are identified and distinguishable\tabularnewline
+Notebook classifications with both decisions & 4{,}695 & classification provenance can be queried\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The third query is the one that could not be asked before this work. It follows a single path from platform to resource to run to notebook execution to reproducibility result, across resources that came from different platforms, in one query.
+
+\subsection{Does the Graph Say the Same as the Database?}
+
+The fifth query repeats the platform comparison directly from the graph. It returns 1{,}456 results with a mean score of 0.3787 for GitHub, 733 with 0.3482 for Zenodo, and 645 with 0.3669 for Codeberg. Running the equivalent SQL query over the database returns exactly the same counts and the same means to four decimal places.
+
+This agreement is the practical proof that the graph represents the same evidence as the database, and not a distorted copy of it. It also illustrates how precise such a check has to be. The query walks the path platform $\rightarrow$ resource $\rightarrow$ run $\rightarrow$ execution $\rightarrow$ result, so it only sees results whose execution still has a run record. Thirty-eight results belong to executions from interrupted runs whose record was removed, and the query therefore does not count them. The graph is not wrong; the query has a stricter definition than the tables in Section~\ref{sec:eval-cross-platform}, which count notebooks directly. Comparing the two on the same definition is what makes the check meaningful.
+
+\section{Cross-Platform Reproducibility Results}
+\label{sec:eval-cross-platform}
+
+This section reports the comparison that RQ4 asks for. In total, \textbf{2{,}291 notebooks} from 282 resources were executed and compared, covering \textbf{38{,}087 code cells}.
+
+\subsection{Execution Outcomes}
+
+Every executed notebook receives one of two statuses. \texttt{SUCCESS} means every code cell completed without raising an error. \texttt{SUCCESS\ub WITH\ub ERRORS} means the notebook ran to the end, but at least one cell raised an error. The second status is not a pipeline failure: the notebook was executed completely, and the errors are the notebook's own.
+
+Across the whole corpus, 826 of 2{,}291 notebooks (36.1\,\%) completed cleanly. Table~\ref{tab:exec-outcomes} breaks this down by platform.
+
+\begin{table}[htbp]
+\centering
+\caption{Notebook execution outcomes per platform.}
+\label{tab:exec-outcomes}
+\small
+\begin{tabularx}{\textwidth}{@{}l r r r r X@{}}
+\toprule
+Platform & Notebooks & Clean & \% clean & Mean cells & Mean duration (s)\tabularnewline
+\midrule
+GitHub & 913 & 281 & 30.8 & 20.2 & 49.8\tabularnewline
+Codeberg & 645 & 292 & 45.3 & 14.0 & 70.1\tabularnewline
+Zenodo & 733 & 253 & 34.5 & 14.5 & 51.1\tabularnewline
+\midrule
+\textbf{Total} & \textbf{2{,}291} & \textbf{826} & \textbf{36.1} & \textbf{16.6} & \textbf{55.9}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Codeberg has the highest clean-execution rate and GitHub the lowest. This is the opposite of what one might expect from the size and maturity of the platforms.
+
+The column showing the mean number of cells suggests part of the explanation. GitHub notebooks in this corpus are noticeably longer, with 20.2 code cells on average against 14.0 and 14.5. A longer notebook has more chances to fail, because a single failing cell is enough to lose the clean status. This is the first sign that comparing raw success rates can be misleading, because the notebooks themselves differ.
+
+\subsection{Output Reproducibility}
+
+The stricter measure compares the outputs cell by cell. The reproducibility score of a notebook is the share of its compared code cells whose outputs matched the stored outputs. A score of 1.0 means every cell reproduced its stored output; a score of 0 means none did. Table~\ref{tab:repro-scores} shows the result together with the cell counts behind it.
+
+\begin{table}[htbp]
+\centering
+\caption{Output reproducibility per platform. Cell counts are totals over all compared notebooks.}
+\label{tab:repro-scores}
+\small
+\begin{tabularx}{\textwidth}{@{}l r r r r r X@{}}
+\toprule
+Platform & Notebooks & Mean score & Cells compared & Identical & Different & Nondet.\tabularnewline
+\midrule
+GitHub & 913 & 0.378 & 18{,}427 & 5{,}935 & 12{,}492 & 387\tabularnewline
+Codeberg & 645 & 0.367 & 9{,}008 & 3{,}260 & 5{,}748 & 229\tabularnewline
+Zenodo & 733 & 0.348 & 10{,}652 & 3{,}057 & 7{,}595 & 222\tabularnewline
+\midrule
+\textbf{Total} & \textbf{2{,}291} & \textbf{0.365} & \textbf{38{,}087} & \textbf{12{,}252} & \textbf{25{,}835} & \textbf{838}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two results stand out.
+
+\paragraph{The level is low on every platform.} Fewer than two cells in five reproduce their stored output. Even the best platform fails to reproduce more than 60\,\% of its cells. The finding that notebook outputs largely do not survive re-execution~\cite{pimentel2019,samuel2024computational} is therefore not something specific to GitHub. It holds on a non-profit forge and on an archival repository as well.
+
+\paragraph{The platform order reverses between the two measures.} Codeberg has the best clean-execution rate (45.3\,\%) but not the best reproducibility score. GitHub has the worst clean-execution rate (30.8\,\%) but the highest score in this table.
+
+A notebook that runs is not the same as a notebook that reproduces. A study that reported only execution success would have reached a different conclusion about which platform performs better, which is why the outputs are compared cell by cell instead of recorded as a simple yes or no.
+
+The differences between the three platforms are small, however: 0.378, 0.367, and 0.348 span only three percentage points of cells. Before reading anything into that order, it has to survive a change of counting rule, and Section~\ref{sec:eval-balanced} shows that it does not.
+
+\subsection{How the Scores Are Distributed}
+
+The mean hides the shape of the distribution. Table~\ref{tab:repro-distribution} shows that notebooks tend to reproduce either almost completely or almost not at all.
+
+\begin{table}[htbp]
+\centering
+\caption{Distribution of per-notebook reproducibility scores.}
+\label{tab:repro-distribution}
+\small
+\begin{tabularx}{\textwidth}{@{}l r r r r r X@{}}
+\toprule
+Platform & $=1.0$ & $[0.75,1.0)$ & $[0.25,0.75)$ & $(0,0.25)$ & $=0$ & Notebooks\tabularnewline
+\midrule
+GitHub & 53 & 117 & 368 & 279 & 96 & 913\tabularnewline
+Codeberg & 56 & 48 & 264 & 153 & 124 & 645\tabularnewline
+Zenodo & 51 & 40 & 324 & 234 & 84 & 733\tabularnewline
+\midrule
+\textbf{Total} & \textbf{160} & \textbf{205} & \textbf{956} & \textbf{666} & \textbf{304} & \textbf{2{,}291}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Full reproduction is uncommon but not rare, at 160 of 2{,}291 notebooks (7.0\,\%). Complete failure to reproduce any cell affects 304 notebooks (13.3\,\%), and these are concentrated on Codeberg, where 124 of its 645 notebooks (19.2\,\%) reproduce nothing.
+
+This explains why Codeberg can have the best execution rate and still not lead on score. Its distribution is the most polarised of the three: it has both the largest share of perfectly reproducing notebooks and the largest share of notebooks that reproduce nothing at all.
+
+\subsection{Why the Notebooks Failed}
+
+Errors raised during execution are grouped into categories taken from the execution log. Table~\ref{tab:error-causes} shows how they are distributed.
+
+\begin{table}[htbp]
+\centering
+\caption{Execution failure causes per platform, as a percentage of that platform's notebooks.}
+\label{tab:error-causes}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.3cm} r r r r r r X@{}}
+\toprule
+& \multicolumn{2}{c}{GitHub} & \multicolumn{2}{c}{Codeberg} & \multicolumn{2}{c}{Zenodo} & \tabularnewline
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Category & $n$ & \% & $n$ & \% & $n$ & \% & Typical error\tabularnewline
+\midrule
+No error & 281 & 30.8 & 292 & 45.3 & 253 & 34.5 & ---\tabularnewline
+Dependency & 180 & 19.7 & 110 & 17.1 & 189 & 25.8 & \texttt{ModuleNotFoundError}\tabularnewline
+Code & 200 & 21.9 & 89 & 13.8 & 102 & 13.9 & \texttt{AttributeError}, \texttt{TypeError}\tabularnewline
+File & 143 & 15.7 & 57 & 8.8 & 48 & 6.5 & \texttt{FileNotFoundError}\tabularnewline
+Other & 63 & 6.9 & 61 & 9.5 & 116 & 15.8 & \texttt{StdinNotImplementedError}\tabularnewline
+Data & 40 & 4.4 & 25 & 3.9 & 21 & 2.9 & \texttt{ValueError}, \texttt{KeyError}\tabularnewline
+Network & 5 & 0.5 & 8 & 1.2 & 4 & 0.5 & \texttt{HTTPError}\tabularnewline
+Environment & 0 & 0.0 & 3 & 0.5 & 0 & 0.0 & kernel-level failure\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Across the whole corpus the largest single cause is a missing dependency: 479 notebooks (20.9\,\%), of which 420 are \texttt{ModuleNotFoundError}. This is the failure that authors can prevent most directly: a complete and declared list of dependencies would remove most of it.
+
+What makes it more interesting is how stable this rate is across platforms, between 17.1\,\% and 25.8\,\%. The three platforms differ in community, governance, and deposit rules, yet none of that moves the dependency-failure rate very much. Incomplete dependency information therefore looks like a property of how notebooks are written, not of where they are published.
+
+The categories that do vary by platform vary in ways that can be explained. File errors are more than twice as common on GitHub (15.7\,\%) than on Zenodo (6.5\,\%), which fits repositories that refer to data files kept outside version control, while an archived deposit tends to ship its data with it. Zenodo's higher ``other'' rate (15.8\,\%) is caused mainly by \texttt{StdinNotImplementedError}, which is raised when a notebook asks for interactive input. This is expected when a notebook was deposited straight from an interactive session without being adapted for unattended execution. Network errors appear on all platforms at low rates.
+
+One limitation applies to the dependency numbers specifically. As explained in Chapter~\ref{chap:implementation}, most resources declare no Python version, so the pipeline falls back to Python~3.10. A dependency failure may therefore reflect an old pinned package meeting a newer interpreter rather than a genuinely missing declaration. This is revisited in Section~\ref{sec:threats}.
+
+\subsection{Does the Comparison Survive a Balanced Design?}
+\label{sec:eval-balanced}
+
+Table~\ref{tab:repro-scores} counts every notebook once, so a repository with 100 notebooks influences its platform's mean a hundred times more than a repository with one. The corpus is very uneven in exactly this way. The comparison was therefore repeated under two additional counting rules from Section~\ref{sec:eval-counting}, and Table~\ref{tab:repro-balanced} puts the three side by side.
+
+The balanced design draws exactly 10 repositories and exactly 17 notebooks from each of the 21 category and platform combinations, giving 357 notebooks in which every one of those 21 groups carries identical weight. The repository-level view counts each of the 282 resources once, using the mean of its own notebooks, and its 95\,\% intervals come from resampling whole repositories, because notebooks from the same repository are not independent observations.
+
+\begin{table}[htbp]
+\centering
+\caption{Mean reproducibility score per platform under three counting rules. The order of the platforms changes with the rule.}
+\label{tab:repro-balanced}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm} r r r X@{}}
+\toprule
+Counting rule & GitHub & Codeberg & Zenodo & Unit of analysis\tabularnewline
+\midrule
+Raw (all notebooks) & 0.378 & 0.367 & 0.348 & 2{,}291 notebooks\tabularnewline
+Repository level & 0.29 & 0.37 & 0.26 & 282 repositories\tabularnewline
+95\,\% interval & [0.26, 0.34] & [0.32, 0.42] & [0.22, 0.31] & bootstrap over repositories\tabularnewline
+Balanced (equal groups) & 0.32 & 0.36 & 0.27 & 10 repos $\times$ 17 notebooks per group\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The comparison does not hold up under the other two rules.
+
+\paragraph{GitHub's lead disappears when repositories count equally.} Under the raw rule GitHub is first at 0.378. Under both other rules it drops to third or second place, behind Codeberg by a clear margin (0.29 against 0.37 at repository level). The raw figure was produced by a few large GitHub repositories that happened to reproduce well, not by GitHub repositories in general.
+
+\paragraph{Only one comparison is stable.} Codeberg scores higher than Zenodo under every rule, and their repository-level intervals, [0.32, 0.42] and [0.22, 0.31], do not overlap. Every other pairwise comparison either changes direction between rules or has clearly overlapping intervals. The honest statement is therefore narrow: in this corpus, Codeberg repositories reproduce better than Zenodo records, GitHub sits between them and cannot be separated from either, and all three are low.
+
+\paragraph{The headline result is unaffected.} Whichever rule is used, the mean stays between 0.26 and 0.38. Low output reproducibility is not an artefact of how the notebooks were counted.
+
+These intervals describe the spread within this corpus. They are not significance tests, and none are reported, because the sample was chosen on purpose rather than at random; Section~\ref{sec:threats} returns to this point.
+
+\subsection{Does Notebook Purpose Explain the Platform Difference?}
+\label{sec:eval-category-effect}
+
+Section~\ref{sec:problem-statement} warned that a platform comparison might mistake a difference in notebook composition for a difference between platforms. Because every executed notebook now carries a category, this can be checked directly. Table~\ref{tab:repro-by-category} shows reproducibility grouped by the purpose the language model assigned, pooled across all platforms.
+
+\begin{table}[htbp]
+\centering
+\caption{Mean reproducibility score per assigned notebook purpose, pooled across platforms. Categories with fewer than 20 notebooks are grouped in the last row.}
+\label{tab:repro-by-category}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.0cm} r r X@{}}
+\toprule
+Category & Notebooks & Mean score & Note\tabularnewline
+\midrule
+\texttt{tutorial} & 298 & 0.442 & highest of the large categories\tabularnewline
+\texttt{visualization} & 179 & 0.404 & \tabularnewline
+\texttt{simulation} & 89 & 0.404 & \tabularnewline
+\texttt{data\ub preparation} & 172 & 0.359 & \tabularnewline
+\texttt{data\ub analysis} & 1{,}271 & 0.339 & largest category by far\tabularnewline
+\texttt{machine\ub learning} & 246 & 0.337 & lowest of the large categories\tabularnewline
+\midrule
+Small categories & 36 & 0.560 & \texttt{software\ub development}, \texttt{uncertain}, \texttt{mixed\ub purpose}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The spread between the large categories runs from 0.337 to 0.442, or about ten percentage points of cells. The spread between platforms under the balanced rule runs from 0.27 to 0.36, or about nine points. The two effects are therefore of a similar size, which means notebook purpose is a real confounding factor and not a small one.
+
+The direction is also plausible. Tutorial notebooks reproduce best, which fits their purpose: they are written to be re-run by a reader, so their authors have a reason to keep them working. Machine-learning notebooks reproduce worst, which fits theirs: they depend on large datasets, random initialisation, and heavy libraries whose versions move quickly.
+
+Two cautions apply, and the second is the more important one. First, the categories are very unevenly sized, with \texttt{data\ub analysis} alone accounting for 1{,}271 of 2{,}291 notebooks. Second, and more fundamentally, these categories come from the classifier, and Section~\ref{sec:eval-classification} shows that the classifier is only moderately reliable. The table therefore describes what the classifier grouped together, which is not the same as what the notebooks actually are.
+
+The balanced design in Section~\ref{sec:eval-balanced} avoids this problem for the platform comparison, because it uses the curated category of the repository rather than the classifier's output, and it holds that category fixed across platforms. Its platform ordering is the one that should be trusted.
+
+\subsection{Does the Execution Environment Explain the Differences?}
+\label{sec:eval-environment}
+
+The corpus was executed in two environments, as Table~\ref{tab:eval-setup} records. If the two produced systematically different results, and if the platforms were unevenly distributed between them, an environment effect could be mistaken for a platform effect. This was measured rather than assumed.
+
+Twenty-four resources, eight per platform, were executed in both environments with the same pipeline scripts. All 24 succeeded, and 127 notebooks could be compared directly. Table~\ref{tab:env-check} shows the result.
+
+\begin{table}[htbp]
+\centering
+\caption{The same notebooks executed in both environments. A difference is the second score minus the first.}
+\label{tab:env-check}
+\small
+\begin{tabularx}{\textwidth}{@{}l r r r r X@{}}
+\toprule
+Group & Notebooks & Identical score & Within 0.05 & Mean difference & 95\,\% interval\tabularnewline
+\midrule
+All & 127 & 95\,\% & 98\,\% & $-0.006$ & [$-0.021$, $+0.000$]\tabularnewline
+GitHub & 62 & 90\,\% & 97\,\% & $-0.013$ & [$-0.048$, $+0.001$]\tabularnewline
+Codeberg & 34 & 100\,\% & 100\,\% & $+0.000$ & [$+0.000$, $+0.000$]\tabularnewline
+Zenodo & 31 & 100\,\% & 100\,\% & $+0.000$ & [$+0.000$, $+0.000$]\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The two environments agree closely. The score was identical for 95\,\% of the notebooks and within five percentage points of cells for 98\,\%; the correlation between the two sets of scores is 0.97, and 126 of the 127 notebooks kept the same execution status. The failure categories are almost identical as well. One notebook changed substantially, from 0.75 to 0.00, and five others moved by at most 0.07; all six are GitHub notebooks, which is why the GitHub row is the only one that is not perfect.
+
+The environment change therefore does not explain the platform differences reported above. It is not completely neutral either: one environment produced very slightly \emph{lower} scores, so the reported figures are, if anything, marginally conservative.
+
+This check has clear limits. It covers 24 of 282 resources, and those 24 are among the smaller and faster ones. It says that the environment does not move typical results, not that it could never matter for a heavy resource.
+
+\section{How Well the Notebook Classification Works}
+\label{sec:eval-classification}
+
+The hybrid classifier was designed on the assumption that two independent automated methods are better than one. This section tests that assumption in two steps.
+
+The first step asks how \emph{good} each method is: how often does it assign the category a human would have assigned? The second step asks how the two methods \emph{relate} to each other: where do they agree, and where do they diverge? Agreement between two methods is not evidence of correctness, so the quality question is asked first.
+
+Every one of the 2{,}291 analysed notebooks carries a rule-based result, and all 2{,}291 also carry a result from the language model. Coverage is therefore complete, and no figure below is weakened by missing classifications.
+
+\subsection{What Can and Cannot Be Measured}
+
+No human-labelled set of notebooks exists for this corpus, so true accuracy cannot be reported. What does exist is the category assigned to each \emph{repository} when the corpus was curated, which was decided by reading the repository's own description.
+
+That curated category is used here as a reference label. Its weakness is that it belongs to the repository, not to the individual notebook. A repository curated as \texttt{machine\ub learning} will usually contain some notebooks that only prepare data or draw plots, and those notebooks will be counted as errors even when the classifier describes them correctly. The figures below are therefore a \emph{lower bound} on classifier quality, not a measurement of it.
+
+The reference set is the 1{,}970 notebooks whose repository category was curated by hand.
+
+\subsection{Precision and Recall Against the Curated Category}
+
+Table~\ref{tab:classifier-quality} reports precision, recall, and F1~\cite{sokolova2009fmeasure} per category for both methods. Precision answers ``when the method says \texttt{tutorial}, how often is the reference label also \texttt{tutorial}?''. Recall answers ``of all notebooks whose reference label is \texttt{tutorial}, how many did the method find?''. F1 combines the two.
+
+\begin{table}[htbp]
+\centering
+\caption{Per-category precision, recall, and F1 against the curated repository category, over 1{,}970 notebooks. ``Predicted'' is how often the method chose that category.}
+\label{tab:classifier-quality}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X r r r r r r r r r@{}}
+\toprule
+& & \multicolumn{4}{c}{Rule-based} & \multicolumn{4}{c}{Language model}\tabularnewline
+\cmidrule(lr){3-6}\cmidrule(lr){7-10}
+Reference category & $n$ & Pred. & P & R & F1 & Pred. & P & R & F1\tabularnewline
+\midrule
+\texttt{data\ub analysis} & 620 & 115 & 0.28 & 0.05 & 0.09 & 1{,}104 & 0.35 & 0.63 & 0.45\tabularnewline
+\texttt{visualization} & 289 & 954 & 0.22 & 0.72 & 0.33 & 142 & 0.51 & 0.25 & 0.34\tabularnewline
+\texttt{tutorial} & 246 & 63 & 0.49 & 0.13 & 0.20 & 268 & 0.31 & 0.34 & 0.32\tabularnewline
+\texttt{machine\ub learning} & 237 & 108 & 0.39 & 0.18 & 0.24 & 215 & 0.50 & 0.45 & 0.47\tabularnewline
+\texttt{data\ub preparation} & 221 & 144 & 0.26 & 0.17 & 0.21 & 133 & 0.32 & 0.19 & 0.24\tabularnewline
+\texttt{software\ub devel.} & 201 & 5 & 0.00 & 0.00 & 0.00 & 12 & 0.08 & 0.00 & 0.01\tabularnewline
+\texttt{simulation} & 156 & 39 & 0.00 & 0.00 & 0.00 & 87 & 0.30 & 0.17 & 0.21\tabularnewline
+\midrule
+\textbf{Macro average} & \textbf{1{,}970} & --- & \textbf{0.23} & \textbf{0.18} & \textbf{0.15} & --- & \textbf{0.34} & \textbf{0.29} & \textbf{0.29}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Four things follow from the table.
+
+\paragraph{Neither method is reliable at notebook level.} The rule-based method reaches 17.8\,\% accuracy and a macro F1 of 0.15. The language model reaches 36.6\,\% accuracy and a macro F1 of 0.29, so it is roughly twice as good, but it is still wrong about two times in three. For comparison, always answering \texttt{data\ub analysis} without looking at the notebook at all would score 31.5\,\%, because that category dominates the corpus. The model beats this trivial baseline by only about five percentage points, and the rule-based method falls well below it.
+
+\paragraph{Each method collapses onto one favourite category.} The rule-based method answered \texttt{visualization} 954 times out of 1{,}970, although only 289 notebooks carry that reference label. The model answered \texttt{data\ub analysis} 1{,}104 times against 620 reference labels. Both therefore buy recall in one category at the cost of precision everywhere else, and this single behaviour explains most of the weak macro scores. The causes differ: the rules key on plotting imports, which appear in almost every notebook, while the model reports what a notebook is broadly \emph{for} and finds ``data analysis'' true of almost anything.
+
+\paragraph{Both methods are effectively blind to two categories.} Neither recognises \texttt{software\ub development}, and the rule-based method never once produces a correct \texttt{simulation} label. These are the categories whose evidence lies in project structure and domain vocabulary rather than in imports or obvious narrative cues.
+
+\paragraph{The model is better where evidence is explicit.} Its best categories are \texttt{machine\ub learning} (F1 0.47) and \texttt{data\ub analysis} (F1 0.45), both of which have distinctive vocabulary. Its precision is highest for \texttt{visualization} at 0.51: when the model does say ``visualization'', it is usually right, it just says it rarely.
+
+The same measurement per platform shows that neither method is platform-specific in any useful way. Rule-based accuracy is 25.1\,\% on GitHub, 13.1\,\% on Codeberg, and 11.3\,\% on Zenodo; the model reaches 35.2\,\%, 30.2\,\%, and 42.6\,\%. The model is the better method on every platform, and by the largest margin on Zenodo.
+
+\subsection{How Often the Two Methods Agree}
+
+Table~\ref{tab:classification-agreement} shows the outcome of reconciling the two methods across all 2{,}291 analysed notebooks.
+
+\begin{table}[htbp]
+\centering
+\caption{Reconciliation outcomes over the 2{,}291 analysed notebooks.}
+\label{tab:classification-agreement}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.0cm} r r X@{}}
+\toprule
+Agreement status & Notebooks & \% & Meaning\tabularnewline
+\midrule
+\texttt{PARTIAL\ub AGREEMENT} & 1{,}226 & 53.5 & main category differs, secondary ones overlap\tabularnewline
+\texttt{RULE\ub LOW\ub CONFIDENCE} & 443 & 19.3 & rule confidence below the threshold\tabularnewline
+\texttt{AGREED} & 215 & 9.4 & same category, both confident\tabularnewline
+\texttt{AGREED\ub LOW\ub CONFIDENCE} & 211 & 9.2 & same category, low confidence\tabularnewline
+\texttt{CLASSIFIER\ub DISAGREEMENT} & 183 & 8.0 & different categories, both confident\tabularnewline
+\texttt{BOTH\ub UNCERTAIN} & 11 & 0.5 & neither method could decide\tabularnewline
+other states & 2 & 0.1 & low model confidence\tabularnewline
+\midrule
+\textbf{Total} & \textbf{2{,}291} & & \tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The two methods chose exactly the same category for \textbf{437 of 2{,}291 notebooks, or 19.1\,\%}. Because two methods drawing from the same nine categories would agree sometimes by chance, the appropriate measure is Cohen's $\kappa$~\cite{cohen1960kappa}, which discounts chance agreement. Here $\kappa = 0.11$, conventionally described as slight agreement.
+
+Part of this low figure comes from the two methods using the taxonomy differently. The rule-based method declines to commit, answering \texttt{uncertain} or \texttt{mixed\ub purpose}, for 623 notebooks (27.2\,\%), while the model does so only 15 times (0.7\,\%). Those rows can never appear on the diagonal, whatever the notebook contains. Restricted to the 1{,}668 notebooks where the rule-based method did commit to a substantive category, agreement rises to 25.5\,\% and $\kappa$ to 0.14, which is still low.
+
+Outright contradiction is comparatively rare: 183 notebooks (8.0\,\%) produced a confident disagreement. The most common outcome by far is partial agreement, where the primary categories differ but the secondary categories overlap, which is the typical result for a notebook that genuinely does two things.
+
+\subsection{Where the Two Methods Diverge}
+\label{sec:eval-confusion}
+
+Table~\ref{tab:rule-llm-confusion} cross-tabulates the rule-based label against the model's label for all 2{,}291 notebooks. The diagonal counts the cases where the two agreed.
+
+\begin{table}[htbp]
+\centering
+\caption{Cross-tabulation of rule-based labels (rows) against language-model labels (columns) for all 2{,}291 analysed notebooks. The diagonal, shown in bold, counts the notebooks where the two methods chose the same category.}
+\label{tab:rule-llm-confusion}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X r r r r r r r r @{\hspace{0.7em}} r@{}}
+\toprule
+& \multicolumn{8}{c}{Language-model label} & \tabularnewline
+\cmidrule(lr){2-9}
+Rule-based label & DP & DA & VIZ & ML & SIM & TUT & SD & UNC & Total\tabularnewline
+\midrule
+\texttt{data\ub preparation} (DP) & \textbf{42} & 102 & 4 & 6 & 1 & 14 & 1 & 1 & 171\tabularnewline
+\texttt{data\ub analysis} (DA) & 14 & \textbf{92} & 3 & 11 & 6 & 8 & 0 & 1 & 135\tabularnewline
+\texttt{visualization} (VIZ) & 29 & 738 & \textbf{158} & 97 & 42 & 21 & 5 & 1 & 1{,}091\tabularnewline
+\texttt{machine\ub learning} (ML) & 20 & 48 & 0 & \textbf{67} & 1 & 7 & 5 & 0 & 148\tabularnewline
+\texttt{simulation} (SIM) & 1 & 5 & 1 & 3 & \textbf{28} & 2 & 0 & 0 & 40\tabularnewline
+\texttt{tutorial} (TUT) & 6 & 27 & 0 & 3 & 1 & \textbf{39} & 0 & 0 & 76\tabularnewline
+\texttt{software\ub devel.} (SD) & 1 & 2 & 0 & 0 & 0 & 4 & \textbf{0} & 0 & 7\tabularnewline
+\texttt{mixed\ub purpose} (MIX) & 29 & 158 & 7 & 48 & 6 & 10 & 3 & 0 & 261\tabularnewline
+\texttt{uncertain} (UNC) & 30 & 99 & 6 & 11 & 4 & 193 & 7 & \textbf{11} & 362\tabularnewline
+\midrule
+\textbf{Total} & \textbf{172} & \textbf{1{,}271} & \textbf{179} & \textbf{246} & \textbf{89} & \textbf{298} & \textbf{21} & \textbf{15} & \textbf{2{,}291}\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Reading the table row by row shows that the disagreement is highly structured rather than random. It concentrates in three places, and each has a clear cause.
+
+\paragraph{The boundary between analysis and visualization is genuinely ambiguous.} The largest single off-diagonal cell is 738 notebooks that the rule-based method called \texttt{visualization} and the model called \texttt{data\ub analysis}. This is one cell holding almost a third of the entire corpus. A notebook that computes results and then plots them can be described either way, and Section~\ref{sec:classification-taxonomy} noted that such notebooks are common. The rule-based method keys on plotting imports and calls, which are easy to detect; the model reads the narrative and reports what the notebook is \emph{for} rather than what it visibly does. Table~\ref{tab:classifier-quality} shows that neither is reliably right: against the curated label, precision in this area is 0.22 for the rules and 0.35 for the model.
+
+\paragraph{The model resolves cases the rules cannot.} Of the 362 notebooks the rule-based method could not classify at all, the model assigned 193 to \texttt{tutorial} and 99 to \texttt{data\ub analysis}. Tutorials are exactly the case where weighted keyword rules are weakest, because teaching material is signalled by the tone and structure of the narrative text rather than by imports or function calls. A tutorial that teaches pandas looks, to a rule engine, like a data-preparation notebook. This is the clearest evidence in the corpus that the two methods are complementary rather than redundant, and Table~\ref{tab:classifier-quality} supports it: the model's recall for \texttt{tutorial} is 0.34 against 0.13 for the rules.
+
+\paragraph{Where both methods commit, they agree more often.} For \texttt{data\ub analysis} the model confirms the rule-based label in 92 of 135 cases (68.1\,\%), and for \texttt{tutorial} in 39 of 76 cases (51.3\,\%). Agreement is highest precisely where the rule-based evidence is strong, which is the behaviour one would want. It is lowest for \texttt{visualization}, at 158 of 1{,}091 (14.5\,\%), which is the category the rules over-produce.
+
+\subsection{Confidence Behaviour}
+
+The two methods report confidence in very different ways. The mean rule-based confidence is 0.49; the mean model confidence is 0.94.
+
+The rule-based confidence is calculated. It derives from the ratio of the winning category's score to the total score, damped when the absolute evidence is weak, so it falls when the evidence really is ambiguous. The model's confidence is self-reported, and it is high almost everywhere, including on notebooks the rule-based method found ambiguous and including, as Table~\ref{tab:classifier-quality} shows, on the many occasions when it is wrong.
+
+A confidence value that does not distinguish easy cases from hard ones carries no usable information. This is the practical reason the hybrid controller routes decisions on the basis of \emph{agreement} between the methods rather than on the model's stated confidence.
+
+\subsection{What the Hybrid Design Achieves}
+
+The hybrid controller assigns a provisional category only when the evidence justifies it, and flags the rest for human review. Applied to the reference set, it committed to a category for 346 of 1{,}970 notebooks (17.6\,\%) and flagged 1{,}803 (91.5\,\%) for review.
+
+Where it committed, it matched the curated category for 151 of 346 notebooks, or \textbf{43.6\,\%}. That is meaningfully better than the model alone (36.6\,\%) and far better than the rules alone (17.8\,\%), which means the reconciliation logic does select the more trustworthy cases. But it buys that improvement by deciding almost nothing: on more than eight notebooks in ten it defers to a human, and even on the cases it accepts it is still wrong more often than right.
+
+The evidence therefore supports the design assumption only in a narrow sense, and refutes a stronger one.
+
+The two methods are genuinely complementary, and this is not merely asserted but visible in the numbers. They have opposite strengths: the rule-based method is precise where imports and function calls are decisive and abstains when they are not, while the model is decisive everywhere and strongest exactly where the rules are weakest. The 193 tutorials recovered from the rule-based method's unclassified pile are the clearest single illustration, and the reconciliation behaves sensibly in ranking its own output by trustworthiness.
+
+What the evidence does not support is using either method, or their combination, as a finished labelling system for individual notebooks. A macro F1 of 0.29 for the better of the two, and a hybrid that has to defer 91.5\,\% of decisions, describe a component that is useful for triage and not yet useful for measurement. This is why Section~\ref{sec:eval-category-effect} treats its own category table with caution, and why the balanced platform comparison deliberately uses the curated repository category instead of the classifier's output.
+
+Two limits qualify these figures in the classifier's favour. The reference label is repo-level and therefore noisy, as Section~\ref{sec:eval-classification} explained, so the true quality is somewhat higher than 36.6\,\%. And the model used is a small one, chosen so that the whole corpus could be classified locally and repeatedly at no cost; a larger model would very likely score better. Neither limit changes the conclusion for this corpus, and Section~\ref{sec:future-classification} describes what a proper evaluation would require.
+
+\section{Reproducibility of This Evaluation}
+\label{sec:eval-repeatability}
+
+Table~\ref{tab:eval-artefacts} lists which artefacts of this evaluation were kept, and which one was not.
+
+\begin{table}[htbp]
+\centering
+\caption{Artefacts preserved for repeating this evaluation.}
+\label{tab:eval-artefacts}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.4cm}X@{}}
+\toprule
+Artefact & Role in repeating the analysis\tabularnewline
+\midrule
+Working SQLite database & the main evidence; every table in this chapter is a query over it\tabularnewline
+Sample list & the exact resources analysed\tabularnewline
+Original notebooks & 2{,}289 of the 2{,}291 analysed notebooks, archived and verified by SHA-256 checksum\tabularnewline
+Comparison files & the per-cell differences behind each score, for the locally executed batch\tabularnewline
+Per-resource logs & download, installation, and execution records behind each status, for both batches\tabularnewline
+Seven CSV exports & the frozen input to the knowledge-graph build\tabularnewline
+Ontology and mappings & the transformation rules, versioned with the code\tabularnewline
+Combined N-Triples graph & the materialised graph, rebuildable from the above\tabularnewline
+SPARQL queries and results & the competency questions and their recorded answers\tabularnewline
+Build and test summaries & machine-readable records of triple counts and check results\tabularnewline
+Analysis scripts & regenerate every table in this chapter from the database\tabularnewline
+\midrule
+\emph{Not kept:} executed notebooks & the \texttt{*\ub output.ipynb} files were deleted with the 45\,GB of cloned resources; their per-cell comparison results remain in the database\tabularnewline
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The generated part of the analysis can be repeated completely. Deleting all CSV and RDF output and running the build again produces the same graph and passes the same checks; this is how the numbers in Section~\ref{sec:eval-kg} were obtained. Every table in this chapter is produced by a script that reads the database, so the chapter can be regenerated after any correction to the data.
+
+The download and execution part cannot be repeated exactly, and the reasons are built into the problem rather than being mistakes.
+
+Repositories change after they are cloned, and this work did not record the commit hash that was used. This is a genuine gap, and it is listed in Section~\ref{sec:future-technical}. Package installation resolves against a live package index, so running the same pipeline months later installs different versions. Notebooks that download data depend on that data still being available.
+
+Zenodo records are the exception. A published record version preserves its deposited files under a persistent identifier, although its metadata can still be updated and new files appear as a new version. The files are what matters here, and they held: when two notebooks had to be classified again, their record was downloaded a second time and both files matched their original checksums exactly. This is a real advantage of archival deposit, and this study can observe it directly only because it processed both kinds of platform.
+
+\section{Answers to the Research Questions}
+\label{sec:rq-answers}
+
+\paragraph{RQ1: To what extent can a platform-independent reproducibility workflow support the analysis of computational notebooks across heterogeneous research platforms?}
+To a large extent, and with a clear boundary. In total, 318 resources across three platforms were processed by one workflow, and 281 of them (88.4\,\%) reached execution, producing 2{,}291 compared notebooks. Platform-specific handling is limited to validation, metadata retrieval, and acquisition. After a local resource folder exists, no stage needed platform-specific behaviour, and the same code processed Git repositories and extracted archives in the same way. The boundary is real rather than nominal: 21 of Zenodo's 25 failures happened before it, and the failures after it follow resource size rather than platform. The main limitation lies at the same boundary. An archived record may contain no notebooks at all, which happened nine times, and this situation cannot arise for a repository that was selected because it contains notebooks.
+
+\paragraph{RQ2: How does metadata heterogeneity across research platforms affect the integration and representation of computational notebooks and their reproducibility-related information?}
+The differences are substantial, and integration is only meaningful with a strict rule against inventing values. Eight fields were normalized across three vocabularies for all 318 resources. The platforms separate completely on persistent identifiers, with Zenodo providing a DOI for 98.2\,\% of its records and both Git forges providing none, and on licensing, at 96.5\,\%, 50.5\,\%, and 0\,\%. The Codeberg figure describes its API rather than its repositories, and only a normalizer that refuses to guess preserves that distinction. Descriptive fields behave differently: title, authors, and dates are 98--100\,\% complete everywhere, so the platforms differ in what they \emph{guarantee} rather than in what they \emph{describe}. At the representation level, integration worked without losing these distinctions: 162{,}008 triples were produced, all structural checks passed, including the check that no archived record is described as a Git repository, and the graph reproduces the database's platform comparison to four decimal places.
+
+\paragraph{RQ3: To what extent do rule-based and AI-based approaches agree when characterizing computational notebooks into reproducibility-relevant categories, and to what extent do the two approaches complement each other?}
+They agree only slightly, they complement each other clearly, and neither is accurate enough to be relied on alone. The two methods chose the same category for 19.1\,\% of the 2{,}291 notebooks both classified, with Cohen's $\kappa = 0.11$, rising to 25.5\,\% and $\kappa = 0.14$ when the rule-based method committed to a substantive category. Measured against the curated repository category, the language model reaches 36.6\,\% accuracy and a macro F1 of 0.29, against 17.8\,\% and 0.15 for the rule-based method; a trivial classifier that always answers the majority category would reach 31.5\,\%. The complementarity is asymmetric and systematic rather than incidental: the rule-based method is precise where imports and function calls are decisive and abstains on 27.2\,\% of notebooks, whereas the model is decisive everywhere and strongest where the rules are weakest, recovering 193 tutorials from the rule-based method's unclassified pile. Their confidence behaviour differs in the same direction, since the calculated rule-based confidence distinguishes easy from hard cases while the model's self-reported confidence (mean 0.94) does not. The hybrid controller exploits this correctly, reaching 43.6\,\% agreement with the curated label on the 17.6\,\% of cases it accepts, but it defers the rest to a human. Combining the two is therefore justified as a triage mechanism and not as a measurement instrument, and the reference label used here is itself noisy, so these figures are a lower bound.
+
+\paragraph{RQ4: To what extent do computational notebooks differ across platforms with respect to metadata completeness, execution outcomes, failure causes, and reproducibility-relevant categories?}
+They differ measurably, but less than the raw numbers first suggest, and not all in the same direction. Metadata completeness is highest on Zenodo and lowest on Codeberg. Clean-execution rates run the other way, at 45.3\,\% for Codeberg, 34.5\,\% for Zenodo, and 30.8\,\% for GitHub. Output reproducibility depends on how it is counted, and this is the most important qualification of the whole chapter: counting every notebook once puts GitHub first at 0.378, while counting every repository once puts Codeberg first at 0.37 and GitHub third at 0.29. Only one comparison survives all three counting rules, namely that Codeberg repositories reproduce better than Zenodo records, with non-overlapping intervals of [0.32, 0.42] and [0.22, 0.31]. Missing dependencies are the largest single failure cause across the corpus at 20.9\,\%, and stay in a narrow band of 17.1\,\% to 25.8\,\% on every platform, although on GitHub code errors are slightly more frequent at 21.9\,\%. File errors concentrate on GitHub at 15.7\,\% and interactive-input errors on Zenodo. Notebook purpose affects reproducibility by about as much as the platform does, which is why the balanced design holds it fixed. Two qualifications limit these results: the samples were chosen on purpose rather than at random, and the assigned notebook categories come from a classifier of moderate quality. What can be stated without qualification is that low output reproducibility is not specific to GitHub, because it holds on all three platforms and under every counting rule.
+
+\section{Summary}
+\label{sec:eval-summary}
+
+The technical requirements are met. Platform detection, validation, acquisition, normalization, evidence storage, and semantic publication all behave as Chapter~\ref{chap:requirements} specified. The knowledge graph builds to 162{,}008 triples, passes every structural check, answers all seven competency questions, and reproduces the database's own platform comparison exactly.
+
+The empirical results support three claims, qualify one, and withhold one.
+
+First, platform-independent processing works, and the boundary lies exactly at acquisition. Second, metadata differences between platforms are substantial, and normalization makes them measurable instead of hiding them. Third, output reproducibility is low on all three platforms: fewer than two code cells in five reproduce their stored output, whichever way the notebooks are counted.
+
+The qualified claim concerns the platform comparison itself. The platforms do differ, but the ranking depends on whether notebooks or repositories are counted, and only the difference between Codeberg and Zenodo survives every counting rule. Using raw notebook counts alone would have reported a GitHub lead that the balanced design does not support, so each reported score names the counting rule it belongs to.
+
+The claim that is withheld concerns classifier quality. Measured against the curated repository category, the language model reaches a macro F1 of 0.29 and the rule-based method 0.15. The two methods are demonstrably complementary, and the hybrid controller is right to route on agreement rather than on self-reported confidence, but a component that defers more than nine decisions in ten is a triage aid rather than a measurement instrument. Establishing what these methods can really do requires labels assigned by a person at notebook level, which was outside the scope of this work. Chapter~\ref{chap:future-work} explains what that would involve, and what else would be needed to strengthen the results reported here.

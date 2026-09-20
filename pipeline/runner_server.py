@@ -6,9 +6,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import re
+import shlex
+import sqlite3
 import subprocess
 import threading
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -24,6 +28,7 @@ MAIN_DB_DIR = DATA_OUTPUT_ROOT / "db"
 JOBS_ROOT = DATA_OUTPUT_ROOT / "web-jobs"
 IMAGE_NAME = os.environ.get("NOTEBOOKFAIR_PIPELINE_IMAGE", "notebookfair-pipeline:local")
 MAX_BODY_BYTES = 256 * 1024
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 MAX_NOTEBOOKS = 2000
 MAX_LOG_LINES = 80
 JOB_TIMEOUT_SECONDS = int(os.environ.get("NOTEBOOKFAIR_JOB_TIMEOUT", "7200"))
@@ -76,6 +81,225 @@ def validate_notebooks(value: object) -> list[str]:
             raise ValueError("An unsafe notebook path was rejected")
         validated.append(normalized)
     return validated
+
+
+def _split_list(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(";") if item.strip()]
+
+
+def _platform_url(platform: str, repository: str) -> str:
+    if platform == "github":
+        return f"https://github.com/{repository}"
+    if platform == "codeberg":
+        return f"https://codeberg.org/{repository}"
+    if platform == "zenodo":
+        return f"https://zenodo.org/records/{repository}"
+    return repository
+
+
+def list_pipeline_repositories() -> list[dict]:
+    """Read real, already-executed repositories straight from the pipeline's
+    own SQLite database (data/output/db/db.sqlite) — read-only, no Docker
+    required. This is the actual pipeline data, distinct from the website's
+    own D1-backed "imported repository" workspace."""
+    db_path = MAIN_DB_DIR / "db.sqlite"
+    if not db_path.is_file():
+        return []
+
+    connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+    connection.row_factory = sqlite3.Row
+    try:
+        repo_rows = connection.execute(
+            """
+            SELECT
+                r.id, r.repository, r.platform, r.notebooks_count,
+                m.title, m.description, m.authors, m.license, m.doi, m.keywords,
+                (SELECT run_status FROM repository_runs WHERE repository_id = r.id ORDER BY id DESC LIMIT 1) AS last_status,
+                (SELECT started_at FROM repository_runs WHERE repository_id = r.id ORDER BY id DESC LIMIT 1) AS last_started_at,
+                (SELECT finished_at FROM repository_runs WHERE repository_id = r.id ORDER BY id DESC LIMIT 1) AS last_finished_at,
+                (SELECT COUNT(*) FROM repository_runs WHERE repository_id = r.id) AS run_count
+            FROM repositories r
+            LEFT JOIN repository_metadata m ON m.repo_id = r.id
+            ORDER BY r.id DESC
+            """
+        ).fetchall()
+
+        notebook_rows = connection.execute(
+            """
+            SELECT
+                n.id, n.repository_id, n.name, n.language,
+                nc.final_category, nc.rule_category, nc.llm_category,
+                nc.agreement_status, nc.needs_human_review,
+                ne.execution_status, ne.execution_duration,
+                nrm.reproducibility_score
+            FROM notebooks n
+            LEFT JOIN (
+                SELECT notebook_id, final_category, rule_category, llm_category, agreement_status, needs_human_review
+                FROM notebook_classifications WHERE id IN (SELECT MAX(id) FROM notebook_classifications GROUP BY notebook_id)
+            ) nc ON nc.notebook_id = n.id
+            LEFT JOIN (
+                SELECT notebook_id, execution_status, execution_duration
+                FROM notebook_executions WHERE id IN (SELECT MAX(id) FROM notebook_executions GROUP BY notebook_id)
+            ) ne ON ne.notebook_id = n.id
+            LEFT JOIN (
+                SELECT notebook_id, reproducibility_score
+                FROM notebook_reproducibility_metrics WHERE id IN (SELECT MAX(id) FROM notebook_reproducibility_metrics GROUP BY notebook_id)
+            ) nrm ON nrm.notebook_id = n.id
+            ORDER BY n.repository_id, n.id
+            """
+        ).fetchall()
+    finally:
+        connection.close()
+
+    notebooks_by_repo: dict[int, list[dict]] = {}
+    for row in notebook_rows:
+        notebooks_by_repo.setdefault(row["repository_id"], []).append(
+            {
+                "id": str(row["id"]),
+                "name": row["name"],
+                "language": row["language"] or "Python",
+                "finalCategory": row["final_category"],
+                "ruleCategory": row["rule_category"],
+                "llmCategory": row["llm_category"],
+                "agreement": row["agreement_status"],
+                "needsHumanReview": bool(row["needs_human_review"]),
+                "executionStatus": row["execution_status"],
+                "executionDuration": row["execution_duration"],
+                "reproducibilityScore": row["reproducibility_score"],
+            }
+        )
+
+    repositories = []
+    for row in repo_rows:
+        platform = row["platform"] or "github"
+        repo_notebooks = notebooks_by_repo.get(row["id"], [])
+        scores = [n["reproducibilityScore"] for n in repo_notebooks if n["reproducibilityScore"] is not None]
+        repositories.append(
+            {
+                "id": str(row["id"]),
+                "name": row["repository"],
+                "platform": platform,
+                "url": _platform_url(platform, row["repository"]),
+                "title": row["title"] or row["repository"],
+                "description": row["description"] or "",
+                "authors": _split_list(row["authors"]),
+                "license": row["license"] or "",
+                "doi": row["doi"] or None,
+                "keywords": _split_list(row["keywords"]),
+                "notebookCount": row["notebooks_count"] if row["notebooks_count"] is not None else len(repo_notebooks),
+                "lastRunStatus": row["last_status"],
+                "lastRunStartedAt": row["last_started_at"],
+                "lastRunFinishedAt": row["last_finished_at"],
+                "runCount": row["run_count"],
+                "averageScorePercent": round(sum(scores) / len(scores) * 100) if scores else None,
+                "notebooks": repo_notebooks,
+            }
+        )
+    return repositories
+
+
+def _repo_dir_name(repository_id: int, repository_path: str) -> str:
+    basename = repository_path.rstrip("/").split("/")[-1]
+    if basename.endswith(".git"):
+        basename = basename[:-4]
+    return f"{repository_id}_{basename}"
+
+
+def _ensure_repo_acquired(repository_id: int, repo_url: str) -> Path:
+    """Makes sure this repository's real source is cloned/downloaded on disk
+    and returns its directory — reusing classify-only.sh's acquisition step
+    (with classification skipped) so the exact same validate+clone/download
+    logic the rest of the pipeline relies on is the only thing that ever
+    creates these directories. Cheap no-op if already acquired."""
+    db_path = MAIN_DB_DIR / "db.sqlite"
+    connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+    try:
+        row = connection.execute("SELECT repository FROM repositories WHERE id = ?", (repository_id,)).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        raise ValueError("Repository not found in the pipeline database")
+
+    repo_dir = DATA_OUTPUT_ROOT / "cloned_repos" / _repo_dir_name(repository_id, row[0])
+    if repo_dir.is_dir():
+        return repo_dir
+
+    job_path = f"/tmp/notebookfair-acquire-{uuid.uuid4().hex}"
+    project_path = _wsl_mount_path(ROOT)
+    repos_dir_override = _wsl_mount_path(DATA_OUTPUT_ROOT / "cloned_repos")
+    script = (
+        f"mkdir -p {shlex.quote(job_path)} && cd {shlex.quote(project_path)} && "
+        f"WEB_REPO_URL={shlex.quote(repo_url)} WEB_JOB_DIR={shlex.quote(job_path)} "
+        f"REPOS_DIR_OVERRIDE={shlex.quote(repos_dir_override)} "
+        "SKIP_CLASSIFY=true bash pipeline/classify-only.sh"
+    )
+    command = ["wsl", "bash", "-lc", script] if platform.system() == "Windows" else ["bash", "-lc", script]
+    result = subprocess.run(command, capture_output=True, text=True, timeout=180, encoding="utf-8", errors="replace")
+    subprocess.run(
+        (["wsl", "bash", "-lc", f"rm -rf {shlex.quote(job_path)}"] if platform.system() == "Windows"
+         else ["bash", "-lc", f"rm -rf {shlex.quote(job_path)}"]),
+        capture_output=True, timeout=30, check=False,
+    )
+    if result.returncode != 0 or not repo_dir.is_dir():
+        log_tail = "\n".join((result.stdout or "").splitlines()[-20:])
+        raise ValueError(f"Could not acquire this repository first: {log_tail or 'unknown error'}")
+    return repo_dir
+
+
+def attach_notebook_to_repository(repository_id: int, filename: str, content_text: str) -> dict:
+    """Uploads a notebook from the user's computer straight into an existing,
+    real repository — the repo must already be in the pipeline database.
+    Acquires the repo first (clone/download) if it has never been run, so
+    the file always lands inside a genuine, git-managed working copy rather
+    than a loose directory that would later conflict with a real clone."""
+    if not filename or "/" in filename or "\\" in filename or not filename.lower().endswith(".ipynb"):
+        raise ValueError("Choose a single .ipynb file.")
+    try:
+        notebook_json = json.loads(content_text)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"That file is not valid JSON, so it can't be a real .ipynb: {error}") from error
+    if not isinstance(notebook_json, dict) or "cells" not in notebook_json:
+        raise ValueError("That file doesn't look like a Jupyter notebook (no 'cells').")
+
+    db_path = MAIN_DB_DIR / "db.sqlite"
+    connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+    try:
+        row = connection.execute("SELECT repository, platform FROM repositories WHERE id = ?", (repository_id,)).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        raise ValueError("Repository not found in the pipeline database")
+    repo_url = _platform_url(row[1] or "github", row[0])
+
+    repo_dir = _ensure_repo_acquired(repository_id, repo_url)
+
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", Path(filename).stem).strip("_")[:80] or "notebook"
+    notebook_filename = f"{safe_name}.ipynb"
+    target = repo_dir / notebook_filename
+    suffix = 2
+    while target.exists():
+        notebook_filename = f"{safe_name}-{suffix}.ipynb"
+        target = repo_dir / notebook_filename
+        suffix += 1
+    target.write_text(content_text, encoding="utf-8")
+
+    connection = sqlite3.connect(str(db_path), timeout=10)
+    try:
+        connection.execute(
+            "INSERT INTO notebooks (repository_id, name, language) VALUES (?, ?, 'python')",
+            (repository_id, notebook_filename),
+        )
+        connection.execute(
+            "UPDATE repositories SET notebooks_count = (SELECT COUNT(*) FROM notebooks WHERE repository_id = ?) WHERE id = ?",
+            (repository_id, repository_id),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+    return {"repositoryId": repository_id, "notebookFilename": notebook_filename}
 
 
 class JobManager:
@@ -257,6 +481,15 @@ class JobManager:
             self.image_ready = True
 
     def _progress_from_line(self, line: str, completed_notebooks: int, total: int) -> tuple[int, str, str, int]:
+        return progress_from_line(line, completed_notebooks, total)
+
+
+def progress_from_line(line: str, completed_notebooks: int, total: int) -> tuple[int, str, str, int]:
+    """Parses one pipeline log line into (progress%, stage, message,
+    completed_notebooks). Shared between the Docker-sandboxed JobManager and
+    the direct/WSL DirectRerunManager so both surface the same live progress
+    in the UI."""
+    if True:
         if "[REPO] Cloning" in line:
             return 10, "Acquiring repository", "Cloning the repository in an isolated container.", completed_notebooks
         if "[ZENODO]" in line:
@@ -469,7 +702,325 @@ class JobManager:
             self.processes.pop(job_id, None)
 
 
+def _wsl_mount_path(path: Path) -> str:
+    """Convert a native Windows path to its WSL /mnt/<drive>/... equivalent.
+    On non-Windows hosts the path is already usable as-is."""
+    resolved = path.resolve()
+    if platform.system() != "Windows":
+        return str(resolved)
+    drive = resolved.drive.rstrip(":").lower()
+    rest = str(resolved)[len(resolved.drive):].replace("\\", "/").lstrip("/")
+    return f"/mnt/{drive}/{rest}"
+
+
+class DirectRerunManager:
+    """Reruns a single real pipeline notebook directly on the host (via WSL on
+    Windows), bypassing the Docker-sandboxed JobManager above. This is what
+    powers the "Rerun" button for notebooks already sitting in the pipeline's
+    own SQLite database — it writes results into that same real database,
+    with no Docker Desktop dependency."""
+
+    def __init__(self) -> None:
+        self.lock = threading.RLock()
+        self.jobs: dict[str, dict] = {}
+        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="direct-rerun")
+
+    def _lookup(self, repository_id: int, notebook_id: int) -> tuple[str, str]:
+        db_path = MAIN_DB_DIR / "db.sqlite"
+        connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+        try:
+            repo = connection.execute(
+                "SELECT repository, platform FROM repositories WHERE id = ?", (repository_id,)
+            ).fetchone()
+            if repo is None:
+                raise ValueError("Repository not found in the pipeline database")
+            notebook = connection.execute(
+                "SELECT name FROM notebooks WHERE id = ? AND repository_id = ?",
+                (notebook_id, repository_id),
+            ).fetchone()
+            if notebook is None:
+                raise ValueError("Notebook not found in the pipeline database")
+        finally:
+            connection.close()
+        repository_path, platform_name = repo
+        return _platform_url(platform_name or "github", repository_path), notebook[0]
+
+    def _lookup_repository(self, repository_id: int) -> tuple[str, str]:
+        db_path = MAIN_DB_DIR / "db.sqlite"
+        connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+        try:
+            repo = connection.execute(
+                "SELECT repository, platform FROM repositories WHERE id = ?", (repository_id,)
+            ).fetchone()
+            if repo is None:
+                raise ValueError("Repository not found in the pipeline database")
+            rows = connection.execute(
+                "SELECT name FROM notebooks WHERE repository_id = ? ORDER BY id", (repository_id,)
+            ).fetchall()
+        finally:
+            connection.close()
+        if not rows:
+            raise ValueError("This repository has no notebooks to run yet.")
+        repository_path, platform_name = repo
+        notebook_paths = ";".join(row[0] for row in rows)
+        return _platform_url(platform_name or "github", repository_path), notebook_paths
+
+    def start_repository(self, repository_id: int) -> dict:
+        repo_url, notebook_paths = self._lookup_repository(repository_id)
+        return self._start(repository_id, None, repo_url, notebook_paths)
+
+    def start(self, repository_id: int, notebook_id: int) -> dict:
+        repo_url, notebook_path = self._lookup(repository_id, notebook_id)
+        return self._start(repository_id, notebook_id, repo_url, notebook_path)
+
+    def _start(self, repository_id: int, notebook_id: int | None, repo_url: str, notebook_path: str) -> dict:
+        job_id = uuid.uuid4().hex
+        notebook_count = notebook_path.count(";") + 1
+        starting_message = (
+            f"Rerunning {notebook_path}…" if notebook_id is not None
+            else f"Rerunning {notebook_count} notebook{'s' if notebook_count != 1 else ''}…"
+        )
+        state = {
+            "id": job_id,
+            "repositoryId": str(repository_id),
+            "notebookId": str(notebook_id) if notebook_id is not None else None,
+            "notebookPath": notebook_path,
+            "status": "running",
+            "stage": "Starting",
+            "progress": 1,
+            "message": starting_message,
+            "error": None,
+            "log": [],
+            "createdAt": utc_now(),
+            "updatedAt": utc_now(),
+            "result": None,
+        }
+        with self.lock:
+            self.jobs[job_id] = state
+        self.executor.submit(self._run, job_id, repo_url, notebook_path, notebook_count)
+        return state
+
+    def _update(self, job_id: str, **changes: object) -> None:
+        with self.lock:
+            state = self.jobs.get(job_id)
+            if state is None:
+                return
+            state.update(changes, updatedAt=utc_now())
+
+    @staticmethod
+    def _wsl_command(script: str) -> list[str]:
+        return ["wsl", "bash", "-lc", script] if platform.system() == "Windows" else ["bash", "-lc", script]
+
+    def _run(self, job_id: str, repo_url: str, notebook_path: str, notebook_total: int = 1) -> None:
+        # Scratch work (git clone, pyenv venv, `pip install jupyter`) lives
+        # under WSL's own native filesystem (/tmp), never under /mnt/c/. That
+        # Windows-mounted path is a 9P network-style mount from WSL's side —
+        # installing a large dependency tree there (many small files) can
+        # take 10-50x longer than native ext4 and effectively hangs. Only the
+        # real pipeline database write (hardcoded inside web-run.sh to the
+        # project's own data/output/db/db.sqlite) needs to touch /mnt/c/ at
+        # all; everything else here is disposable per-job scratch space.
+        job_path = f"/tmp/notebookfair-direct-{job_id}"
+        try:
+            project_path = _wsl_mount_path(ROOT)
+            run_script = (
+                f"mkdir -p {shlex.quote(job_path)} && cd {shlex.quote(project_path)} && "
+                f"WEB_REPO_URL={shlex.quote(repo_url)} "
+                f"WEB_NOTEBOOK_PATHS={shlex.quote(notebook_path)} "
+                f"WEB_JOB_DIR={shlex.quote(job_path)} "
+                "CLASSIFICATION_ENABLED=true CLASSIFICATION_RULE_ONLY=true "
+                "bash pipeline/web-run.sh"
+            )
+            process = subprocess.Popen(
+                self._wsl_command(run_script), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, encoding="utf-8", errors="replace", bufsize=1,
+            )
+            log_lines: list[str] = []
+            completed_notebooks = 0
+            timed_out = False
+            deadline = time.monotonic() + 1800
+            assert process.stdout is not None
+            for line in process.stdout:
+                log_lines.append(line.rstrip("\n"))
+                progress, stage, message, completed_notebooks = progress_from_line(
+                    line.rstrip("\n"), completed_notebooks, notebook_total
+                )
+                if progress >= 0:
+                    self._update(job_id, stage=stage, progress=progress, message=message, log=log_lines[-80:])
+                if time.monotonic() > deadline:
+                    timed_out = True
+                    process.terminate()
+                    break
+            return_code = process.wait()
+            if timed_out:
+                raise subprocess.TimeoutExpired(run_script, 1800)
+
+            cat_result = subprocess.run(
+                self._wsl_command(f"cat {shlex.quote(job_path)}/result.json 2>/dev/null"),
+                capture_output=True, text=True, timeout=30, encoding="utf-8", errors="replace",
+            )
+
+            if cat_result.stdout.strip():
+                payload = json.loads(cat_result.stdout)
+                self._update(
+                    job_id,
+                    status=payload.get("status", "failed"),
+                    stage="Complete",
+                    progress=100,
+                    message="Rerun complete.",
+                    error=payload.get("error"),
+                    result=payload,
+                )
+            else:
+                log_tail = "\n".join(log_lines[-40:])
+                self._update(
+                    job_id,
+                    status="failed",
+                    message="The rerun did not produce a result.",
+                    error=log_tail or f"The rerun exited with code {return_code}",
+                )
+        except subprocess.TimeoutExpired:
+            self._update(job_id, status="failed", message="The rerun timed out.", error="Timed out after 30 minutes")
+        except json.JSONDecodeError as error:
+            self._update(job_id, status="failed", message="The rerun result could not be parsed.", error=str(error))
+        except Exception as error:  # keep the server alive after any single rerun failure
+            self._update(job_id, status="failed", message=str(error), error=str(error))
+        finally:
+            subprocess.run(
+                self._wsl_command(f"rm -rf {shlex.quote(job_path)}"),
+                capture_output=True, timeout=30, check=False,
+            )
+
+    def get(self, job_id: str) -> dict:
+        with self.lock:
+            state = self.jobs.get(job_id)
+        if state is None:
+            raise KeyError(job_id)
+        return state
+
+
+class ClassifyOnlyManager:
+    """Reclassifies one notebook without a full rerun — no dependency install,
+    no pyenv, no execution. Much faster; used by the small "reclassify" action
+    next to a notebook's classification badge."""
+
+    def __init__(self) -> None:
+        self.lock = threading.RLock()
+        self.jobs: dict[str, dict] = {}
+        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="classify-only")
+
+    def _lookup(self, repository_id: int, notebook_id: int) -> tuple[str, str]:
+        db_path = MAIN_DB_DIR / "db.sqlite"
+        connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+        try:
+            repo = connection.execute(
+                "SELECT repository, platform FROM repositories WHERE id = ?", (repository_id,)
+            ).fetchone()
+            if repo is None:
+                raise ValueError("Repository not found in the pipeline database")
+            notebook = connection.execute(
+                "SELECT name FROM notebooks WHERE id = ? AND repository_id = ?",
+                (notebook_id, repository_id),
+            ).fetchone()
+            if notebook is None:
+                raise ValueError("Notebook not found in the pipeline database")
+        finally:
+            connection.close()
+        repository_path, platform_name = repo
+        return _platform_url(platform_name or "github", repository_path), notebook[0]
+
+    def _read_classification(self, notebook_id: int) -> dict | None:
+        db_path = MAIN_DB_DIR / "db.sqlite"
+        connection = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True, timeout=5)
+        connection.row_factory = sqlite3.Row
+        try:
+            row = connection.execute(
+                """
+                SELECT rule_category, llm_category, final_category, agreement_status, needs_human_review
+                FROM notebook_classifications WHERE notebook_id = ? ORDER BY id DESC LIMIT 1
+                """,
+                (notebook_id,),
+            ).fetchone()
+        finally:
+            connection.close()
+        return dict(row) if row is not None else None
+
+    def start(self, repository_id: int, notebook_id: int) -> dict:
+        repo_url, notebook_path = self._lookup(repository_id, notebook_id)
+        job_id = uuid.uuid4().hex
+        state = {
+            "id": job_id,
+            "repositoryId": str(repository_id),
+            "notebookId": str(notebook_id),
+            "status": "running",
+            "message": f"Reclassifying {notebook_path}…",
+            "error": None,
+            "createdAt": utc_now(),
+            "updatedAt": utc_now(),
+            "result": None,
+        }
+        with self.lock:
+            self.jobs[job_id] = state
+        self.executor.submit(self._run, job_id, repo_url, notebook_path, notebook_id)
+        return state
+
+    def _update(self, job_id: str, **changes: object) -> None:
+        with self.lock:
+            state = self.jobs.get(job_id)
+            if state is None:
+                return
+            state.update(changes, updatedAt=utc_now())
+
+    def _run(self, job_id: str, repo_url: str, notebook_path: str, notebook_id: int) -> None:
+        job_path = f"/tmp/notebookfair-classify-{job_id}"
+        try:
+            project_path = _wsl_mount_path(ROOT)
+            script = (
+                f"mkdir -p {shlex.quote(job_path)} && cd {shlex.quote(project_path)} && "
+                f"WEB_REPO_URL={shlex.quote(repo_url)} "
+                f"WEB_NOTEBOOK_PATHS={shlex.quote(notebook_path)} "
+                f"WEB_JOB_DIR={shlex.quote(job_path)} "
+                "CLASSIFICATION_RULE_ONLY=true "
+                "bash pipeline/classify-only.sh"
+            )
+            command = ["wsl", "bash", "-lc", script] if platform.system() == "Windows" else ["bash", "-lc", script]
+            result = subprocess.run(
+                command, capture_output=True, text=True, timeout=300, encoding="utf-8", errors="replace"
+            )
+            if result.returncode != 0:
+                log_tail = "\n".join((result.stdout or "").splitlines()[-30:])
+                self._update(
+                    job_id, status="failed", message="Reclassification failed.",
+                    error=log_tail or f"exit code {result.returncode}",
+                )
+                return
+            classification = self._read_classification(notebook_id)
+            if classification is None:
+                self._update(job_id, status="failed", message="No classification result was produced.", error=None)
+                return
+            self._update(job_id, status="succeeded", message="Reclassification complete.", result=classification)
+        except subprocess.TimeoutExpired:
+            self._update(job_id, status="failed", message="Reclassification timed out.", error="Timed out after 5 minutes")
+        except Exception as error:
+            self._update(job_id, status="failed", message=str(error), error=str(error))
+        finally:
+            subprocess.run(
+                (["wsl", "bash", "-lc", f"rm -rf {shlex.quote(job_path)}"] if platform.system() == "Windows"
+                 else ["bash", "-lc", f"rm -rf {shlex.quote(job_path)}"]),
+                capture_output=True, timeout=30, check=False,
+            )
+
+    def get(self, job_id: str) -> dict:
+        with self.lock:
+            state = self.jobs.get(job_id)
+        if state is None:
+            raise KeyError(job_id)
+        return state
+
+
 MANAGER = JobManager()
+DIRECT_MANAGER = DirectRerunManager()
+CLASSIFY_MANAGER = ClassifyOnlyManager()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -498,6 +1049,26 @@ class Handler(BaseHTTPRequestHandler):
             status = HTTPStatus.OK if health["status"] == "ok" else HTTPStatus.SERVICE_UNAVAILABLE
             self._json(status, health)
             return
+        if path == "/repositories":
+            try:
+                self._json(HTTPStatus.OK, {"repositories": list_pipeline_repositories()})
+            except sqlite3.Error as error:
+                self._json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": f"The pipeline database could not be read: {error}"})
+            return
+        direct_match = re.fullmatch(r"/direct-rerun/([0-9a-f]{32})", path)
+        if direct_match:
+            try:
+                self._json(HTTPStatus.OK, DIRECT_MANAGER.get(direct_match.group(1)))
+            except KeyError:
+                self._json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
+            return
+        classify_match = re.fullmatch(r"/classify-only/([0-9a-f]{32})", path)
+        if classify_match:
+            try:
+                self._json(HTTPStatus.OK, CLASSIFY_MANAGER.get(classify_match.group(1)))
+            except KeyError:
+                self._json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
+            return
         job_id = self._job_id()
         if job_id and path == f"/jobs/{job_id}":
             try:
@@ -509,6 +1080,66 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path
+        if path == "/local-notebooks":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > MAX_UPLOAD_BYTES:
+                    raise ValueError(f"The file is empty or larger than {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+                payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise ValueError("The upload request must be a JSON object")
+                repository_id = int(payload.get("repositoryId"))
+                filename = payload.get("filename")
+                content = payload.get("content")
+                if not isinstance(filename, str) or not isinstance(content, str):
+                    raise ValueError("filename and content are required strings")
+                self._json(HTTPStatus.CREATED, attach_notebook_to_repository(repository_id, filename, content))
+            except (ValueError, TypeError, json.JSONDecodeError) as error:
+                self._json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
+            except sqlite3.Error as error:
+                self._json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": f"The pipeline database could not be written: {error}"})
+            return
+        if path == "/direct-rerun":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > MAX_BODY_BYTES:
+                    raise ValueError("The rerun request is empty or too large")
+                payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise ValueError("The rerun request must be a JSON object")
+                repository_id = int(payload.get("repositoryId"))
+                notebook_id = int(payload.get("notebookId"))
+                self._json(HTTPStatus.ACCEPTED, DIRECT_MANAGER.start(repository_id, notebook_id))
+            except (ValueError, TypeError, json.JSONDecodeError) as error:
+                self._json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
+            return
+        if path == "/direct-rerun-repository":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > MAX_BODY_BYTES:
+                    raise ValueError("The rerun request is empty or too large")
+                payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise ValueError("The rerun request must be a JSON object")
+                repository_id = int(payload.get("repositoryId"))
+                self._json(HTTPStatus.ACCEPTED, DIRECT_MANAGER.start_repository(repository_id))
+            except (ValueError, TypeError, json.JSONDecodeError) as error:
+                self._json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
+            return
+        if path == "/classify-only":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > MAX_BODY_BYTES:
+                    raise ValueError("The reclassify request is empty or too large")
+                payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise ValueError("The reclassify request must be a JSON object")
+                repository_id = int(payload.get("repositoryId"))
+                notebook_id = int(payload.get("notebookId"))
+                self._json(HTTPStatus.ACCEPTED, CLASSIFY_MANAGER.start(repository_id, notebook_id))
+            except (ValueError, TypeError, json.JSONDecodeError) as error:
+                self._json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
+            return
         if path == "/jobs":
             try:
                 length = int(self.headers.get("Content-Length", "0"))

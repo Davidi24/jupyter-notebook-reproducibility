@@ -777,7 +777,7 @@ fetch_github_metadata() {
         headers+=(-H "Authorization: Bearer $GITHUB_TOKEN")
     fi
 
-    if ! response=$(curl -fsS \
+    if ! response=$(curl -fsSL \
         --retry 2 \
         --retry-all-errors \
         --retry-delay 1 \
@@ -822,7 +822,7 @@ fetch_codeberg_metadata() {
         headers+=(-H "Authorization: token $CODEBERG_TOKEN")
     fi
 
-    if ! response=$(curl -fsS \
+    if ! response=$(curl -fsSL \
         --retry 2 \
         --retry-all-errors \
         --retry-delay 1 \

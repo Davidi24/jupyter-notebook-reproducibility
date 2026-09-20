@@ -1,0 +1,282 @@
+[
+ {
+  "page": 1,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "In registration form, you have the title 'Cross-Platform Reproducibility Analysis of Jupyter Notebooks across GitHub, Codeberg, and Zenodo'\n\nPlease keep in consistent",
+  "target_text": "Extending Jupyter Notebook Reproducibility Analysis to Non-GitHub Repositories"
+ },
+ {
+  "page": 1,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Examiner: Prof. Dr. Martin Gaedke\nSupervisor: Dr. Sheeba Samuel",
+  "target_text": "Supervisor: Prof. Dr. Sheeba Samuel"
+ },
+ {
+  "page": 1,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 1,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Dont forget to remove draft everywhere bfore submission",
+  "target_text": "Draft"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "cite",
+  "target_text": "An existing reproducibility pipeline"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "cite",
+  "target_text": "Jupyter notebooks"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Clarify?\ngithub API?\nCodeberg APi?",
+  "target_text": "th Git"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "cite or add footnote for each platform. Better to cite",
+  "target_text": "GitHub, Codeberg, and Zenodo"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "cite",
+  "target_text": "FAIR Jupyter knowledge gra"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "The result of the thesis does not directly come in the begiing.\nFirst the introduction of reproducibility problem from state of the art needs to be mentioned. Different ways of publishing results through platforms like github, gitlab, zenodo, figshare, etc. Give some statistics (rough estimate with citaion) of how many repositories exisit in each platforms . Why it is important to check reproducibility and publishing practices of results in other platforms, etc.\nYou are explaining this in motivation but it needs to move up and what the thesis does at athe end of the chapter",
+  "target_text": "This thesis rst extends the pipeli"
+ },
+ {
+  "page": 7,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "cite when there is a new scienitfic term is present everywhere in the thesis.\nReference is very important.",
+  "target_text": "Provenance"
+ },
+ {
+  "page": 8,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "A flow is required in your narrative and explained in a research/scientific manner. You are not just extending a pipeline to different platforms.\nWhy these platforms are selected?\nWhat is the importance of looking into reproducibility practices in these platforms?\nAre there studies that show some statistics? Based on that, did the thesis look into these practices.\nWhat will be the problems if you want to look into their publishing/reproducibility practices?Metadata, urls, etc.\nAnd then talk about the pipeline.\nAlso dont mention the pipleine as original reproducibility pipeline as there are multiple piplines in the current research.\n\nYou should mention :\nThe pipeline [2] assumes....\n\nChange it everwhere it is mentioned in that way.",
+  "target_text": "The original reproducibility pipeline"
+ },
+ {
+  "page": 8,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 8,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "These RQs need to be rephrased  in a scientific way.\nCurrently it feels like only an engineering problem than a research problem.\n\nThe main issue is that the current RQs are phrased around what to build (“extend,” “normalize,” “place notebooks into categories”), rather than what scientific phenomenon you want to investigate.\n\nA more scientific formulation\n\nRQ1 — Cross-platform reproducibility infrastructure\n\nRQ1: To what extent can a platform-independent reproducibility workflow support the analysis of computational notebooks across heterogeneous research platforms?\n\nThis changes the focus from “How do we add Codeberg and Zenodo connectors?” to the more research-oriented question of whether platform-independent processing can generalize across repositories.\n\nRQ2 — Metadata heterogeneity and integration\n\nRQ2: How does metadata heterogeneity across research platforms affect the integration and representation of computational notebooks and their reproducibility-related information?\n\nRQ3: To what extent can rule-based and AI-based approaches reliably characterize computational notebooks into reproducibility-relevant categories, and how do their classifications compare with human judgments?\n\nRQ4: To what extent do computational notebooks differ across corss-platforms with respect to metadata completeness, execution outcomes, failure causes, and reproducibility-relevant categories?\n\n\n\nYou can then refer to research questions in other chapters to show how ach RQs were addressed.",
+  "target_text": "four research questions:"
+ },
+ {
+  "page": 8,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 9,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "These contributions provide a system that can support...\n\nYour contribution is bigger than just changing a single pltform workflow to support multiple workflow.\n\nThough it should be mentioned but in detail in the methods chapter.\nOtherwise it feels liek yyou are  undersell your contribution",
+  "target_text": "these contributions change a single-platform work ow"
+ },
+ {
+  "page": 9,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 9,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Can make it more strong by rephrasing",
+  "target_text": "thesis makes the following contributions"
+ },
+ {
+  "page": 10,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 10,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "describe the terminologies used in the thesis and discusses the state of the art\n\n\nSomething along this line\n\nnot just listing everything but a little more explaination. \nApplies to others chapters as well.",
+  "target_text": "apter 2 exp"
+ },
+ {
+  "page": 11,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Chapter title should be more prominent and large.\n\nPlease make sure the implementation details or the solution itself is not provided in this chapter 2 or 3. It is important to distinguish the proposed solution with the research gap.",
+  "target_text": "2 Background and Related Work"
+ },
+ {
+  "page": 11,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "The original pipeline however compares the output and see if the cells have same or different outputs and records that.\nAre you also not using that?",
+  "target_text": "can the publish"
+ },
+ {
+  "page": 13,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "This is not a remaining limitation. May be keep blank here for your thesis.",
+  "target_text": "Adds Codeberg, Zen- mantic foundations odo, normalized meta-"
+ },
+ {
+  "page": 13,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "cite which all work [2,..]",
+  "target_text": "that work"
+ },
+ {
+  "page": 13,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "",
+  "target_text": ""
+ },
+ {
+  "page": 13,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Always provide the reference number \napplies to others even if you have provided it earlier",
+  "target_text": "Pimentel et al"
+ },
+ {
+  "page": 16,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Which pipeline are you mentioning now?\n\n\nDifferentiate your own pipeline with the original pipeline",
+  "target_text": "The pipeline"
+ },
+ {
+  "page": 16,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "You are combining your solution in the related work/background chapter. \nYou solution should come later only",
+  "target_text": "the pipeline stores"
+ },
+ {
+  "page": 17,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Is it based on state of the art literature?references adding is good here.\n\nHere again you added your results in this chapter.",
+  "target_text": "nine categories"
+ },
+ {
+  "page": 18,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "again result which does not belong here.",
+  "target_text": "The graph is built in several clear steps"
+ },
+ {
+  "page": 19,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "can be rephrased more scientifically based on the new research questions added in chapter 1.",
+  "target_text": "Research Gap"
+ },
+ {
+  "page": 21,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Each requiremnt should be written as a statement.\n\ne.g. The pipeline shall identify GitHub, Codeberg, and Zenodo resources from supported URLs and reject URLs from unsupported hosts.",
+  "target_text": "Detect GitHub, Codeberg, an"
+ },
+ {
+  "page": 21,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "Unit tests with valid and invalid URLs",
+  "target_text": "Unit examples"
+ },
+ {
+  "page": 21,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "The pipeline shall map platform-specific metadata to a common set of eight database fields without generating values for missing metadata.",
+  "target_text": "Translate each supported API response into t"
+ },
+ {
+  "page": 29,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "It uses docker environment, right?\nor did you change the implementation to create environemnt using pyenv?",
+  "target_text": "Create Environment ti d i t P"
+ },
+ {
+  "page": 39,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "How is this python version selected?\nIs it same version as of the notebook?",
+  "target_text": "selects a Python version,"
+ },
+ {
+  "page": 43,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "is this the complete list of normalized metadata fields?\n\nAre ther also other metadata fields which are platform specific which are stored in database?",
+  "target_text": "Normalized metadata elds"
+ },
+ {
+  "page": 52,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "overflows in the table",
+  "target_text": "ble for one notebook_reproducibility_metr t bl cell-lev d ibi"
+ },
+ {
+  "page": 56,
+  "type": "Highlight",
+  "author": "shsam",
+  "comment": "What happens when a notebook does both data preparation and analysis?\nor preparation, analysis, and visualization?\nHow does it classify?",
+  "target_text": "Table 5.11: Notebook-purpose taxonomy. Category Operational meaning Example evidence data_preparation cleans, transforms, com- pandas imports, fillna( bi d bines, or prepares data bines, or prepares data data_analysis explores data, computes statsmod"
+ }
+]

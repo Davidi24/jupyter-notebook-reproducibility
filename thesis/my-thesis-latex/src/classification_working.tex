@@ -7,6 +7,8 @@ The classification component is implemented as a separate Python package under \
 
 The implemented classification route has five main steps. First, the notebook is read and converted into a bounded evidence object. Second, a rule-based classifier can assign a category from transparent signals. Third, an AI-based classifier can receive the same bounded evidence and independently assign a category. Neither method is fixed as mandatory: by default both run, but either can be switched off on its own. Disabling both at the same time is rejected before any notebook is read, because at least one method must produce a decision. Fourth, whichever decisions are available are reconciled into an agreement status, review flag, and optional provisional category. Finally, the complete result is stored in the working database so it can be inspected, reviewed, evaluated, and exported to the knowledge graph.
 
+Figure~\ref{fig:classification-implementation-flow} shows the notebook classification implementation flow.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/classification_implementation_flow.png}
@@ -15,12 +17,15 @@ The implemented classification route has five main steps. First, the notebook is
 \end{figure}
 
 \subsection{Classification Objective and Taxonomy}
+\label{sec:classification-taxonomy}
 
 The classifier assigns one main purpose category to each notebook. The category describes what the notebook mainly does. It does not describe the scientific subject of the notebook, and it does not say whether the notebook executed successfully. For example, a notebook about biology and a notebook about finance can both belong to \texttt{data\_analysis} if their main purpose is to analyse data.
 
 The taxonomy is defined once in \texttt{categories.py}. This shared definition is imported by the rule-based classifier, the AI-based classifier, command-line validation, database review functions, and evaluation scripts. Using one shared taxonomy prevents different parts of the implementation from accepting different labels. If a category is not part of the taxonomy, it is rejected before it is stored.
 
 The implementation uses nine categories: \texttt{data\_preparation}, \texttt{data\_analysis}, \texttt{visualization}, \texttt{machine\_learning}, \texttt{simulation}, \texttt{tutorial}, \texttt{software\_development}, \texttt{mixed\_purpose}, and \texttt{uncertain}. The first seven categories describe common notebook purposes. The last two categories are used when the evidence does not support a clear single purpose. \texttt{mixed\_purpose} is used when several purposes are equally central. \texttt{uncertain} is used when the notebook contains too little useful evidence for a reliable decision.
+
+Table~\ref{tab:classification-taxonomy} summarises the notebook-purpose taxonomy.
 
 \begin{table}[ht]
 \centering
@@ -44,7 +49,25 @@ Category & Operational meaning & Example evidence\tabularnewline
 \end{tabularx}
 \end{table}
 
-This taxonomy makes classification usable for later evaluation. Instead of comparing reproducibility only by platform, the system can also ask whether certain notebook purposes are more difficult to reproduce. For example, machine-learning notebooks may depend on larger libraries or external datasets, while tutorial notebooks may be simpler and more self-contained. The category is therefore an additional context variable for interpreting execution and comparison results.
+\subsubsection*{Notebooks Serving Several Purposes}
+
+A notebook that both prepares data and analyses it --- or that prepares, analyses, and plots --- is the common case rather than the exception, as the corpus studies discussed in Section~2.7 report \cite{rule2018,kery2018,psallidas2022datascience}. The taxonomy therefore does not assume a single purpose. It resolves multi-purpose notebooks through an explicit, deterministic rule rather than leaving the outcome to whichever category happens to score marginally higher.
+
+Each classification produces a \emph{primary} category and a list of \emph{secondary} categories. The rule-based classifier accumulates a weighted score per category from the collected evidence and then applies three cases in order:
+
+\begin{enumerate}[label=\textbf{Case \arabic*.},leftmargin=1.9cm,itemsep=0.3em,topsep=0.3em]
+\item \textbf{Insufficient evidence.} If the highest score is below 2.0, the notebook is labelled \texttt{uncertain} with confidence 0 and no secondary categories. No category is asserted on weak evidence.
+\item \textbf{One dominant purpose.} Otherwise the highest-scoring category becomes the primary label. Every other category scoring at least 2.0 \emph{and} at least 65\% of the top score is retained as a secondary category. A notebook that mainly analyses data but also plots it is therefore \texttt{data\_analysis} with \texttt{visualization} recorded as secondary --- the subordinate purpose is preserved, not discarded.
+\item \textbf{No dominant purpose.} If the second-highest score is at least 3.0 \emph{and} at least 90\% of the top score, neither purpose dominates. The primary label becomes \texttt{mixed\_purpose}, and the two tied categories become its secondary categories. Confidence is computed from their combined score, so a notebook with two strong purposes is not penalised for being genuinely mixed.
+\end{enumerate}
+
+To answer the question directly: a notebook that performs data preparation and data analysis is labelled \texttt{data\_analysis} (with \texttt{data\_preparation} secondary) when the analysis evidence clearly dominates, and \texttt{mixed\_purpose} (with both recorded as secondary) when the two are within 10\% of each other. A notebook doing preparation, analysis, and visualization follows the same rule on its top two scores; the third purpose is retained as an additional secondary category whenever it clears the 65\% threshold. The AI-based classifier returns the same primary/secondary structure and is instructed to choose \texttt{mixed\_purpose} only when several purposes are equally central, so both methods express multiplicity identically and remain directly comparable.
+
+Two consequences are worth stating. First, \texttt{mixed\_purpose} is a substantive finding about a notebook, not a failure of the classifier --- unlike \texttt{uncertain}, which records that the evidence was insufficient. The two are kept separate for exactly this reason. Second, because the secondary categories are stored alongside the primary one, the evaluation in Section~\ref{sec:eval-classification} can analyse notebooks either by their dominant purpose alone or by the full set of purposes they serve, without re-running the classifier.
+
+\subsubsection*{Role in the Evaluation}
+
+This taxonomy makes classification usable for later evaluation. Instead of comparing reproducibility only by platform, the system can also ask whether certain notebook purposes are more difficult to reproduce. For example, machine-learning notebooks may depend on larger libraries or external datasets, while tutorial notebooks may be simpler and more self-contained. The category is therefore an additional context variable for interpreting execution and comparison results, and it is used in Section~\ref{sec:eval-cross-platform} to check whether an apparent platform difference is in fact a difference in notebook composition.
 
 \subsection{Notebook Evidence Collection}
 
@@ -55,6 +78,8 @@ The collector separates the notebook into Markdown cells, code cells, raw cells,
 Python imports are extracted using the standard-library \texttt{ast} module. For example, \texttt{import pandas as pd} is reduced to \texttt{pandas}, and \texttt{from sklearn.model\_selection import train\_test\_split} is reduced to \texttt{sklearn}. This keeps the feature representation compact and focuses on top-level package signals. Before parsing, the collector removes syntax that is common in notebooks but not valid as normal Python, such as IPython magics, shell commands, and help syntax. If a cell cannot be parsed as Python, the collector skips import extraction for that cell instead of failing the whole notebook.
 
 Stored outputs are represented only by type. A display or execution result keeps its MIME types, a stream keeps the stream name, and an error keeps its error name. For example, a PNG plot contributes the signal \texttt{image/png}, but the actual encoded image bytes are not sent to the classifiers. Long text outputs, large binary objects, and detailed traceback contents are also excluded. This keeps the classifier input small and avoids sending unnecessary or sensitive content to the AI prompt.
+
+Table~\ref{tab:classification-features} shows the collected notebook evidence and its role.
 
 \begin{table}[ht]
 \centering
@@ -91,6 +116,8 @@ Each matched text pattern contributes a defined score. Repeated matches are capp
 
 Image outputs provide an additional visualization signal. If the stored outputs contain image MIME types, the rules add visualization evidence. This matters because some notebooks store plots even when the plotting library is not clearly detected from imports.
 
+Table~\ref{tab:rule-signals} gives the rule-based classification signals.
+
 \begin{table}[ht]
 \centering
 \caption{Rule-based classification signals.}
@@ -114,6 +141,8 @@ After all signals are counted, the rule classifier compares the category scores.
 The confidence score is calculated from two ideas: dominance and signal strength. Dominance measures how much of the total evidence supports the winning category. Signal strength reduces the confidence when the absolute amount of evidence is small. This means a category can win but still receive only moderate confidence if the notebook contains little classification evidence overall.
 
 \texttt{mixed\_purpose} is handled more conservatively than ordinary secondary categories. It is used only when the two strongest purposes are both strong and very close to each other. This avoids forcing a notebook into one category when the implementation has evidence that two purposes are equally central.
+
+Table~\ref{tab:rule-decision-cases} lists the rule decision cases.
 
 \begin{table}[ht]
 \centering
@@ -146,6 +175,8 @@ The prompt begins with the classification task and the nine allowed categories. 
 
 The prompt also includes an instruction that notebook text and code are untrusted data. This is necessary because Markdown and code cells are copied from external notebooks. A notebook could contain text such as ``ignore previous instructions'' or other misleading content. The implementation treats this text as data for classification, not as instructions that control the system.
 
+Figure~\ref{fig:ai-request-structure} illustrates the AI classification request structure.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/ai_classification_request_structure.png}
@@ -156,6 +187,8 @@ The prompt also includes an instruction that notebook text and code are untruste
 The model is required to return structured JSON. The schema contains a primary category, secondary categories, confidence value, reason, and evidence list. The category fields are restricted to the nine allowed taxonomy labels. The same schema is passed to Ollama through its \texttt{format} field \cite{ollamastructured}. The client still validates the response independently because a schema-constrained model output is helpful but should not be treated as a guarantee.
 
 The input sent to the model is bounded. The implementation includes the notebook path, cell counts, kernel and language metadata, unique imports, selected Markdown, selected code, and at most 100 output summaries. Markdown and code are limited by character count. This prevents very large notebooks from producing unbounded prompts and avoids sending embedded binary outputs.
+
+Table~\ref{tab:ai-input-limits} shows the AI input limits.
 
 \begin{table}[ht]
 \centering
@@ -189,13 +222,15 @@ The hybrid stage combines the rule-based result and the AI-based result. It does
 
 The main function collects the notebook once, runs whichever methods are enabled, and passes both results to the reconciliation function. Rules and the AI model are each independently switchable: by default both run, a rule-only mode skips the AI model, and an AI-only mode skips the rules. Disabling both is rejected before any notebook is read, because at least one method must produce a decision. The default confidence threshold is 0.55. The reconciliation output contains an agreement status, a Boolean review flag, an optional warning, and an optional provisional category.
 
-If the rule method and AI method confidently choose the same primary category, the result is marked as \texttt{AGREED}, and the shared category becomes the provisional classification. If they choose the same category but one confidence value is below the threshold, the result is marked as \texttt{AGREED\_LOW\_CONFIDENCE}. The shared category is still visible, but the row is sent to review.
+If the rule method and AI method confidently choose the same primary category, the result is marked as \texttt{AGREED}, and the shared category becomes the provisional classification. If they choose the same category but one confidence value is below the threshold, the result is marked as \texttt{AGREED\ub LOW\ub CONFIDENCE}. The shared category is still visible, but the row is sent to review.
 
-If one method chooses a category as primary and the other includes it as secondary, the result is marked as \texttt{PARTIAL\_AGREEMENT}. This means both methods found related evidence, but they did not agree strongly enough on one main purpose. If both methods choose different confident primary categories, the result is marked as \texttt{CLASSIFIER\_DISAGREEMENT}.
+If one method chooses a category as primary and the other includes it as secondary, the result is marked as \texttt{PARTIAL\_AGREEMENT}. This means both methods found related evidence, but they did not agree strongly enough on one main purpose. If both methods choose different confident primary categories, the result is marked as \texttt{CLASSIFIER\ub DISAGREEMENT}.
 
 Low-confidence cases are also separated. The implementation can record whether only the rule result was weak, only the AI result was weak, or both were weak. If both methods return uncertain, the result becomes \texttt{BOTH\_UNCERTAIN}. This is treated differently from ordinary agreement because it means both methods lacked enough evidence, not that they confidently agreed on a meaningful purpose.
 
-If the AI method is disabled, the result is marked as \texttt{LLM\_NOT\_REQUESTED}. If the AI request fails or returns invalid output, the result is marked as \texttt{LLM\_UNAVAILABLE}. In both cases, the rule label can still be shown, but the row requires review because the second method did not provide a valid independent decision. The reverse case is handled symmetrically: if the rule-based classifier was disabled, the result is marked as \texttt{RULE\_NOT\_REQUESTED} and the AI label is shown instead, again with mandatory review. If neither method produced a usable result, for example because the rule classifier was disabled and the AI request also failed, the notebook still receives a stored row with no provisional category, so the missing evidence remains visible rather than silently dropped.
+If the AI method is disabled, the result is marked as \texttt{LLM\ub NOT\ub REQUESTED}. If the AI request fails or returns invalid output, the result is marked as \texttt{LLM\ub UNAVAILABLE}. In both cases, the rule label can still be shown, but the row requires review because the second method did not provide a valid independent decision. The reverse case is handled symmetrically: if the rule-based classifier was disabled, the result is marked as \texttt{RULE\_NOT\_REQUESTED} and the AI label is shown instead, again with mandatory review. If neither method produced a usable result, for example because the rule classifier was disabled and the AI request also failed, the notebook still receives a stored row with no provisional category, so the missing evidence remains visible rather than silently dropped.
+
+Table~\ref{tab:hybrid-outcomes} gives the hybrid reconciliation outcomes.
 
 \begin{table}[ht]
 \centering
@@ -214,7 +249,7 @@ Status & Condition & Provisional category & Human review required\tabularnewline
 \texttt{LLM\_LOW\_}\linebreak\texttt{CONFIDENCE} & labels differ, only the AI confidence is low & none & Yes\tabularnewline
 \texttt{BOTH\_LOW\_}\linebreak\texttt{CONFIDENCE} & labels differ, both confidences are low & none & Yes\tabularnewline
 \texttt{BOTH\_UNCERTAIN} & both primary labels are uncertain & none & Yes\tabularnewline
-\texttt{LLM\_UNAVAILABLE} & request or validation failed & rule label shown & Yes\tabularnewline
+\texttt{LLM\ub UNAVAILABLE} & request or validation failed & rule label shown & Yes\tabularnewline
 \texttt{LLM\_NOT\_}\linebreak\texttt{REQUESTED} & rule-only command was selected & rule label shown & Yes\tabularnewline
 \texttt{RULE\_NOT\_}\linebreak\texttt{REQUESTED} & AI-only command was selected, so rules did not run & AI label shown & Yes\tabularnewline
 \bottomrule
@@ -228,6 +263,8 @@ Only confident exact agreement is accepted without immediate review. All other c
 After reconciliation, the result is stored in the working database. The classification table is connected to the registered notebook identity. This connection is made through the notebook ID when the implementation can resolve the local path to exactly one notebook row. If the path is ambiguous, the system avoids creating an incorrect database relation.
 
 The table stores both automated methods separately, and either one may be empty when that method was not requested. It keeps the notebook path and hash, the rule category and confidence, the AI category and confidence, the model name, prompt version, agreement status, review flag, warning, provisional category, final category, reviewer information, timestamps, and the full JSON result. This means the database does not only contain the final category. It contains the evidence needed to understand how the category was produced.
+
+Table~\ref{tab:classification-fields} lists the main fields stored in \texttt{notebook\_classifications}.
 
 \begin{table}[ht]
 \centering
@@ -255,6 +292,8 @@ Human review can be performed for one classification row or through a CSV review
 
 When reviewed labels are applied, the implementation validates them against the same taxonomy. A valid review updates the selected classification row with the final category, reviewer name, note, and review time. The automated rule and AI answers remain unchanged. This separation prevents human labels from being confused with automated predictions.
 
+Figure~\ref{fig:human-review-flow} illustrates the human review flow.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/chapter5/human_review_flow.png}
@@ -270,7 +309,9 @@ The classification component can be called from the pipeline or directly from th
 
 The command-line options make the experiment configuration explicit. The user can run classification in rule-only mode, in AI-only mode, or leave both enabled for the hybrid default; select the AI model; set the Ollama URL; choose a timeout; and change the confidence threshold. Selecting rule-only and AI-only together is rejected immediately, before any notebook is read, because the implementation always requires at least one classification method to run. These settings affect how the classification was produced, so they are part of the experiment context.
 
-The implementation handles three main failure types. First, collection failures occur when a notebook cannot be read or parsed as a notebook file. These failures affect that file. Second, AI failures occur when the model cannot be reached or returns invalid output. These become \texttt{LLM\_UNAVAILABLE}, while the rule result is retained for review when rules were requested. Third, uncertainty is treated as a normal classification state rather than an exception. A notebook with too little evidence can be stored as uncertain and counted during evaluation.
+The implementation handles three main failure types. First, collection failures occur when a notebook cannot be read or parsed as a notebook file. These failures affect that file. Second, AI failures occur when the model cannot be reached or returns invalid output. These become \texttt{LLM\ub UNAVAILABLE}, while the rule result is retained for review when rules were requested. Third, uncertainty is treated as a normal classification state rather than an exception. A notebook with too little evidence can be stored as uncertain and counted during evaluation.
+
+Table~\ref{tab:classification-failure-handling} shows the classification failure handling.
 
 \begin{table}[ht]
 \centering
@@ -282,10 +323,10 @@ The implementation handles three main failure types. First, collection failures 
 Failure type & Example cause & Stored outcome & Pipeline effect\tabularnewline
 \midrule
 Collection failure & notebook file cannot be read or parsed & command error for that file & other notebooks are unaffected\tabularnewline
-AI unavailable & network error, non-success HTTP response & \texttt{LLM\_UNAVAILABLE}, rule result retained & row is marked for human review\tabularnewline
+AI unavailable & network error, non-success HTTP response & \texttt{LLM\ub UNAVAILABLE}, rule result retained & row is marked for human review\tabularnewline
 Invalid AI output & malformed JSON, unknown label, invalid confidence & converted into a classifier error & treated the same as AI unavailable\tabularnewline
-Low confidence & one or both methods score below the threshold & \texttt{RULE\_LOW\_CONFIDENCE}, \texttt{LLM\_LOW\_CONFIDENCE}, or \texttt{BOTH\_LOW\_CONFIDENCE} & row is marked for human review\tabularnewline
-Disagreement & confident primary labels differ & \texttt{CLASSIFIER\_DISAGREEMENT} & row is marked for human review\tabularnewline
+Low confidence & one or both methods score below the threshold & \texttt{RULE\ub LOW\ub CONFIDENCE}, \texttt{LLM\_LOW\_CONFIDENCE}, or \texttt{BOTH\ub LOW\ub CONFIDENCE} & row is marked for human review\tabularnewline
+Disagreement & confident primary labels differ & \texttt{CLASSIFIER\ub DISAGREEMENT} & row is marked for human review\tabularnewline
 Uncertainty & too little evidence for either method & \texttt{BOTH\_UNCERTAIN}, stored as a normal state & counted during evaluation, not treated as an exception\tabularnewline
 \bottomrule
 \end{tabularx}
